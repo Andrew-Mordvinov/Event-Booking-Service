@@ -5,9 +5,9 @@ using EventBookingService.Models.Events.Requests;
 namespace EventBookingService.Application.Events.Implementation;
 
 /// <summary>
-/// Реализация <see cref="IEventRepository"/> с хранением данных в памяти приложения
+/// Реализация <see cref="IEventService"/> с хранением данных в памяти приложения
 /// </summary>
-public class MemoryEventRepository : IEventRepository
+public class MemoryEventService : IEventService
 {
     private static readonly List<Event> _events = new();
 

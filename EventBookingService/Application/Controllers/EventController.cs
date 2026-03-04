@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace EventBookingService.Application.Controllers;
 
 [ApiController]
-[Route("[controller]")]
-public class EventController(IEventRepository _eventRepository) : ControllerBase
+[Route("events")]
+public class EventController(IEventService _eventRepository) : ControllerBase
 {
     [HttpGet("{id}")]
     public async Task<ActionResult<BaseEventResponse>> GetEventByIdAsync(Guid id, CancellationToken cancellationToken)

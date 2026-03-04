@@ -4,7 +4,7 @@ using EventBookingService.Models.Events.Requests;
 
 namespace EventBookingService.Application.Events;
 
-public interface IEventRepository
+public interface IEventService
 {
     /// <summary>
     /// Получить все события в виде коллекции для чтения
