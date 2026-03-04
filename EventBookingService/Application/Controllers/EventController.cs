@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace EventBookingService.Application.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class EventController(IEventRepository _eventRepository) : ControllerBase
 {
     [HttpGet("{id}")]

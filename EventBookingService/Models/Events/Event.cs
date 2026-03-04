@@ -1,12 +1,21 @@
 ﻿namespace EventBookingService.Models.Events;
 
+/// <summary>
+/// Модель мероприятия, реализующая непосредственно бизнес-логику
+/// </summary>
 public class Event
 {
+    #region Props
+
     public Guid Id { get; }
     public string Title { get; set; }
     public string Description { get; set; }
     public DateTime StartAt { get; protected set; }
     public DateTime EndAt { get; protected set; }
+
+    #endregion
+
+    #region Constructors
 
     public Event(Guid id, string title, DateTime start, DateTime end, string? description = null)
     {
@@ -20,6 +29,10 @@ public class Event
         StartAt = start;
         EndAt = end;
     }
+
+    #endregion
+
+    #region Public static methods
 
     /// <summary>
     /// Статический метод, который пытается создать объект <see cref="Event"/>
@@ -65,6 +78,10 @@ public class Event
         }
     }
 
+    #endregion
+
+    #region Public methods
+
     /// <summary>
     /// Заполняет все поля в текущем экземпляре данными источника (кроме идентификатора)
     /// </summary>
@@ -76,4 +93,12 @@ public class Event
         StartAt = source.StartAt;
         EndAt = source.EndAt;
     }
+
+    /// <summary>
+    /// Создает полного клона текущего объекта
+    /// </summary>
+    /// <returns>Новый экземпляр события</returns>
+    public Event Clone() => new Event(Id, Title, StartAt, EndAt, Description);
+
+    #endregion
 }

@@ -16,28 +16,33 @@ public class MemoryEventRepository : IEventRepository
         var (entity, errors) = Event.TryCreate(Guid.NewGuid(), request.Title, request.StartAt, request.EndAt, request.Description);
         if (entity is null)
         {
-            return Task.FromResult(new ValidationResult<Event?>(null, errors));
+            return Task.FromResult(ResultCreator.Fail<Event?>(null, errors));
         }
         _events.Add(entity);
 
-        return Task.FromResult(new ValidationResult<Event?>(entity));
+        // чтобы нельзя было модифицировать полученный объект в обход, выкидываем копию
+        return Task.FromResult(ResultCreator.Success(entity.Clone()));
     }
 
     public Task<ValidationResult<bool>> DeleteEventByIdAsync(Guid id, CancellationToken token = default)
     {
         var removed = _events.RemoveAll(t => t.Id == id);
 
-        return Task.FromResult(new ValidationResult<bool>(removed > 0));
+        return Task.FromResult(ResultCreator.Success(removed > 0));
     }
 
-    public Task<ValidationResult<IReadOnlyCollection<Event>>> GetAllEventsAsync(CancellationToken token = default)
+    public Task<ValidationResult<IReadOnlyCollection<Event>?>> GetAllEventsAsync(CancellationToken token = default)
     {
-        return Task.FromResult(new ValidationResult<IReadOnlyCollection<Event>>(_events.AsReadOnly()));
+        IReadOnlyCollection<Event> all = _events.AsReadOnly();
+
+        return Task.FromResult(ResultCreator.Success(all));
     }
 
     public Task<ValidationResult<Event?>> GetEventByIdAsync(Guid id, CancellationToken token = default)
     {
-        return Task.FromResult(new ValidationResult<Event?>(_events.FirstOrDefault(t => t.Id == id)));
+        var entity = _events.FirstOrDefault(t => t.Id == id);
+        // чтобы нельзя было модифицировать полученный объект в обход, выкидываем копию
+        return Task.FromResult(ResultCreator.Success(entity?.Clone()));
     }
 
     public Task<ValidationResult<Event?>> ModifyEventAsync(Guid id, ModifyEventRequest request, CancellationToken token = default)
@@ -46,19 +51,19 @@ public class MemoryEventRepository : IEventRepository
 
         if (target == null)
         {
-            return Task.FromResult(new ValidationResult<Event?>(null));
+            return Task.FromResult(ResultCreator.Success<Event>(null));
         }
 
         // Создаем объект, чтобы прогнать все валидации, т.к. поля в ModifyEventRequest nullable
-        var (source, errors) = Event.TryCreate(Guid.NewGuid(), request.Title, request.StartAt, request.EndAt, request.Description);
+        var (source, errors) = Event.TryCreate(id, request.Title, request.StartAt, request.EndAt, request.Description);
         if (source is null)
         {
-            return Task.FromResult(new ValidationResult<Event?>(null, errors));
+            return Task.FromResult(ResultCreator.Fail<Event?>(null, errors));
         }
 
         target.FillFrom(source);
-
-        return Task.FromResult(new ValidationResult<Event?>(target));
+        // target лежит в коллекции, поэтому на выход копию
+        return Task.FromResult(ResultCreator.Success(source));
     }
 }
 

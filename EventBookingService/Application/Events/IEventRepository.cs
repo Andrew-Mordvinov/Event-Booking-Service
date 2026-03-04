@@ -7,11 +7,11 @@ namespace EventBookingService.Application.Events;
 public interface IEventRepository
 {
     /// <summary>
-    /// Получить все события
+    /// Получить все события в виде коллекции для чтения
     /// </summary>
     /// <param name="token">Токен отмены асинхронной операции</param>
-    /// <returns>Список всех мероприятий и ошибки в процессе</returns>
-    Task<ValidationResult<IReadOnlyCollection<Event>>> GetAllEventsAsync(CancellationToken token = default);
+    /// <returns>Список всех мероприятий или null и ошибки в процессе</returns>
+    Task<ValidationResult<IReadOnlyCollection<Event>?>> GetAllEventsAsync(CancellationToken token = default);
 
     /// <summary>
     /// Получить событие по заданному идентификатору

@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EventBookingService.Models.Events.Requests;
 
+/// <summary>
+/// Dto для входящего запроса создания события
+/// </summary>
 public class CreateEventRequest
 {
     [Required(ErrorMessage = "Наименование мероприятия обязательно для заполнения")]

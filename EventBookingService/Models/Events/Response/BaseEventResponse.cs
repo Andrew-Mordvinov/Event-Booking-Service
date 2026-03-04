@@ -1,5 +1,8 @@
 ﻿namespace EventBookingService.Models.Events.Response;
 
+/// <summary>
+/// Базовый ответ на запрос с полями как в <see cref="Event"/>
+/// </summary>
 public class BaseEventResponse
 {
     public Guid Id { get; set; }
