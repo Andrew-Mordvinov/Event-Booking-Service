@@ -1,5 +1,6 @@
 using EventBookingService.Application;
 using EventBookingService.Infrastructure;
+using EventBookingService.Middleware;
 using EventBookingService.Presentation;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +25,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseExceptionHandlingMiddleware();
 
 app.UseHttpsRedirection();
 
