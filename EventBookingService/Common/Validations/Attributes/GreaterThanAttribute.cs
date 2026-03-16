@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
@@ -11,7 +11,19 @@ namespace EventBookingService.Common.Validations.Attributes;
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public class GreaterThanAttribute : ValidationAttribute
 {
-    [RequiresUnreferencedCode("The property referenced by 'otherProperty' may be trimmed. Ensure it is preserved.")]
+    #region Properties
+
+    public string OtherProperty { get; }
+
+    public string? OtherPropertyDisplayName { get; internal set; }
+
+    public override bool RequiresValidationContext => true;
+
+    #endregion
+
+    #region Constructors
+
+    [RequiresUnreferencedCode("Свойство, указанное в параметре 'otherProperty', может быть удалено линкером. Убедитесь, что оно сохраняется.")]
     public GreaterThanAttribute(string otherProperty) : base()
     {
         ArgumentNullException.ThrowIfNull(otherProperty);
@@ -19,11 +31,9 @@ public class GreaterThanAttribute : ValidationAttribute
         OtherProperty = otherProperty;
     }
 
-    public string OtherProperty { get; }
+    #endregion
 
-    public string? OtherPropertyDisplayName { get; internal set; }
-
-    public override bool RequiresValidationContext => true;
+    #region Base overrides
 
     public override string FormatErrorMessage(string name) =>
         string.Format(
@@ -69,7 +79,7 @@ public class GreaterThanAttribute : ValidationAttribute
                 OtherPropertyDisplayName ??= GetDisplayNameForProperty(otherPropertyInfo);
 
                 string[]? memberNames = validationContext.MemberName != null
-                   ? new[] { validationContext.MemberName }
+                   ? [validationContext.MemberName]
                    : null;
                 return new ValidationResult(FormatErrorMessage(validationContext.DisplayName), memberNames);
             }
@@ -82,10 +92,14 @@ public class GreaterThanAttribute : ValidationAttribute
         return ValidationResult.Success;
     }
 
+    #endregion
+
+    #region Private methods
+
     private string? GetDisplayNameForProperty(PropertyInfo property)
     {
-        IEnumerable<Attribute> attributes = CustomAttributeExtensions.GetCustomAttributes(property, true);
-        foreach (Attribute attribute in attributes)
+        var attributes = CustomAttributeExtensions.GetCustomAttributes(property, true);
+        foreach (var attribute in attributes)
         {
             if (attribute is DisplayAttribute display)
             {
@@ -95,4 +109,6 @@ public class GreaterThanAttribute : ValidationAttribute
 
         return OtherProperty;
     }
+
+    #endregion
 }

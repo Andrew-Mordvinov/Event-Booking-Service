@@ -1,4 +1,4 @@
-﻿namespace EventBookingService.Common.Validations
+namespace EventBookingService.Common.Validations
 {
     /// <summary>
     /// Хэлпер для более явного указания намерений в коде
@@ -6,19 +6,10 @@
     /// </summary>
     public static class ResultCreator
     {
-        public static ValidationResult<T?> Success<T>(T? val)
-        {
-            return new ValidationResult<T?>(val);
-        }
+        public static ValidationResult<T?> Success<T>(T? val) => new(val);
 
-        public static ValidationResult<T?> Fail<T>(T? val, IEnumerable<string> errors)
-        {
-            return new ValidationResult<T?>(val, errors);
-        }
+        public static ValidationResult<T?> Fail<T>(T? val, IEnumerable<string> errors) => new(val, errors);
 
-        public static ValidationResult<T?> Fail<T>(T? val, string error)
-        {
-            return new ValidationResult<T?>(val, error);
-        }
+        public static ValidationResult<T?> Fail<T>(T? val, string error) => new(val, error);
     }
 }

@@ -1,20 +1,24 @@
-﻿
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventBookingService.Middleware;
 
-public class ExceptionHandlingMiddleware
+/// <summary>
+/// Глобальный перехватчик исключений с логгированием и формированием
+/// ответа в единообразной структуре
+/// </summary>
+public class ExceptionHandlingMiddleware(
+    RequestDelegate next,
+    ILogger<ExceptionHandlingMiddleware> logger)
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+    #region Private fields
 
-    public ExceptionHandlingMiddleware(
-        RequestDelegate next,
-        ILogger<ExceptionHandlingMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
+    private readonly RequestDelegate _next = next;
+    private readonly ILogger<ExceptionHandlingMiddleware> _logger = logger;
+
+    #endregion
+
+    #region Public methods
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -27,6 +31,10 @@ public class ExceptionHandlingMiddleware
             await Handle(context, ex);
         }
     }
+
+    #endregion
+
+    #region Private methods
 
     private async Task Handle(HttpContext context, Exception exception)
     {
@@ -50,6 +58,12 @@ public class ExceptionHandlingMiddleware
         await context.Response.WriteAsJsonAsync(new ProblemDetails { Status = code, Detail = exception.Message });
     }
 
+    #endregion
+
+    #region Private static methods
+
     // Пока все ошибки обрабатываются без исключений и любое исключение - внутренняя ошибка сервера
-    private int GetStatusCode(Exception exception) => StatusCodes.Status500InternalServerError;
+    private static int GetStatusCode(Exception exception) => StatusCodes.Status500InternalServerError;
+
+    #endregion
 }

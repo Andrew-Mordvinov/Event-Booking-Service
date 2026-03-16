@@ -1,9 +1,12 @@
-﻿using EventBookingService.Common.Validations;
+using EventBookingService.Common.Validations;
 using EventBookingService.Models.Events;
 using EventBookingService.Models.Events.Requests;
 
 namespace EventBookingService.Application.Events;
 
+/// <summary>
+/// Сервис для работы с событиями
+/// </summary>
 public interface IEventService
 {
     /// <summary>

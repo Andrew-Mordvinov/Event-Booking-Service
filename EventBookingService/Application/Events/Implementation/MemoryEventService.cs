@@ -1,4 +1,4 @@
-﻿using EventBookingService.Common.Validations;
+using EventBookingService.Common.Validations;
 using EventBookingService.Models.Events;
 using EventBookingService.Models.Events.Requests;
 
@@ -9,7 +9,13 @@ namespace EventBookingService.Application.Events.Implementation;
 /// </summary>
 public class MemoryEventService : IEventService
 {
-    private static readonly List<Event> _events = new();
+    #region Private fields
+
+    private static readonly List<Event> _events = [];
+
+    #endregion
+
+    #region Base overrides
 
     public Task<ValidationResult<Event?>> CreateEventAsync(CreateEventRequest request, CancellationToken token = default)
     {
@@ -65,5 +71,7 @@ public class MemoryEventService : IEventService
         // target лежит в коллекции, поэтому на выход копию
         return Task.FromResult(ResultCreator.Success(source));
     }
+
+    #endregion
 }
 

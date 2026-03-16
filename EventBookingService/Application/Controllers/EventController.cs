@@ -16,7 +16,7 @@ public class EventController(IEventService _eventRepository) : ControllerBase
 
         if (result.Value is null)
         {
-            return result.IsSuccessful 
+            return result.IsSuccessful
                 ? NotFound()
                 : BadRequest(result.Errors);
         }
@@ -34,7 +34,7 @@ public class EventController(IEventService _eventRepository) : ControllerBase
             return BadRequest(result.Errors);
         }
 
-        return Ok(result.Value is not null 
+        return Ok(result.Value is not null
             ? result.Value.Select(t => BaseEventResponse.FromEvent(t))
             : []);
     }

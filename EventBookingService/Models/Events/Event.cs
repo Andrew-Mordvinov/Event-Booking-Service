@@ -1,11 +1,11 @@
-﻿namespace EventBookingService.Models.Events;
+namespace EventBookingService.Models.Events;
 
 /// <summary>
 /// Модель мероприятия, реализующая непосредственно бизнес-логику
 /// </summary>
 public class Event
 {
-    #region Props
+    #region Properties
 
     public Guid Id { get; }
     public string Title { get; set; }
@@ -63,7 +63,7 @@ public class Event
                 errors.Add("Дата окончания обязательна");
             }
 
-            if (errors.Any())
+            if (errors.Count != 0)
             {
                 return (null, errors);
             }
@@ -98,7 +98,7 @@ public class Event
     /// Создает полного клона текущего объекта
     /// </summary>
     /// <returns>Новый экземпляр события</returns>
-    public Event Clone() => new Event(Id, Title, StartAt, EndAt, Description);
+    public Event Clone() => new(Id, Title, StartAt, EndAt, Description);
 
     #endregion
 }

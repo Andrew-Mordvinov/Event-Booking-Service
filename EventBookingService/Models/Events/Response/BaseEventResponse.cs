@@ -1,4 +1,4 @@
-﻿namespace EventBookingService.Models.Events.Response;
+namespace EventBookingService.Models.Events.Response;
 
 /// <summary>
 /// Базовый ответ на запрос с полями как в <see cref="Event"/>
@@ -11,7 +11,7 @@ public class BaseEventResponse
     public DateTime StartAt { get; set; }
     public DateTime EndAt { get; set; }
 
-    public static BaseEventResponse FromEvent(Event entity) => new BaseEventResponse
+    public static BaseEventResponse FromEvent(Event entity) => new()
     {
         Id = entity.Id,
         Title = entity.Title,
