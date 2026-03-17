@@ -1,7 +1,9 @@
 namespace EventBookingService.Models.Events.Response;
 
 /// <summary>
-/// Базовый ответ на запрос с полями как в <see cref="Event"/>
+/// Базовый ответ на запрос с полями как в <see cref="Event"/>. Представляет собой
+/// проекцию <see cref="Event"/> с теми свойствами, которые должны быть переданы в
+/// качестве ответа на запрос (пока что все)
 /// </summary>
 public class BaseEventResponse
 {

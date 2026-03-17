@@ -1,3 +1,4 @@
+using EventBookingService.Common.Paging;
 using EventBookingService.Common.Validations;
 using EventBookingService.Models.Events;
 using EventBookingService.Models.Events.Requests;
@@ -10,11 +11,14 @@ namespace EventBookingService.Application.Events;
 public interface IEventService
 {
     /// <summary>
-    /// Получить все события в виде коллекции для чтения
+    /// Получить события в виде страницы с опциональным применением фильтров
     /// </summary>
+    /// <param name="filters">Параметры фильтрации</param>
+    /// <param name="page">Страница</param>
+    /// <param name="pageSize">Размер страницы</param>
     /// <param name="token">Токен отмены асинхронной операции</param>
-    /// <returns>Список всех мероприятий или null и ошибки в процессе</returns>
-    Task<ValidationResult<IReadOnlyCollection<Event>?>> GetAllEventsAsync(CancellationToken token = default);
+    /// <returns>Страничный результат с событиями или null и возникшие ошибки в процессе</returns>
+    Task<ValidationResult<PaginatedResult<Event>?>> GetEventsAsync(EventFilters filters, int page, int pageSize, CancellationToken token = default);
 
     /// <summary>
     /// Получить событие по заданному идентификатору

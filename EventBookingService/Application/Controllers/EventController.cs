@@ -1,5 +1,6 @@
 using EventBookingService.Application.Events;
 using EventBookingService.Common.Validations;
+using EventBookingService.Models.Events;
 using EventBookingService.Models.Events.Requests;
 using EventBookingService.Models.Events.Response;
 using Microsoft.AspNetCore.Mvc;
@@ -26,18 +27,25 @@ public class EventController(IEventService _eventRepository) : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<BaseEventResponse>>> GetAllEventAsync(CancellationToken cancellationToken)
+    public async Task<ActionResult<PaginatedResponse<BaseEventResponse>>> GetEventsAsync([FromQuery] GetEventsRequest request, CancellationToken cancellationToken)
     {
-        var result = await _eventRepository.GetAllEventsAsync(cancellationToken);
+        var eventFilers = new EventFilters
+        {
+            Title = request.Title,
+            From = request.From,
+            To = request.To,
+        };
+
+        var result = await _eventRepository.GetEventsAsync(eventFilers, request.EffectivePage, request.EffectivePageSize, cancellationToken);
 
         if (!result.IsSuccessful)
         {
             return BadRequest(result.ToProblemDetails(HttpContext));
         }
 
-        return Ok(result.Value is not null
-            ? result.Value.Select(t => BaseEventResponse.FromEvent(t))
-            : []);
+        return result.Value is { } value
+            ? Ok(PaginatedResponse<BaseEventResponse>.FromPaginatedResult(value, BaseEventResponse.FromEvent))
+            : NotFound();
     }
 
     [HttpPost]

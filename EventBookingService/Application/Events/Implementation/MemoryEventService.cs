@@ -1,3 +1,4 @@
+using EventBookingService.Common.Paging;
 using EventBookingService.Common.Validations;
 using EventBookingService.Models.Events;
 using EventBookingService.Models.Events.Requests;
@@ -37,11 +38,57 @@ public class MemoryEventService : IEventService
         return Task.FromResult(ResultCreator.Success(removed > 0));
     }
 
-    public Task<ValidationResult<IReadOnlyCollection<Event>?>> GetAllEventsAsync(CancellationToken token = default)
+    public Task<ValidationResult<PaginatedResult<Event>?>> GetEventsAsync(EventFilters filters, int page, int pageSize, CancellationToken token = default)
     {
-        IReadOnlyCollection<Event> all = _events.AsReadOnly();
+        var result = ResultCreator.Success<PaginatedResult<Event>?>(null);
 
-        return Task.FromResult(ResultCreator.Success(all));
+        if (page == 0)
+        {
+            result.AddError("Некорректное значение номера страницы: номер не должен быть равен 0");
+        }
+
+        if (pageSize < 1 || pageSize > 100)
+        {
+            result.AddError("Некорректное значение размера страницы: размер должен быть в диапазоне 1-100");
+        }
+
+        if (!result.IsSuccessful)
+        {
+            return Task.FromResult(result);
+        }
+
+        var (filtered, count) = ApplyFilter(filters);
+
+        if (count < 1)
+        {
+            return Task.FromResult(result);
+        }
+
+        var totalPages = (count + pageSize - 1) / pageSize;
+
+        if (totalPages < page)
+        {
+            result.AddError($"Указанная страница {page} не существует. Максимальная в текущем запросе страница - {totalPages}");
+        }
+
+        if (!result.IsSuccessful)
+        {
+            return Task.FromResult(result);
+        }
+
+        var dataPage = filtered.Skip((page - 1) * pageSize).Take(pageSize);
+
+        var paginatedResult = new PaginatedResult<Event>
+        {
+            CurrentPage = page,
+            TotalPages = totalPages,
+            FilteredCount = count,
+            Items = dataPage.ToList()
+        };
+
+        result.Value = paginatedResult;
+
+        return Task.FromResult(result);
     }
 
     public Task<ValidationResult<Event?>> GetEventByIdAsync(Guid id, CancellationToken token = default)
@@ -70,6 +117,45 @@ public class MemoryEventService : IEventService
         target.FillFrom(source);
         // target лежит в коллекции, поэтому на выход копию
         return Task.FromResult(ResultCreator.Success(source));
+    }
+
+    #endregion
+
+    #region Private methods
+
+    private static (IEnumerable<Event> collection, int count) ApplyFilter(EventFilters filters)
+    {
+        if (_events.Count == 0)
+        {
+            return ([], 0);
+        }
+
+        IEnumerable<Event> result = _events;
+
+        var (title, from, to) = filters;
+
+        if (title is null && from is null && to is null)
+        {
+            return (result, _events.Count);
+        }
+
+        if (title is not null)
+        {
+            var titleLower = title.ToLower();
+            result = result.Where(e => e.Title.ToLower().Contains(titleLower));
+        }
+
+        if (from is not null)
+        {
+            result = result.Where(e => e.StartAt >= from);
+        }
+
+        if (to is not null)
+        {
+            result = result.Where(e => e.EndAt <= to);
+        }
+
+        return (result, result.Count());
     }
 
     #endregion
