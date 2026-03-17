@@ -40,10 +40,10 @@ public class ExceptionHandlingMiddleware(
     {
         _logger.LogError(
             exception,
-            "Возникло необработанное исключение. Method={Method}, Path={Path}, RequestId={RequestId}",
+            "Возникло необработанное исключение. Method={Method}, Path={Path}, TraceId={TraceId}",
             context.Request.Method,
             context.Request.Path,
-            context.Request.Headers["x-request-id"]);
+            context.TraceIdentifier);
 
         if (context.Response.HasStarted)
         {
@@ -55,7 +55,12 @@ public class ExceptionHandlingMiddleware(
         context.Response.StatusCode = code;
         context.Response.ContentType = "application/json";
 
-        await context.Response.WriteAsJsonAsync(new ProblemDetails { Status = code, Detail = exception.Message });
+        await context.Response.WriteAsJsonAsync(new ProblemDetails 
+        {
+            Status = code,
+            Detail = exception.Message,
+            Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
+        });
     }
 
     #endregion

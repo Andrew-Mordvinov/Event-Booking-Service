@@ -1,4 +1,5 @@
 using EventBookingService.Application.Events;
+using EventBookingService.Common.Validations;
 using EventBookingService.Models.Events.Requests;
 using EventBookingService.Models.Events.Response;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,7 @@ public class EventController(IEventService _eventRepository) : ControllerBase
         {
             return result.IsSuccessful
                 ? NotFound()
-                : BadRequest(result.Errors);
+                : BadRequest(result.ToProblemDetails(HttpContext));
         }
 
         return Ok(BaseEventResponse.FromEvent(result.Value));
@@ -31,7 +32,7 @@ public class EventController(IEventService _eventRepository) : ControllerBase
 
         if (!result.IsSuccessful)
         {
-            return BadRequest(result.Errors);
+            return BadRequest(result.ToProblemDetails(HttpContext));
         }
 
         return Ok(result.Value is not null
@@ -46,7 +47,7 @@ public class EventController(IEventService _eventRepository) : ControllerBase
 
         if (result.Value is null)
         {
-            return BadRequest(result.Errors);
+            return BadRequest(result.ToProblemDetails(HttpContext));
         }
 
         return CreatedAtAction
@@ -66,7 +67,7 @@ public class EventController(IEventService _eventRepository) : ControllerBase
         {
             return result.IsSuccessful
                 ? NotFound()
-                : BadRequest(result.Errors);
+                : BadRequest(result.ToProblemDetails(HttpContext));
         }
 
         return Ok(BaseEventResponse.FromEvent(result.Value));
@@ -81,7 +82,7 @@ public class EventController(IEventService _eventRepository) : ControllerBase
         {
             return result.IsSuccessful
                 ? NotFound()
-                : BadRequest(result.Errors);
+                : BadRequest(result.ToProblemDetails(HttpContext));
         }
 
         return Ok();
