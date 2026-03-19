@@ -1,9 +1,12 @@
+using EventBookingService.Common;
+using EventBookingService.Models.Events.Const;
+
 namespace EventBookingService.Models.Events;
 
 /// <summary>
 /// Модель мероприятия, реализующая непосредственно бизнес-логику
 /// </summary>
-public class Event
+public class Event : IHasId
 {
     #region Properties
 
@@ -21,7 +24,11 @@ public class Event
     {
         if (start > end)
         {
-            throw new ArgumentException("Дата начала события не может быть позже даты окончания", nameof(start));
+            throw new ArgumentException(EventErrors.StartAfterEndForbidden, nameof(start));
+        }
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            throw new ArgumentException(EventErrors.TitleNeed, nameof(title));
         }
         Id = id;
         Title = title;
@@ -48,19 +55,24 @@ public class Event
         try
         {
             var errors = new List<string>();
-            if (title is null)
+            if (string.IsNullOrWhiteSpace(title))
             {
-                errors.Add("Название мероприятия обязательно");
+                errors.Add(EventErrors.TitleNeed);
             }
 
             if (start is null)
             {
-                errors.Add("Дата начала обязательна");
+                errors.Add(EventErrors.StartDateNeed);
             }
 
             if (end is null)
             {
-                errors.Add("Дата окончания обязательна");
+                errors.Add(EventErrors.EndDateNeed);
+            }
+
+            if (start is not null && end is not null && start > end)
+            {
+                errors.Add(EventErrors.StartAfterEndForbidden);
             }
 
             if (errors.Count != 0)
@@ -99,6 +111,9 @@ public class Event
     /// </summary>
     /// <returns>Новый экземпляр события</returns>
     public Event Clone() => new(Id, Title, StartAt, EndAt, Description);
+
+    public bool Equivalent(Event other) => 
+        Title == other.Title && Description == other.Description && StartAt == other.StartAt && EndAt == other.EndAt;
 
     #endregion
 }

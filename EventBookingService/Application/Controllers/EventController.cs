@@ -3,6 +3,7 @@ using EventBookingService.Common.Validations;
 using EventBookingService.Models.Events;
 using EventBookingService.Models.Events.Requests;
 using EventBookingService.Models.Events.Response;
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventBookingService.Application.Controllers;

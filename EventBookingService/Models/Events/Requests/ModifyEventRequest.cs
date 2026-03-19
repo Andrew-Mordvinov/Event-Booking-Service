@@ -1,5 +1,6 @@
-﻿using EventBookingService.Common.Validations.Attributes;
 using System.ComponentModel.DataAnnotations;
+
+using EventBookingService.Common.Validations.Attributes;
 
 namespace EventBookingService.Models.Events.Requests;
 

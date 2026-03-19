@@ -1,4 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+
+using EventBookingService.Common;
+
 using Microsoft.AspNetCore.Mvc;
 
 using Swashbuckle.AspNetCore.Annotations;
@@ -39,7 +42,7 @@ public class GetEventsRequest
     /// Размер страницы
     /// </summary>
     [FromQuery(Name = "pageSize")]
-    [Range(1, 100, ErrorMessage = "Размер страницы должен быть от 1 до 100")]
+    [Range(GlobalConst.MinPageSize, GlobalConst.MaxPageSize, ErrorMessage = "Размер страницы должен быть от {0} до {1}")]
     public int? PageSize { get; set; }
 
     [SwaggerIgnore]

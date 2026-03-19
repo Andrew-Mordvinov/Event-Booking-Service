@@ -55,7 +55,7 @@ public class ExceptionHandlingMiddleware(
         context.Response.StatusCode = code;
         context.Response.ContentType = "application/json";
 
-        await context.Response.WriteAsJsonAsync(new ProblemDetails 
+        await context.Response.WriteAsJsonAsync(new ProblemDetails
         {
             Status = code,
             Detail = exception.Message,

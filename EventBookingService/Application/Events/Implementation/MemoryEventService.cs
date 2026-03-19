@@ -1,4 +1,6 @@
+using EventBookingService.Common;
 using EventBookingService.Common.Paging;
+using EventBookingService.Common.Storage;
 using EventBookingService.Common.Validations;
 using EventBookingService.Models.Events;
 using EventBookingService.Models.Events.Requests;
@@ -8,11 +10,11 @@ namespace EventBookingService.Application.Events.Implementation;
 /// <summary>
 /// Реализация <see cref="IEventService"/> с хранением данных в памяти приложения
 /// </summary>
-public class MemoryEventService : IEventService
+public class MemoryEventService([FromKeyedServices("Static")] IStorage<Event> events) : IEventService
 {
     #region Private fields
 
-    private static readonly List<Event> _events = [];
+    private readonly IStorage<Event> _events = events;
 
     #endregion
 
@@ -33,23 +35,23 @@ public class MemoryEventService : IEventService
 
     public Task<ValidationResult<bool>> DeleteEventByIdAsync(Guid id, CancellationToken token = default)
     {
-        var removed = _events.RemoveAll(t => t.Id == id);
+        var count = _events.Remove(id);
 
-        return Task.FromResult(ResultCreator.Success(removed > 0));
+        return Task.FromResult(ResultCreator.Success(count > 0));
     }
 
     public Task<ValidationResult<PaginatedResult<Event>?>> GetEventsAsync(EventFilters filters, int page, int pageSize, CancellationToken token = default)
     {
         var result = ResultCreator.Success<PaginatedResult<Event>?>(null);
 
-        if (page == 0)
+        if (page < 1)
         {
-            result.AddError("Некорректное значение номера страницы: номер не должен быть равен 0");
+            result.AddError(MemoryEventServiceErrors.InvalidPageNumber);
         }
 
         if (pageSize < 1 || pageSize > 100)
         {
-            result.AddError("Некорректное значение размера страницы: размер должен быть в диапазоне 1-100");
+            result.AddError(MemoryEventServiceErrors.PageSizeOutOfRange(GlobalConst.MinPageSize, GlobalConst.MaxPageSize));
         }
 
         if (!result.IsSuccessful)
@@ -68,7 +70,7 @@ public class MemoryEventService : IEventService
 
         if (totalPages < page)
         {
-            result.AddError($"Указанная страница {page} не существует. Максимальная в текущем запросе страница - {totalPages}");
+            result.AddError(MemoryEventServiceErrors.PageNotFound(page, totalPages));
         }
 
         if (!result.IsSuccessful)
@@ -83,7 +85,7 @@ public class MemoryEventService : IEventService
             CurrentPage = page,
             TotalPages = totalPages,
             FilteredCount = count,
-            Items = dataPage.ToList()
+            Items = [.. dataPage]
         };
 
         result.Value = paginatedResult;
@@ -93,14 +95,14 @@ public class MemoryEventService : IEventService
 
     public Task<ValidationResult<Event?>> GetEventByIdAsync(Guid id, CancellationToken token = default)
     {
-        var entity = _events.FirstOrDefault(t => t.Id == id);
+        var entity = _events.GetById(id);
         // чтобы нельзя было модифицировать полученный объект в обход, выкидываем копию
         return Task.FromResult(ResultCreator.Success(entity?.Clone()));
     }
 
     public Task<ValidationResult<Event?>> ModifyEventAsync(Guid id, ModifyEventRequest request, CancellationToken token = default)
     {
-        var target = _events.FirstOrDefault(t => t.Id == id);
+        var target = _events.GetById(id);
 
         if (target == null)
         {
@@ -123,14 +125,14 @@ public class MemoryEventService : IEventService
 
     #region Private methods
 
-    private static (IEnumerable<Event> collection, int count) ApplyFilter(EventFilters filters)
+    private (IEnumerable<Event> collection, int count) ApplyFilter(EventFilters filters)
     {
         if (_events.Count == 0)
         {
             return ([], 0);
         }
 
-        IEnumerable<Event> result = _events;
+        var result = _events.GetAll();
 
         var (title, from, to) = filters;
 
@@ -141,8 +143,7 @@ public class MemoryEventService : IEventService
 
         if (title is not null)
         {
-            var titleLower = title.ToLower();
-            result = result.Where(e => e.Title.ToLower().Contains(titleLower));
+            result = result.Where(e => e.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
         }
 
         if (from is not null)

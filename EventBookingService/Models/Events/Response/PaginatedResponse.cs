@@ -9,12 +9,12 @@ public class PaginatedResponse<T>
     public int TotalPages { get; set; } = 0;
 
     public int CurrentPage { get; set; } = 0;
-    
+
     public long FilteredCount { get; set; } = 0;
-    
+
     public static PaginatedResponse<T> FromPaginatedResult<V>(PaginatedResult<V> entity, Func<V, T> selector) => new()
     {
-        CurrentPage = entity.CurrentPage,        
+        CurrentPage = entity.CurrentPage,
         FilteredCount = entity.FilteredCount,
         TotalPages = entity.TotalPages,
         Items = entity.Items.Select(selector).ToList()

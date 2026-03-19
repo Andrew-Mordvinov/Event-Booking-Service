@@ -1,5 +1,6 @@
-﻿using EventBookingService.Common.Validations.Attributes;
 using System.ComponentModel.DataAnnotations;
+
+using EventBookingService.Common.Validations.Attributes;
 
 namespace EventBookingService.Models.Events.Requests;
 
@@ -8,7 +9,7 @@ namespace EventBookingService.Models.Events.Requests;
 /// </summary>
 public class CreateEventRequest
 {
-    [Required(ErrorMessage = "Наименование мероприятия обязательно для заполнения")]
+    [Required(ErrorMessage = "Наименование мероприятия обязательно для заполнения", AllowEmptyStrings = false)]
     public string? Title { get; set; }
 
     public string? Description { get; set; }
