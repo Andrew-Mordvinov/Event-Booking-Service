@@ -290,19 +290,9 @@ public partial class MemoryEventFilterTests
         ]
     ];
 
-    public static IEnumerable<object?[]> FilterEvent_EmptyCollectionParamValid =>
-    [
-        [
-            Enumerable.Empty<Event>(),
-            new EventFilters { Title = "фестиваль" },
-            1,
-            10
-        ]
-    ];
-
     #endregion
 
-        #region FilterEvent_BadPagingParam
+    #region FilterEvent_BadPagingParam
 
     public static IEnumerable<object?[]> FilterEvent_BadPagingParam =>
     [

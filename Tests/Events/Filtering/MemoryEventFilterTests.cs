@@ -1,12 +1,35 @@
 ﻿using EventBookingService.Application.Events.Implementation;
 using EventBookingService.Common.Storage;
 using EventBookingService.Models.Events;
+using FluentAssertions;
 using Moq;
 
 namespace Tests.Events.Filtering;
 
 public partial class MemoryEventFilterTests
 {
+    [Fact]
+    public async Task FilterEvent_EmptyCollectionParamValid_SuccessfulWithNull()
+    {
+        var mock = new Mock<IStorage<Event>>();
+
+        mock.Setup(s => s.GetAll())
+            .Returns(Enumerable.Empty<Event>())
+            .Verifiable(Times.Never);
+
+        mock.Setup(s => s.Count)
+            .Returns(0)
+            .Verifiable(Times.Once);
+
+        var service = new MemoryEventService(mock.Object);
+
+        var result = await service.GetEventsAsync(new EventFilters { Title = "неважно" }, 1, 10, TestContext.Current.CancellationToken);
+
+        mock.Verify();
+        result.IsSuccessful.Should().BeTrue();
+        result.Value.Should().BeNull();
+    }
+
     [Theory]
     [MemberData(nameof(FilterEvent_ParamValid))]
     public async Task FilterEvent_ParamValid_SuccessfullyReturned(
@@ -33,38 +56,11 @@ public partial class MemoryEventFilterTests
         var result = await service.GetEventsAsync(filters, page, pageSize, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        Assert.True(result.IsSuccessful);
-        Assert.NotNull(result.Value);
-        Assert.Equal(result.Value.FilteredCount, expectedCount);
-        Assert.Equal(result.Value.TotalPages, expectedPageCount);
-        Assert.Equivalent(result.Value.Items.Select(t => t.Id), expectedIds, strict: true);
-    }
-
-    [Theory]
-    [MemberData(nameof(FilterEvent_EmptyCollectionParamValid))]
-    public async Task FilterEvent_EmptyCollectionParamValid_SuccessfulWithNull(
-        IEnumerable<Event> collection,
-        EventFilters filters,
-        int page,
-        int pageSize)
-    {
-        var mock = new Mock<IStorage<Event>>();
-
-        mock.Setup(s => s.GetAll())
-            .Returns(collection)
-            .Verifiable(Times.Never);
-
-        mock.Setup(s => s.Count)
-            .Returns(collection.Count())
-            .Verifiable(Times.Once);
-
-        var service = new MemoryEventService(mock.Object);
-
-        var result = await service.GetEventsAsync(filters, page, pageSize, TestContext.Current.CancellationToken);
-
-        mock.Verify();
-        Assert.True(result.IsSuccessful);
-        Assert.Null(result.Value);
+        result.IsSuccessful.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value.FilteredCount.Should().Be(expectedCount);
+        result.Value.TotalPages.Should().Be(expectedPageCount);
+        result.Value.Items.Select(t => t.Id).Should().Equal(expectedIds);
     }
 
     [Theory]
@@ -91,9 +87,9 @@ public partial class MemoryEventFilterTests
         var result = await service.GetEventsAsync(filters, page, pageSize, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        Assert.False(result.IsSuccessful);
-        Assert.Null(result.Value);
-        Assert.Equivalent(result.Errors, errors, strict: true);
+        result.IsSuccessful.Should().BeFalse();
+        result.Value.Should().BeNull();
+        result.Errors.Should().BeEquivalentTo(errors);
     }
 
     [Theory]
@@ -120,9 +116,9 @@ public partial class MemoryEventFilterTests
         var result = await service.GetEventsAsync(filters, page, pageSize, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        Assert.False(result.IsSuccessful);
-        Assert.Null(result.Value);
-        Assert.Equivalent(result.Errors, errors, strict: true);
+        result.IsSuccessful.Should().BeFalse();
+        result.Value.Should().BeNull();
+        result.Errors.Should().BeEquivalentTo(errors);
     }
 
     [Theory]
@@ -148,7 +144,7 @@ public partial class MemoryEventFilterTests
         var result = await service.GetEventsAsync(filters, page, pageSize, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        Assert.True(result.IsSuccessful);
-        Assert.Null(result.Value);
+        result.IsSuccessful.Should().BeTrue();
+        result.Value.Should().BeNull();
     }
 }

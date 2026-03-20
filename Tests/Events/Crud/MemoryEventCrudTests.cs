@@ -2,6 +2,7 @@
 using EventBookingService.Common.Storage;
 using EventBookingService.Models.Events;
 using EventBookingService.Models.Events.Requests;
+using FluentAssertions;
 using Moq;
 
 namespace Tests.Events.Crud;
@@ -30,8 +31,8 @@ public partial class MemoryEventCrudTests
         var result = await service.GetEventByIdAsync(id, TestContext.Current.CancellationToken);
 
         mock.Verify(s => s.GetById(id), Times.Once);
-        Assert.True(result.IsSuccessful);
-        Assert.Equivalent(expected, result.Value);
+        result.IsSuccessful.Should().BeTrue();
+        result.Value.Should().BeEquivalentTo(expected);
     }
 
     [Theory]
@@ -47,8 +48,8 @@ public partial class MemoryEventCrudTests
         var result = await service.GetEventByIdAsync(id, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        Assert.True(result.IsSuccessful);
-        Assert.Null(result.Value);
+        result.IsSuccessful.Should().BeTrue();
+        result.Value.Should().BeNull();
     }
 
     #endregion
@@ -67,9 +68,11 @@ public partial class MemoryEventCrudTests
         var result = await service.CreateEventAsync(request, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        Assert.True(result.IsSuccessful);
-        Assert.NotNull(result.Value);
-        Assert.True(expected.Equivalent(result.Value));
+        result.IsSuccessful.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value.Equivalent(expected);
+        // Id выделяется динамически, его не проверяем
+        result.Value.Should().BeEquivalentTo(expected, options => options.Excluding(e => e.Id));
     }
 
     [Theory]
@@ -80,9 +83,9 @@ public partial class MemoryEventCrudTests
 
         var result = await service.CreateEventAsync(request, TestContext.Current.CancellationToken);
 
-        Assert.False(result.IsSuccessful);
-        Assert.Null(result.Value);
-        Assert.Equivalent(errors, result.Errors, strict: true);
+        result.IsSuccessful.Should().BeFalse();
+        result.Value.Should().BeNull();
+        result.Errors.Should().BeEquivalentTo(errors);
     }
 
     #endregion
@@ -102,8 +105,8 @@ public partial class MemoryEventCrudTests
         var result = await service.DeleteEventByIdAsync(id, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        Assert.True(result.IsSuccessful);
-        Assert.True(result.Value);
+        result.IsSuccessful.Should().BeTrue();
+        result.Value.Should().BeTrue();
     }
 
     [Theory]
@@ -119,8 +122,8 @@ public partial class MemoryEventCrudTests
         var result = await service.DeleteEventByIdAsync(id, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        Assert.True(result.IsSuccessful);
-        Assert.False(result.Value);
+        result.IsSuccessful.Should().BeTrue();
+        result.Value.Should().BeFalse();
     }
 
     #endregion
@@ -140,8 +143,8 @@ public partial class MemoryEventCrudTests
         var result = await service.ModifyEventAsync(id, request, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        Assert.True(result.IsSuccessful);
-        Assert.Equivalent(expected, result.Value);
+        result.IsSuccessful.Should().BeTrue();
+        result.Value.Should().BeEquivalentTo(expected);
     }
 
     [Theory]
@@ -157,8 +160,8 @@ public partial class MemoryEventCrudTests
         var result = await service.ModifyEventAsync(id, request, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        Assert.True(result.IsSuccessful);
-        Assert.Null(result.Value);
+        result.IsSuccessful.Should().BeTrue();
+        result.Value.Should().BeNull();
     }
 
     [Theory]
@@ -174,8 +177,8 @@ public partial class MemoryEventCrudTests
         var result = await service.ModifyEventAsync(id, request, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        Assert.True(result.IsSuccessful);
-        Assert.Null(result.Value);
+        result.IsSuccessful.Should().BeTrue();
+        result.Value.Should().BeNull();
     }
 
     [Theory]
@@ -191,9 +194,9 @@ public partial class MemoryEventCrudTests
         var result = await service.ModifyEventAsync(id, request, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        Assert.False(result.IsSuccessful);
-        Assert.Null(result.Value);
-        Assert.Equivalent(errors, result.Errors, strict: true);
+        result.IsSuccessful.Should().BeFalse();
+        result.Value.Should().BeNull();
+        result.Errors.Should().BeEquivalentTo(errors);
     }
 
     #endregion
