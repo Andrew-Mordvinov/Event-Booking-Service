@@ -14,7 +14,7 @@ public partial class MemoryEventFilterTests
         var mock = new Mock<IStorage<Event>>();
 
         mock.Setup(s => s.GetAll())
-            .Returns(Enumerable.Empty<Event>())
+            .Returns([])
             .Verifiable(Times.Never);
 
         mock.Setup(s => s.Count)

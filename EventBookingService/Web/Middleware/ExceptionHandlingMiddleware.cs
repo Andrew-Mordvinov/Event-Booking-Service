@@ -57,8 +57,10 @@ public class ExceptionHandlingMiddleware(
 
         await context.Response.WriteAsJsonAsync(new ProblemDetails
         {
+            Title = "Unexpected error",
             Status = code,
             Detail = exception.Message,
+            Instance = context.Request.Path,
             Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
         });
     }

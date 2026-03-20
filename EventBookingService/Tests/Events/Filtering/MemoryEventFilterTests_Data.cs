@@ -27,7 +27,7 @@ public partial class MemoryEventFilterTests
     /// <summary>
     /// Лист с событиями для тестирования операций фильтрации
     /// </summary>
-    private static IEnumerable<Event> BasicEventList =
+    private static readonly IEnumerable<Event> BasicEventList =
     [
         new Event
         (

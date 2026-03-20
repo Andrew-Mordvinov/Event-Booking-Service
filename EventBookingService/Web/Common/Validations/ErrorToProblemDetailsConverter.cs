@@ -25,6 +25,7 @@ public static class ErrorToProblemDetailsConverter
         int code = StatusCodes.Status400BadRequest) =>
         result.Errors.Select(e => new ProblemDetails
         {
+            Instance = context.Request.Path,
             Detail = e,
             Status = code,
             Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }

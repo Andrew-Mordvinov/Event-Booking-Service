@@ -12,7 +12,7 @@ public partial class MemoryEventCrudTests
     private static (MemoryEventService service, Mock<IStorage<Event>> mock, List<Event> scopedCollection) GetMemoryEventService(IEnumerable<Event> collection)
     {
         var mock = new Mock<IStorage<Event>>();
-        var events = collection.ToList() ?? new List<Event>();
+        var events = collection.ToList() ?? [];
 
         return (new MemoryEventService(mock.Object), mock, events);
     }
@@ -79,7 +79,7 @@ public partial class MemoryEventCrudTests
     [MemberData(nameof(CreateEvent_InvalidModel))]
     public async Task CreateEvent_InvalidModel_FailWithError(IEnumerable<Event> baseCollection, CreateEventRequest request, List<string> errors)
     {
-        var (service, mock, _) = GetMemoryEventService(baseCollection);
+        var (service, _, _) = GetMemoryEventService(baseCollection);
 
         var result = await service.CreateEventAsync(request, TestContext.Current.CancellationToken);
 
@@ -154,7 +154,7 @@ public partial class MemoryEventCrudTests
         var (service, mock, _) = GetMemoryEventService(baseCollection);
 
         mock.Setup(s => s.GetById(id))
-            .Returns<Event?>(null)
+            .Returns(() => null)
             .Verifiable();
 
         var result = await service.ModifyEventAsync(id, request, TestContext.Current.CancellationToken);
@@ -171,7 +171,7 @@ public partial class MemoryEventCrudTests
         var (service, mock, _) = GetMemoryEventService(baseCollection);
 
         mock.Setup(s => s.GetById(id))
-            .Returns<Event?>(null)
+            .Returns(() => null)
             .Verifiable();
 
         var result = await service.ModifyEventAsync(id, request, TestContext.Current.CancellationToken);
