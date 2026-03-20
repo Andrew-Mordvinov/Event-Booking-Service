@@ -45,8 +45,15 @@ public class EventController(IEventService _eventRepository) : ControllerBase
         }
 
         return result.Value is { } value
-            ? Ok(PaginatedResponse<BaseEventResponse>.FromPaginatedResult(value, BaseEventResponse.FromEvent))
-            : NotFound();
+            ? Ok(PaginatedResponse<BaseEventResponse>.FromPaginatedResult(value, request.EffectivePageSize, BaseEventResponse.FromEvent))
+            : Ok(new PaginatedResponse<BaseEventResponse>
+            {
+                CurrentPage = 1,
+                FilteredCount = 0,
+                TotalPages = 1,
+                PageSize = 10,
+                Items = []
+            });
     }
 
     [HttpPost]
