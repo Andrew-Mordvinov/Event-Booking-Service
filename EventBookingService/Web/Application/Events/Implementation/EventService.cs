@@ -27,23 +27,32 @@ public class EventService([FromKeyedServices("Mem")] IStorage<Event> events) : I
 
     #region Base overrides
 
-    public async Task<ValidationResult<Event?>> GetEventByIdAsync(Guid id, CancellationToken token = default) => await _events.GetByIdAsync(id, token);
+    public Task<ValidationResult<Event?>> GetEventByIdAsync(Guid id, CancellationToken token = default) =>
+        _events.GetByIdAsync(id, token);
 
-    public async Task<ValidationResult<bool>> DeleteEventByIdAsync(Guid id, CancellationToken token = default) => await _events.RemoveAsync(id, token);
+    public Task<ValidationResult<bool>> DeleteEventByIdAsync(Guid id, CancellationToken token = default) =>
+        _events.RemoveAsync(id, token);
 
-    public async Task<ValidationResult<Event?>> CreateEventAsync(CreateEventRequest request, CancellationToken token = default)
+    public async Task<ValidationResult<Event?>> CreateEventAsync(
+        CreateEventRequest request,
+        CancellationToken token = default)
     {
         var (entity, errors) = Event.TryCreate(Guid.NewGuid(), request.Title, request.StartAt, request.EndAt, request.Description);
         if (entity is null)
         {
             return ResultCreator.Fail<Event?>(null, errors);
         }
+
         var result = await _events.AddAsync(entity, token);
 
         return result.ToGeneric(entity);
     }
 
-    public async Task<ValidationResult<PaginatedResult<Event>?>> GetEventsAsync(EventFilters filters, int page, int pageSize, CancellationToken token = default)
+    public Task<ValidationResult<PaginatedResult<Event>?>> GetEventsAsync(
+        EventFilters filters,
+        int page,
+        int pageSize,
+        CancellationToken token = default)
     {
         var result = ResultCreator.Success<PaginatedResult<Event>?>(null);
 
@@ -59,15 +68,18 @@ public class EventService([FromKeyedServices("Mem")] IStorage<Event> events) : I
 
         if (!result.IsSuccessful)
         {
-            return result;
+            return Task.FromResult(result);
         }
 
         var expression = GetFilterExpression(filters);
 
-        return await _events.GetPageAsync(expression, page, pageSize, token);
+        return _events.GetPageAsync(expression, page, pageSize, token);
     }
 
-    public async Task<ValidationResult<Event?>> ModifyEventAsync(Guid id, ModifyEventRequest request, CancellationToken token = default)
+    public async Task<ValidationResult<Event?>> ModifyEventAsync(
+        Guid id,
+        ModifyEventRequest request,
+        CancellationToken token = default)
     {
         // Создаем объект, чтобы прогнать все валидации, т.к. поля в ModifyEventRequest nullable
         var (source, errors) = Event.TryCreate(id, request.Title, request.StartAt, request.EndAt, request.Description);
