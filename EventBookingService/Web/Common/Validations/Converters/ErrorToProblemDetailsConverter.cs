@@ -1,6 +1,8 @@
+using EventBookingService.Common.Validations.Results;
+
 using Microsoft.AspNetCore.Mvc;
 
-namespace EventBookingService.Common.Validations;
+namespace EventBookingService.Common.Validations.Converters;
 
 /// <summary>
 /// Конвертер ошибок из <see cref="ValidationResult{T}"/> в <see cref="ProblemDetails"/> 

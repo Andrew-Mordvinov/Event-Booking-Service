@@ -1,18 +1,61 @@
+using System.Linq.Expressions;
+
+using EventBookingService.Common.Paging;
+using EventBookingService.Common.Validations.Results;
+
 namespace EventBookingService.Common.Storage;
 
 /// <summary>
-/// Простая обертка над memory-коллекциями, позволяет использовать
-/// LINQ и добавлять/удалять элементы
+/// Интерфейс хранилища данных
 /// </summary>
-public interface IStorage<T> where T : IHasId
+public interface IStorage<T> where T : IHasId, IFillable<T>, ICopyable<T>
 {
-    IEnumerable<T> GetAll();
+    /// <summary>
+    /// Получение страницы с данными из хранилища
+    /// </summary>
+    /// <param name="filter">Фильтр, может быть не определен</param>
+    /// <param name="page">Номер страницы, больше 0</param>
+    /// <param name="pageSize">Размер страницы, больше 0</param>
+    /// <param name="token">Токен отмены асинхронной операции</param>
+    /// <returns>Результат со страницей с данными или null</returns>
+    Task<ValidationResult<PaginatedResult<T>?>> GetPageAsync(Expression<Func<T, bool>>? filter, int page, int pageSize, CancellationToken token = default);
 
-    T? GetById(Guid id);
+    /// <summary>
+    /// Получение объекта по идентификатору
+    /// </summary>
+    /// <param name="id">Идентификатор</param>
+    /// <param name="token">Токен отмены асинхронной операции</param>
+    /// <returns>Результат с объектом или null</returns>
+    Task<ValidationResult<T?>> GetByIdAsync(Guid id, CancellationToken token = default);
 
-    void Add(T item);
+    /// <summary>
+    /// Добавление объекта в хранилище
+    /// </summary>
+    /// <param name="item">Объект</param>
+    /// <param name="token">Токен отмены асинхронной операции</param>
+    /// <returns>Результат с ошибками, если произошли</returns>
+    Task<ValidationResult> AddAsync(T item, CancellationToken token = default);
 
-    int Remove(Guid id);
+    /// <summary>
+    /// Удаление объекта из хранилища
+    /// </summary>
+    /// <param name="id">Идентификатор</param>
+    /// <param name="token">Токен отмены асинхронной операции</param>
+    /// <returns>Результат с true, если удалено успешно, или false, если не найден 
+    /// или произошли ошибки</returns>
+    Task<ValidationResult<bool>> RemoveAsync(Guid id, CancellationToken token = default);
 
-    int Count { get; }
+    /// <summary>
+    /// Обновление объекта в хранилище
+    /// </summary>
+    /// <param name="item">Объект, который должен заменить лежащий в хранилище</param>
+    /// <param name="token">Токен отмены асинхронной операции</param>
+    /// <returns>Результат с true, если обновлено успешно, или false, если не найден 
+    /// или произошли ошибки</returns>
+    Task<ValidationResult<bool>> UpdateAsync(T item, CancellationToken token = default);
+
+    /// <summary>
+    /// Признак наличия хотя бы одного элемента в хранилище
+    /// </summary>
+    bool HasAny { get; }
 }

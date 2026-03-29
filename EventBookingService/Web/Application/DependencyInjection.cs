@@ -9,8 +9,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddScoped<IEventService, MemoryEventService>();
-        services.AddKeyedScoped<IStorage<Event>, StaticListStorage<Event>>("Static");
+        services.AddScoped<IEventService, EventService>();
+        services.AddKeyedSingleton<IStorage<Event>, ListStorage<Event>>("Mem");
 
         return services;
     }

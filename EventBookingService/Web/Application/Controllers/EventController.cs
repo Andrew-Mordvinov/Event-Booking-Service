@@ -1,5 +1,5 @@
 using EventBookingService.Application.Events;
-using EventBookingService.Common.Validations;
+using EventBookingService.Common.Validations.Converters;
 using EventBookingService.Models.Events;
 using EventBookingService.Models.Events.Requests;
 using EventBookingService.Models.Events.Response;
