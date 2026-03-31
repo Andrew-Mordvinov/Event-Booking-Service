@@ -23,4 +23,12 @@ public interface IBookingService
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Объект брони или null вместе с возникшими ошибками</returns>
     Task<ValidationResult<Booking?>> GetBookingByIdAsync(Guid bookingId, CancellationToken token = default);
+
+    /// <summary>
+    /// Обработка ожидающих броней. Получает брони из хранилища и обрабатывает
+    /// </summary>
+    /// <param name="maxCount">Максимальное количество броней, обрабатываемых за вызов метода</param>
+    /// <param name="token">Токен отмены операции</param>
+    /// <returns>Результат выполнения операции</returns>
+    Task<ValidationResult> ProcessPendingBookingsAsync(int maxCount = 100, CancellationToken token = default);
 }

@@ -142,6 +142,18 @@ public partial class ListStorageTests
         getResult.Value.Should().BeNull();
     }
 
+    [Fact]
+    public async Task GetByIdAsync_StorageEmpty_EmptySuccessfulResult()
+    {
+        var wrongId = Guid.NewGuid();
+        var storage = new ListStorage<TestItem>();
+
+        var getResult = await storage.GetByIdAsync(wrongId, TestContext.Current.CancellationToken);
+
+        getResult.IsSuccessful.Should().BeTrue();
+        getResult.Value.Should().BeNull();
+    }
+
     #endregion
 
     #region RemoveAsync

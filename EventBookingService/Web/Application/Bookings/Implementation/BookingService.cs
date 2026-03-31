@@ -7,8 +7,14 @@ namespace EventBookingService.Application.Bookings.Implementation;
 
 public class BookingService(
     [FromKeyedServices("Mem")] IStorage<Booking> _storageBooking,
-    IEventService _eventService) : IBookingService
+    IEventService _eventService,
+    ILogger<BookingService> _logger) : IBookingService
 {
+    public Task<ValidationResult<Booking?>> GetBookingByIdAsync(
+        Guid bookingId,
+        CancellationToken token = default) =>
+        _storageBooking.GetByIdAsync(bookingId, token);
+
     public async Task<ValidationResult<Booking?>> CreateBookingAsync(
         Guid eventId,
         CancellationToken token = default)
@@ -34,8 +40,46 @@ public class BookingService(
             : result.ToGeneric<Booking>(null);
     }
 
-    public Task<ValidationResult<Booking?>> GetBookingByIdAsync(
-        Guid bookingId,
-        CancellationToken token = default) =>
-        _storageBooking.GetByIdAsync(bookingId, token);
+    public async Task<ValidationResult> ProcessPendingBookingsAsync(int maxCount = 100, CancellationToken token = default)
+    {
+        if (maxCount < 1)
+        {
+            return ResultCreator.Fail(BookingServiceErrors.InvalidMaxCount);
+        }
+
+        var pageResult = await _storageBooking.GetPageAsync(
+                b => b.Status == BookingStatus.Pending,
+                1,
+                maxCount,
+                token);
+
+        if (!pageResult.IsSuccessful)
+        {
+            _logger.LogError("При получении броней возникли ошибки: {@Errors}", pageResult.Errors);
+            return pageResult;
+        }
+
+        token.ThrowIfCancellationRequested();
+
+        foreach (var book in pageResult.Value?.Items ?? Enumerable.Empty<Booking>())
+        {
+            token.ThrowIfCancellationRequested();
+
+            book.Status = BookingStatus.Confirmed;
+            book.ProcessedAt = DateTime.UtcNow;
+
+            var result = await _storageBooking.UpdateAsync(book, token);
+            if (!result.IsSuccessful)
+            {
+                _logger.LogWarning("Не удалось обновить бронирование {BookId} для события {EventId}. " +
+                    "Возможно, данное бронирование было удалено", book.Id, book.EventId);
+                continue;
+            }
+
+            _logger.LogInformation("Бронирование события {EventId} успешно обработано. Заявка с " +
+                "{BookId} получила статус {Status}", book.EventId, book.Id, book.Status);
+        }
+
+        return ResultCreator.Success();
+    }
 }

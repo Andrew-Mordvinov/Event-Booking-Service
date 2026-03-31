@@ -3,7 +3,13 @@ using EventBookingService.Infrastructure;
 using EventBookingService.Middleware;
 using EventBookingService.Presentation;
 
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, config) => config
+    .ReadFrom.Configuration(context.Configuration)
+);
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
