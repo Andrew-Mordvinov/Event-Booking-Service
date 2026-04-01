@@ -59,14 +59,26 @@ public class BookingService(
             return pageResult;
         }
 
+        if (pageResult.Value is null || pageResult.Value.Items.Count < 1)
+        {
+            _logger.LogInformation("Бронирований для обработки не найдено");
+            return ResultCreator.Success();
+        }
+
+        _logger.LogInformation("Найдено {Count} броней для обработки", pageResult.Value.Items.Count);
+
         token.ThrowIfCancellationRequested();
 
         foreach (var book in pageResult.Value?.Items ?? Enumerable.Empty<Booking>())
         {
             token.ThrowIfCancellationRequested();
 
+            _logger.LogInformation("Обработка бронирования {BookId} для события {EventId}", book.Id, book.EventId);
+
             book.Status = BookingStatus.Confirmed;
             book.ProcessedAt = DateTime.UtcNow;
+
+            await Task.Delay(2000, token);
 
             var result = await _storageBooking.UpdateAsync(book, token);
             if (!result.IsSuccessful)
