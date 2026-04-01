@@ -123,7 +123,10 @@ public class EventController(
             return NotFound();
         }
 
-        return Accepted(BookingAcceptedResponse.FromBooking(result.Value));
+        return AcceptedAtRoute(
+            nameof(BookingController.GetBookingByIdAsync),
+            new { id = result.Value.Id },
+            BookingAcceptedResponse.FromBooking(result.Value));
     }
 }
 
