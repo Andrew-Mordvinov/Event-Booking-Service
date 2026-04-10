@@ -1,5 +1,5 @@
 using EventBookingService.Common.Paging;
-using EventBookingService.Common.Validations;
+using EventBookingService.Common.Validations.Results;
 using EventBookingService.Models.Events;
 using EventBookingService.Models.Events.Requests;
 

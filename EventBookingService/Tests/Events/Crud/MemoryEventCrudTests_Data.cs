@@ -30,7 +30,7 @@ public partial class MemoryEventCrudTests
     /// <summary>
     /// Лист с событиями для тестирования операций удаления/модификации/получения/создания
     /// </summary>
-    private static IEnumerable<Event> BasicEventList =
+    private readonly static IEnumerable<Event> BasicEventList =
     [
         new Event
         (
@@ -460,44 +460,7 @@ public partial class MemoryEventCrudTests
         ],
     ];
 
-    public static IEnumerable<object?[]> ModifyEvent_InvalidDataAndId =>
-    [
-        [
-            BasicEventList,
-            EventIds.BadId,
-            new ModifyEventRequest
-            {
-                Title = null,
-                StartAt = null,
-                EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
-                Description = null
-            }
-        ],
-        [
-            BasicEventList,
-            EventIds.BadId,
-            new ModifyEventRequest
-            {
-                Title = string.Empty,
-                StartAt = null,
-                EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
-                Description = null
-            }
-        ],
-        [
-            Enumerable.Empty<Event>(),
-            EventIds.BadId,
-            new ModifyEventRequest
-            {
-                Title = " ",
-                StartAt = new DateTime(2026, 3, 25, 03, 0, 0),
-                EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
-                Description = "Описание"
-            }
-        ],
-    ];
-
-    public static IEnumerable<object?[]> ModifyEvent_InvalidDataAndCorrectId =>
+    public static IEnumerable<object?[]> ModifyEvent_InvalidData =>
     [
         // Название null
         [

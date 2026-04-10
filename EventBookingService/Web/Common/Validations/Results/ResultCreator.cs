@@ -1,4 +1,4 @@
-namespace EventBookingService.Common.Validations
+namespace EventBookingService.Common.Validations.Results
 {
     /// <summary>
     /// Хэлпер для более явного указания намерений в коде
@@ -11,5 +11,18 @@ namespace EventBookingService.Common.Validations
         public static ValidationResult<T?> Fail<T>(T? val, IEnumerable<string> errors) => new(val, errors);
 
         public static ValidationResult<T?> Fail<T>(T? val, string error) => new(val, error);
+
+        public static ValidationResult Success() => new();
+
+        public static ValidationResult Fail(IEnumerable<string> errors) => new(errors);
+
+        public static ValidationResult Fail(string error) => new(error);
+
+        public static ValidationResult<T?> ToGeneric<T>(this ValidationResult result, T? val)
+        {
+            return result.IsSuccessful ?
+                Success(val)
+                : Fail(val, result.Errors);
+        }
     }
 }

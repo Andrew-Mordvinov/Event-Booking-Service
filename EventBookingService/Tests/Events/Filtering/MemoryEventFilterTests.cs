@@ -1,29 +1,36 @@
 ﻿using EventBookingService.Application.Events.Implementation;
+using EventBookingService.Common.Paging;
 using EventBookingService.Common.Storage;
+using EventBookingService.Common.Validations.Results;
 using EventBookingService.Models.Events;
 using FluentAssertions;
 using Moq;
+using System.Linq.Expressions;
 
 namespace Tests.Events.Filtering;
 
 public partial class MemoryEventFilterTests
 {
-    [Fact]
-    public async Task FilterEvent_EmptyCollectionParamValid_SuccessfulWithNull()
+    private static EventService CreateService(out Mock<IStorage<Event>> storageMock)
     {
-        var mock = new Mock<IStorage<Event>>();
+        storageMock = new Mock<IStorage<Event>>();
+        return new EventService(storageMock.Object);
+    }
 
-        mock.Setup(s => s.GetAll())
-            .Returns([])
-            .Verifiable(Times.Never);
+    [Fact]
+    public async Task FilterEvent_ParamValidStorageReturnNoElements_SuccessfulWithNull()
+    {
+        var service = CreateService(out var mock);
 
-        mock.Setup(s => s.Count)
-            .Returns(0)
+        mock.Setup(s => s.GetPageAsync(It.IsAny<Expression<Func<Event, bool>>>(), 1, 10, TestContext.Current.CancellationToken))
+            .ReturnsAsync(ResultCreator.Success<PaginatedResult<Event>>(null))
             .Verifiable(Times.Once);
 
-        var service = new MemoryEventService(mock.Object);
-
-        var result = await service.GetEventsAsync(new EventFilters { Title = "неважно" }, 1, 10, TestContext.Current.CancellationToken);
+        var result = await service.GetEventsAsync(
+            new EventFilters { Title = "неважно" },
+            1,
+            10,
+            TestContext.Current.CancellationToken);
 
         mock.Verify();
         result.IsSuccessful.Should().BeTrue();
@@ -41,48 +48,59 @@ public partial class MemoryEventFilterTests
         int expectedPageCount,
         Guid[] expectedIds)
     {
-        var mock = new Mock<IStorage<Event>>();
+        var service = CreateService(out var mock);
 
-        mock.Setup(s => s.GetAll())
-            .Returns(collection)
+        // Arrange
+        var capturedFilter = new List<Expression<Func<Event, bool>>>();
+        // Не важно, фильтрует репозиторий, сервис валидирует параметры и формирует выражение фильтра
+        var noMatterResult = new PaginatedResult<Event>
+        {
+            CurrentPage = page,
+            FilteredCount = expectedCount,
+            TotalPages = expectedPageCount,
+            Items = []
+        };
+
+        mock.Setup(s => s.GetPageAsync(Capture.In(capturedFilter), page, pageSize, TestContext.Current.CancellationToken))
+            .ReturnsAsync(ResultCreator.Success(noMatterResult))
             .Verifiable(Times.Once);
 
-        mock.Setup(s => s.Count)
-            .Returns(collection.Count())
-            .Verifiable(Times.AtLeastOnce);
-
-        var service = new MemoryEventService(mock.Object);
-
+        // Act
         var result = await service.GetEventsAsync(filters, page, pageSize, TestContext.Current.CancellationToken);
 
+        if (capturedFilter.Count != 1)
+        {
+            Assert.Fail($"{nameof(IStorage<>.GetPageAsync)} захватилось несколько выражений фильтров, ожидалось одно значение");
+        }
+
+        var filtered = capturedFilter.First() is not null
+            ? collection.Where(capturedFilter.First().Compile())
+            : collection;
+
+        // Assert
         mock.Verify();
         result.IsSuccessful.Should().BeTrue();
         result.Value.Should().NotBeNull();
         result.Value.FilteredCount.Should().Be(expectedCount);
         result.Value.TotalPages.Should().Be(expectedPageCount);
-        result.Value.Items.Select(t => t.Id).Should().Equal(expectedIds);
+        // В результат заложена пустая коллекция, сам сервис просто передает то, что вернул репозиторий
+        result.Value.Items.Should().BeEmpty();
+
+        filtered.Select(t => t.Id).Should().BeEquivalentTo(expectedIds);
     }
 
     [Theory]
     [MemberData(nameof(FilterEvent_BadPagingParam))]
     public async Task FilterEvent_BadPagingParam_FailWithErrors(
-        IEnumerable<Event> collection,
         EventFilters filters,
         int page,
         int pageSize,
         List<string> errors)
     {
-        var mock = new Mock<IStorage<Event>>();
+        var service = CreateService(out var mock);
 
-        mock.Setup(s => s.GetAll())
-            .Returns(collection)
+        mock.Setup(s => s.GetPageAsync(It.IsAny<Expression<Func<Event, bool>>>(), page, pageSize, TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
-
-        mock.Setup(s => s.Count)
-            .Returns(collection.Count())
-            .Verifiable(Times.Never);
-
-        var service = new MemoryEventService(mock.Object);
 
         var result = await service.GetEventsAsync(filters, page, pageSize, TestContext.Current.CancellationToken);
 
@@ -95,23 +113,23 @@ public partial class MemoryEventFilterTests
     [Theory]
     [MemberData(nameof(FilterEvent_PageGreaterThanMaxPage))]
     public async Task FilterEvent_PageGreaterThanMaxPage_FailWithErrors(
-        IEnumerable<Event> collection,
         EventFilters filters,
         int page,
         int pageSize,
+        int totalPages,
         List<string> errors)
     {
-        var mock = new Mock<IStorage<Event>>();
+        var service = CreateService(out var mock);
 
-        mock.Setup(s => s.GetAll())
-            .Returns(collection)
-            .Verifiable(Times.AtLeastOnce);
-
-        mock.Setup(s => s.Count)
-            .Returns(collection.Count())
-            .Verifiable(Times.AtLeastOnce);
-
-        var service = new MemoryEventService(mock.Object);
+        mock.Setup(s => s.GetPageAsync(
+                It.IsAny<Expression<Func<Event, bool>>>(),
+                page,
+                pageSize,
+                TestContext.Current.CancellationToken))
+            .ReturnsAsync(ResultCreator.Fail<PaginatedResult<Event>?>(
+                null,
+                StorageErrors.PageNotFound(page, totalPages)))
+            .Verifiable(Times.Once);
 
         var result = await service.GetEventsAsync(filters, page, pageSize, TestContext.Current.CancellationToken);
 
@@ -119,32 +137,5 @@ public partial class MemoryEventFilterTests
         result.IsSuccessful.Should().BeFalse();
         result.Value.Should().BeNull();
         result.Errors.Should().BeEquivalentTo(errors);
-    }
-
-    [Theory]
-    [MemberData(nameof(FilterEvent_NoElementsAfterFilter))]
-    public async Task FilterEvent_NoElementsAfterFilter_SuccessWithNull(
-        IEnumerable<Event> collection,
-        EventFilters filters,
-        int page,
-        int pageSize)
-    {
-        var mock = new Mock<IStorage<Event>>();
-
-        mock.Setup(s => s.GetAll())
-            .Returns(collection)
-            .Verifiable(Times.AtMostOnce);
-
-        mock.Setup(s => s.Count)
-            .Returns(collection.Count())
-            .Verifiable(Times.Once);
-
-        var service = new MemoryEventService(mock.Object);
-
-        var result = await service.GetEventsAsync(filters, page, pageSize, TestContext.Current.CancellationToken);
-
-        mock.Verify();
-        result.IsSuccessful.Should().BeTrue();
-        result.Value.Should().BeNull();
     }
 }

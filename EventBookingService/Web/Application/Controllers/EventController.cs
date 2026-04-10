@@ -1,5 +1,7 @@
+using EventBookingService.Application.Bookings;
 using EventBookingService.Application.Events;
-using EventBookingService.Common.Validations;
+using EventBookingService.Common.Validations.Converters;
+using EventBookingService.Models.Bookings.Response;
 using EventBookingService.Models.Events;
 using EventBookingService.Models.Events.Requests;
 using EventBookingService.Models.Events.Response;
@@ -10,12 +12,14 @@ namespace EventBookingService.Application.Controllers;
 
 [ApiController]
 [Route("events")]
-public class EventController(IEventService _eventRepository) : ControllerBase
+public class EventController(
+    IEventService _eventService,
+    IBookingService _bookingService) : ControllerBase
 {
     [HttpGet("{id}")]
     public async Task<ActionResult<BaseEventResponse>> GetEventByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        var result = await _eventRepository.GetEventByIdAsync(id, cancellationToken);
+        var result = await _eventService.GetEventByIdAsync(id, cancellationToken);
 
         if (result.Value is null)
         {
@@ -37,7 +41,7 @@ public class EventController(IEventService _eventRepository) : ControllerBase
             To = request.To,
         };
 
-        var result = await _eventRepository.GetEventsAsync(eventFilers, request.EffectivePage, request.EffectivePageSize, cancellationToken);
+        var result = await _eventService.GetEventsAsync(eventFilers, request.EffectivePage, request.EffectivePageSize, cancellationToken);
 
         if (!result.IsSuccessful)
         {
@@ -59,7 +63,7 @@ public class EventController(IEventService _eventRepository) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<BaseEventResponse>> CreateEventAsync([FromBody] CreateEventRequest request, CancellationToken cancellationToken)
     {
-        var result = await _eventRepository.CreateEventAsync(request, cancellationToken);
+        var result = await _eventService.CreateEventAsync(request, cancellationToken);
 
         if (result.Value is null)
         {
@@ -77,7 +81,7 @@ public class EventController(IEventService _eventRepository) : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<BaseEventResponse>> ModifyEventAsync(Guid id, [FromBody] ModifyEventRequest request, CancellationToken cancellationToken)
     {
-        var result = await _eventRepository.ModifyEventAsync(id, request, cancellationToken);
+        var result = await _eventService.ModifyEventAsync(id, request, cancellationToken);
 
         if (result.Value is null)
         {
@@ -92,7 +96,7 @@ public class EventController(IEventService _eventRepository) : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteEventAsync(Guid id, CancellationToken cancellationToken)
     {
-        var result = await _eventRepository.DeleteEventByIdAsync(id, cancellationToken);
+        var result = await _eventService.DeleteEventByIdAsync(id, cancellationToken);
 
         if (result.Value != true)
         {
@@ -102,6 +106,27 @@ public class EventController(IEventService _eventRepository) : ControllerBase
         }
 
         return Ok();
+    }
+
+    [HttpPost("{eventId}/book")]
+    public async Task<ActionResult<BookingAcceptedResponse>> BookEventAsync(Guid eventId, CancellationToken cancellationToken)
+    {
+        var result = await _bookingService.CreateBookingAsync(eventId, cancellationToken);
+
+        if (!result.IsSuccessful)
+        {
+            return BadRequest(result.ToProblemDetails(HttpContext));
+        }
+
+        if (result.Value is null)
+        {
+            return NotFound();
+        }
+
+        return AcceptedAtRoute(
+            nameof(BookingController.GetBookingByIdAsync),
+            new { id = result.Value.Id },
+            BookingAcceptedResponse.FromBooking(result.Value));
     }
 }
 

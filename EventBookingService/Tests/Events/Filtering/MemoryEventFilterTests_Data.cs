@@ -1,5 +1,6 @@
 ﻿using EventBookingService.Application.Events.Implementation;
 using EventBookingService.Common;
+using EventBookingService.Common.Storage;
 using EventBookingService.Models.Events;
 
 namespace Tests.Events.Filtering;
@@ -256,38 +257,12 @@ public partial class MemoryEventFilterTests
                 EventIds.PotteryMasterclass,
                 EventIds.JazzNight,
                 EventIds.TheaterPlay,
-                EventIds.CraftFair
+                EventIds.CraftFair,
+                EventIds.LiveMusicBar,
+                EventIds.ReadingClub
             }
         ],
-        // 10. Пагинация: вторая страница (первые 5 элементов на странице 1)
-        [
-            BasicEventList,
-            new EventFilters(),
-            2, 5,
-            12,
-            3,
-            new[]
-            {
-                EventIds.StandupEvening,      // 6-й
-                EventIds.PotteryMasterclass,  // 7-й
-                EventIds.JazzNight,           // 8-й
-                EventIds.TheaterPlay,         // 9-й
-                EventIds.CraftFair            // 10-й
-            }
-        ],
-        // 11. Пагинация: последняя страница (оставшиеся 2 элемента)
-        [
-            BasicEventList,
-            new EventFilters(),
-            3, 5,
-            12,
-            3,
-            new[]
-            {
-                EventIds.LiveMusicBar,  // 11-й
-                EventIds.ReadingClub  // 12-й
-            }
-        ]
+
     ];
 
     #endregion
@@ -298,58 +273,53 @@ public partial class MemoryEventFilterTests
     [
         // Page = 0
         [
-            BasicEventList,
             new EventFilters(),
             0,
             10,
             new List<string>
             {
-                MemoryEventServiceErrors.InvalidPageNumber
+                EventServiceErrors.InvalidPageNumber
             }
         ],    
         // Page отрицательное
         [
-            BasicEventList,
             new EventFilters(),
             -1,
             10,
             new List<string>
             {
-                MemoryEventServiceErrors.InvalidPageNumber
+                EventServiceErrors.InvalidPageNumber
             }
         ],
         // PageSize = 0
         [
-            BasicEventList,
             new EventFilters(),
             1,
             0,
             new List<string>
             {
-                MemoryEventServiceErrors.PageSizeOutOfRange(GlobalConst.MinPageSize, GlobalConst.MaxPageSize)
+                EventServiceErrors.PageSizeOutOfRange(GlobalConst.MinPageSize, GlobalConst.MaxPageSize)
             }
         ],
         // PageSize больше максимального
         [
-            BasicEventList,
             new EventFilters(),
             0,
             101,
             new List<string>
             {
-                MemoryEventServiceErrors.InvalidPageNumber,
-                MemoryEventServiceErrors.PageSizeOutOfRange(GlobalConst.MinPageSize, GlobalConst.MaxPageSize)
+                EventServiceErrors.InvalidPageNumber,
+                EventServiceErrors.PageSizeOutOfRange(GlobalConst.MinPageSize, GlobalConst.MaxPageSize)
             }
         ],
         // PageSize отрицательное
         [
-            BasicEventList,
             new EventFilters(),
             1,
             -5,
             new List<string>
             {
-                MemoryEventServiceErrors.PageSizeOutOfRange(GlobalConst.MinPageSize, GlobalConst.MaxPageSize)
+                EventServiceErrors.PageSizeOutOfRange(GlobalConst.MinPageSize, GlobalConst.MaxPageSize)
             }
         ]
     ];
@@ -360,63 +330,29 @@ public partial class MemoryEventFilterTests
 
     public static IEnumerable<object?[]> FilterEvent_PageGreaterThanMaxPage =>
     [
-        // Всего 12 событий, pageSize = 5, всего страниц = 3
+        // Без фильтра
         [
-            BasicEventList,
             new EventFilters(),
-            4, // page > totalPages (3)
+            4, // page
             5, // pageSize
+            3, // totalPages
             new List<string>
             {
-                MemoryEventServiceErrors.PageNotFound(4, 3)
+                StorageErrors.PageNotFound(4, 3)
             }
         ],
         
-        // С фильтром, который уменьшает количество результатов (2 фестиваля, pageSize=5 => 1 страница)
+        // С фильтром
         [
-            BasicEventList,
             new EventFilters { Title = "фестиваль" },
-            2, // page > totalPages (1)
-            5, // pageSize
+            2,
+            5,
+            1,
             new List<string>
             {
-                MemoryEventServiceErrors.PageNotFound(2, 1)
-            }
-        ],
-        
-        // С фильтром по дате (апрельские события, 2 шт, pageSize=1 => 2 страницы)
-        [
-            BasicEventList,
-            new EventFilters { From = new DateTime(2026, 4, 1) },
-            4, // page > totalPages (2)
-            1, // pageSize
-            new List<string>
-            {
-                MemoryEventServiceErrors.PageNotFound(4, 2)
+                StorageErrors.PageNotFound(2, 1)
             }
         ]
-    ];
-
-    #endregion
-
-    #region FilterEvent_NoElementsAfterFilter
-
-    public static IEnumerable<object?[]> FilterEvent_NoElementsAfterFilter =>
-    [
-        // Фильтр по несуществующему названию
-        [
-            BasicEventList,
-            new EventFilters { Title = "НесуществующееСобытие" },
-            1,
-            10
-        ],
-        // Фильтр с пустым массивом
-        [
-            Enumerable.Empty<Event>(),
-            new EventFilters { To = new DateTime(2020, 1, 1) },
-            1,
-            10
-        ],
     ];
 
     #endregion

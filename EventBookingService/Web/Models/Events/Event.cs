@@ -6,7 +6,7 @@ namespace EventBookingService.Models.Events;
 /// <summary>
 /// Модель мероприятия, реализующая непосредственно бизнес-логику
 /// </summary>
-public class Event : IHasId
+public class Event : IHasId, IFillable<Event>, ICopyable<Event>
 {
     #region Properties
 
@@ -94,10 +94,6 @@ public class Event : IHasId
 
     #region Public methods
 
-    /// <summary>
-    /// Заполняет все поля в текущем экземпляре данными источника (кроме идентификатора)
-    /// </summary>
-    /// <param name="source">Источник, из которого заполняется текущий объект</param>
     public void FillFrom(Event source)
     {
         Title = source.Title;
@@ -106,11 +102,7 @@ public class Event : IHasId
         EndAt = source.EndAt;
     }
 
-    /// <summary>
-    /// Создает полного клона текущего объекта
-    /// </summary>
-    /// <returns>Новый экземпляр события</returns>
-    public Event Clone() => new(Id, Title, StartAt, EndAt, Description);
+    public Event Copy() => new(Id, Title, StartAt, EndAt, Description);
 
     public bool Equivalent(Event other) => 
         Title == other.Title && Description == other.Description && StartAt == other.StartAt && EndAt == other.EndAt;
