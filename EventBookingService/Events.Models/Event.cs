@@ -1,0 +1,195 @@
+using Shared.Interfaces;
+using System.Runtime.CompilerServices;
+
+namespace Events.Models;
+
+/// <summary>
+/// Модель мероприятия, реализующая непосредственно бизнес-логику
+/// </summary>
+public class Event : IHasId, IFillable<Event>, ICopyable<Event>
+{
+    #region Fields
+
+    private int _availableSeats;
+
+    #endregion
+
+    #region Properties
+
+    public Guid Id { get; }
+    public string Title { get; set; }
+    public string Description { get; set; }
+    public DateTime StartAt { get; protected set; }
+    public DateTime EndAt { get; protected set; }
+    public int TotalSeats { get; protected set; }
+    public int AvailableSeats { get => _availableSeats; protected set => _availableSeats = value; }
+
+    #endregion
+
+    #region Constructors
+
+    internal Event(
+        Guid id,
+        string title,
+        DateTime start,
+        DateTime end,
+        int totalSeats,
+        int? availableSeats = null,
+        string? description = null)
+    {
+        Id = id;
+        Title = title;
+        Description = description ?? string.Empty;
+        StartAt = start;
+        EndAt = end;
+        TotalSeats = totalSeats;
+        AvailableSeats = availableSeats ?? totalSeats;
+    }
+
+    #endregion
+
+    #region Public static methods
+
+    /// <summary>
+    /// Статический метод, который пытается создать объект <see cref="Event"/>
+    /// </summary>
+    /// <param name="id">Идентификатор</param>
+    /// <param name="title">Название</param>
+    /// <param name="start">Дата начала</param>
+    /// <param name="end">Дата окончания</param>
+    /// <param name="totalSeats">Общее число мест</param>
+    /// <param name="availableSeats">Доступное число мест. Допустимо не передавать, тогда по умолчанию будет равно общему числу мест</param>
+    /// <param name="description">Описание</param>
+    /// <returns>Созданный объект или null и список возникших ошибок</returns>
+    public static (Event? value, IEnumerable<string> errors) TryCreate(
+        Guid id,
+        string? title,
+        DateTime? start,
+        DateTime? end,
+        int? totalSeats,
+        int? availableSeats = null,
+        string? description = null)
+    {
+        try
+        {
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                errors.Add(EventErrors.TitleNeed);
+            }
+
+            if (start is null)
+            {
+                errors.Add(EventErrors.StartDateNeed);
+            }
+
+            if (end is null)
+            {
+                errors.Add(EventErrors.EndDateNeed);
+            }
+
+            if (start is not null
+                && end is not null
+                && start > end)
+            {
+                errors.Add(EventErrors.StartAfterEndForbidden);
+            }
+
+            if (totalSeats is null || totalSeats < 1)
+            {
+                errors.Add(EventErrors.TotalSeatsMustPositive);
+            }
+
+            if (availableSeats is not null && availableSeats < 1)
+            {
+                errors.Add(EventErrors.AvailableSeatsMustPositive);
+            }
+
+            if (availableSeats is not null && totalSeats < availableSeats)
+            {
+                errors.Add(EventErrors.TotalSeatsCantBeLessAvailableSeats);
+            }
+
+            if (errors.Count != 0)
+            {
+                return (null, errors);
+            }
+
+            var value = new Event(
+                id,
+                title!,
+                start.GetValueOrDefault(),
+                end.GetValueOrDefault(),
+                totalSeats.GetValueOrDefault(),
+                availableSeats,
+                description);
+
+            return (value, []);
+        }
+        catch (ArgumentException e)
+        {
+            return (null, [e.Message]);
+        }
+    }
+
+    #endregion
+
+    #region Public methods
+
+    public bool TryReserveSeats(int count = 1)
+    {
+        int current, updated;
+        do
+        {
+            current = AvailableSeats;
+            updated = current - count;
+            if (updated < 0)
+            {
+                return false;
+            }
+        }
+        while (Interlocked.CompareExchange(ref _availableSeats, updated, current) != current);
+
+        return true;
+    }
+
+    public bool TryReleaseSeats(int count = 1)
+    {
+        int current, updated;
+        do
+        {
+            current = AvailableSeats;
+            updated = current + count;
+            if (updated > TotalSeats)
+            {
+                return false;
+            }
+        }
+        while (Interlocked.CompareExchange(ref _availableSeats, updated, current) != current);
+
+        return true;
+    }
+
+    public void FillFrom(Event source)
+    {
+        Title = source.Title;
+        Description = source.Description;
+        StartAt = source.StartAt;
+        EndAt = source.EndAt;
+        TotalSeats = source.TotalSeats;
+        AvailableSeats = source.AvailableSeats;
+    }
+
+    public Event Copy() => new(Id, Title, StartAt, EndAt, TotalSeats, AvailableSeats, Description);
+
+    public bool Equivalent(Event other) => 
+        Title == other.Title 
+        && Description == other.Description 
+        && StartAt == other.StartAt 
+        && EndAt == other.EndAt
+        && TotalSeats == other.TotalSeats
+        && AvailableSeats == other.AvailableSeats;
+
+    #endregion
+}

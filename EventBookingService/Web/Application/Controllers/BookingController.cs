@@ -1,10 +1,12 @@
-using EventBookingService.Application.Bookings;
-using EventBookingService.Common.Validations.Converters;
-using EventBookingService.Models.Bookings.Response;
+using Bookings.Service;
+
+using DTO.Bookings.Response;
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace EventBookingService.Application.Controllers;
+using Web.Common.Validations;
+
+namespace Web.Application.Controllers;
 
 [Route("bookings")]
 [ApiController]

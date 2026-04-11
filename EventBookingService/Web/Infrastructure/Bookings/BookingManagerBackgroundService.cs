@@ -1,6 +1,6 @@
-using EventBookingService.Application.Bookings;
+using Bookings.Service;
 
-namespace EventBookingService.Infrastructure.Bookings;
+namespace Web.Infrastructure.Bookings;
 
 public class BookingManagerBackgroundService(
     IServiceScopeFactory _scopeFactory,

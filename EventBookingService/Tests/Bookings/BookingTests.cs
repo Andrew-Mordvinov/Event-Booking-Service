@@ -1,12 +1,12 @@
-﻿using EventBookingService.Application.Bookings.Implementation;
-using EventBookingService.Application.Events;
-using EventBookingService.Common.Storage;
-using EventBookingService.Common.Validations.Results;
-using EventBookingService.Models.Bookings;
-using EventBookingService.Models.Events;
+﻿using Bookings.Models;
+using Bookings.Service.Implementation;
+using DataAccess.Storage;
+using Events.Models;
+using Events.Service;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Validation;
 
 namespace Tests.Bookings;
 
@@ -86,7 +86,7 @@ public partial class BookingTests
             .Verifiable(Times.Once);
 
         eventServiceMock.Setup(s => s.GetEventByIdAsync(eventId, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(new Event(eventId, "SomeTitle", DateTime.UtcNow, DateTime.UtcNow.AddDays(1))))
+            .ReturnsAsync(ResultCreator.Success(new Event(eventId, "SomeTitle", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), CorrectSeatsCount)))
             .Verifiable(Times.Once);
 
         var result = await service.CreateBookingAsync(eventId, TestContext.Current.CancellationToken);
@@ -153,7 +153,7 @@ public partial class BookingTests
             .Verifiable(Times.Once);
 
         eventServiceMock.Setup(s => s.GetEventByIdAsync(eventId, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(new Event(eventId, "SomeTitle", DateTime.UtcNow, DateTime.UtcNow.AddDays(1))))
+            .ReturnsAsync(ResultCreator.Success(new Event(eventId, "SomeTitle", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), CorrectSeatsCount)))
             .Verifiable(Times.Once);
 
         var result = await service.CreateBookingAsync(eventId, TestContext.Current.CancellationToken);

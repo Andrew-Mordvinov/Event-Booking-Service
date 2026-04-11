@@ -1,7 +1,7 @@
-﻿using EventBookingService.Application.Events.Implementation;
-using EventBookingService.Common;
-using EventBookingService.Common.Storage;
-using EventBookingService.Models.Events;
+﻿using DataAccess.Storage;
+using Events.Models;
+using Events.Service.Implementation;
+using Shared;
 
 namespace Tests.Events.Filtering;
 
@@ -36,7 +36,8 @@ public partial class MemoryEventFilterTests
             "Рок-фестиваль 'Красная Площадь'",
             new DateTime(2026, 3, 19, 18, 0, 0),
             new DateTime(2026, 3, 19, 23, 0, 0),
-            "Выступление лучших рок-групп города"
+            10,
+            description: "Выступление лучших рок-групп города"
         ),
         new Event
         (
@@ -44,7 +45,8 @@ public partial class MemoryEventFilterTests
             "Концерт симфонического оркестра",
             new DateTime(2026, 3, 19, 19, 0, 0),
             new DateTime(2026, 3, 19, 21, 30, 0),
-            "Исполнение классических произведений Чайковского"
+            80,
+            description: "Исполнение классических произведений Чайковского"
         ),
         new Event
         (
@@ -52,7 +54,8 @@ public partial class MemoryEventFilterTests
             "Выставка современного искусства",
             new DateTime(2026, 3, 19, 12, 0, 0),
             new DateTime(2026, 3, 20, 0, 0, 0),
-            "Работы молодых художников из 10 стран мира"
+            25,
+            description: "Работы молодых художников из 10 стран мира"
         ),
         new Event
         (
@@ -60,7 +63,8 @@ public partial class MemoryEventFilterTests
             "Ночной киномарафон",
             new DateTime(2026, 3, 20, 0, 0, 0),
             new DateTime(2026, 3, 20, 6, 0, 0),
-            "Показ культовых фильмов под открытым небом"
+            120,
+            description: "Показ культовых фильмов под открытым небом"
         ),
         new Event
         (
@@ -68,14 +72,16 @@ public partial class MemoryEventFilterTests
             "Фестиваль уличной еды",
             new DateTime(2026, 3, 21, 12, 0, 0),
             new DateTime(2026, 3, 21, 22, 0, 0),
-            "Дегустация блюд от лучших фудтраков города"
+            50,
+            description: "Дегустация блюд от лучших фудтраков города"
         ),
         new Event(
             EventIds.StandupEvening,
             "Вечер стендап-комедии",
             new DateTime(2026, 3, 21, 20, 0, 0),
             new DateTime(2026, 3, 22, 0, 0, 0),
-            "Выступление популярных комиков"
+            250,
+            description: "Выступление популярных комиков"
         ),
         new Event
         (
@@ -83,7 +89,8 @@ public partial class MemoryEventFilterTests
             "Мастер-класс по гончарному делу",
             new DateTime(2026, 3, 22, 14, 0, 0),
             new DateTime(2026, 3, 22, 17, 0, 0),
-            "Создай свою керамическую кружку"
+            5,
+            description: "Создай свою керамическую кружку"
         ),
         new Event
         (
@@ -91,7 +98,8 @@ public partial class MemoryEventFilterTests
             "Джазовый концерт",
             new DateTime(2026, 3, 22, 19, 0, 0),
             new DateTime(2026, 3, 22, 22, 0, 0),
-            "Уютный вечер с живой музыкой"
+            12,
+            description: "Уютный вечер с живой музыкой"
         ),
         new Event
         (
@@ -99,7 +107,8 @@ public partial class MemoryEventFilterTests
             "Спектакль 'Вишневый сад'",
             new DateTime(2026, 3, 23, 18, 30, 0),
             new DateTime(2026, 3, 23, 21, 0, 0),
-            "Премьера в городском театре"
+            500,
+            description: "Премьера в городском театре"
         ),
         new Event
         (
@@ -107,7 +116,8 @@ public partial class MemoryEventFilterTests
             "Ярмарка мастеров",
             new DateTime(2026, 3, 23, 10, 0, 0),
             new DateTime(2026, 3, 23, 19, 0, 0),
-            null
+            50,
+            description: null
         ),
         new Event
         (
@@ -115,7 +125,8 @@ public partial class MemoryEventFilterTests
             "Живая музыка в баре 'Ноты и Кофе'",
             new DateTime(2026, 4, 1, 20, 0, 0),
             new DateTime(2026, 4, 1, 23, 0, 0),
-            "Акустический вечер с местными группами. Вход свободный"
+            30,
+            description: "Акустический вечер с местными группами. Вход свободный"
         ),
         new Event
         (
@@ -123,7 +134,8 @@ public partial class MemoryEventFilterTests
             "Книжный клуб: обсуждение 'Мастера и Маргариты'",
             new DateTime(2026, 4, 2, 18, 30, 0),
             new DateTime(2026, 4, 2, 20, 30, 0),
-            "Встреча любителей литературы. Обсуждаем роман Булгакова за чашечкой чая"
+            10,
+            description: "Встреча любителей литературы. Обсуждаем роман Булгакова за чашечкой чая"
         )
     ];
 

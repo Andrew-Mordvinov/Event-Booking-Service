@@ -1,4 +1,13 @@
 <Solution>
-  <Project Path="Tests/Tests.csproj"/>
-  <Project Path="Web/EventBookingService.csproj" />
+  <Project Path="Bookings.Models/Bookings.Models.csproj" Id="f28cef61-0e25-41b2-85f9-360fb53f522d" />
+  <Project Path="Bookings.Service/Bookings.Service.csproj" Id="88f216bc-19cd-4092-b597-a665d9aefee6" />
+  <Project Path="DataAccess/DataAccess.csproj" Id="24168e9f-ebec-459b-ba45-db20770143cf" />
+  <Project Path="DTO/DTO.csproj" Id="331cc17b-adea-42c4-90a5-5573a3069fc4" />
+  <Project Path="Events.Models/Events.Models.csproj" Id="54c9be70-4bce-467e-86ef-39f404e54e72" />
+  <Project Path="Events.Service/Events.Service.csproj" Id="347dc335-a6a6-49e3-aa9d-058bae479f10" />
+  <Project Path="LinqExtensions/LinqExtensions.csproj" Id="1b5e061f-3ac9-4f68-9261-53b216a4afdc" />
+  <Project Path="Shared/Shared.csproj" Id="9c894035-9eb8-4304-8d9b-d4c3c7282599" />
+  <Project Path="Tests/Tests.csproj" />
+  <Project Path="Validation/Validation.csproj" Id="8e9501ec-b2bc-4fbd-bb16-e49ab6f24630" />
+  <Project Path="Web/Web.csproj" />
 </Solution>

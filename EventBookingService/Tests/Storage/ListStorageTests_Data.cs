@@ -1,6 +1,5 @@
-﻿using EventBookingService.Common;
-using EventBookingService.Common.Storage;
-using EventBookingService.Models.Events;
+﻿using DataAccess.Storage;
+using Shared.Interfaces;
 using System.Linq.Expressions;
 
 namespace Tests.Storage;

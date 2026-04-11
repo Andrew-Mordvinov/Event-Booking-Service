@@ -1,11 +1,11 @@
-﻿using EventBookingService.Application.Events.Implementation;
-using EventBookingService.Common.Paging;
-using EventBookingService.Common.Storage;
-using EventBookingService.Common.Validations.Results;
-using EventBookingService.Models.Events;
+﻿using DataAccess.Storage;
+using Events.Models;
+using Events.Service.Implementation;
 using FluentAssertions;
 using Moq;
+using Shared.Paging;
 using System.Linq.Expressions;
+using Validation;
 
 namespace Tests.Events.Filtering;
 

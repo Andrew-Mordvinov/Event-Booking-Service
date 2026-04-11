@@ -1,9 +1,9 @@
-using EventBookingService.Application;
-using EventBookingService.Infrastructure;
-using EventBookingService.Middleware;
-using EventBookingService.Presentation;
-
 using Serilog;
+
+using Web.Application;
+using Web.Infrastructure;
+using Web.Middleware;
+using Web.Presentation;
 
 var builder = WebApplication.CreateBuilder(args);
 

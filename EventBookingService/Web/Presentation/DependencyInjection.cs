@@ -1,4 +1,4 @@
-﻿namespace EventBookingService.Presentation;
+namespace Web.Presentation;
 
 public static class DependencyInjection
 {

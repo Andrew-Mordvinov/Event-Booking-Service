@@ -1,6 +1,5 @@
-﻿using EventBookingService.Models.Events;
-using EventBookingService.Models.Events.Const;
-using EventBookingService.Models.Events.Requests;
+﻿using DTO.Events.Requests;
+using Events.Models;
 
 namespace Tests.Events.Crud;
 
@@ -38,7 +37,8 @@ public partial class MemoryEventCrudTests
             "Рок-фестиваль 'Красная Площадь'",
             new DateTime(2026, 3, 19, 18, 0, 0),
             new DateTime(2026, 3, 19, 23, 0, 0),
-            "Выступление лучших рок-групп города"
+            10000,
+            description: "Выступление лучших рок-групп города"
         ),
         new Event
         (
@@ -46,7 +46,8 @@ public partial class MemoryEventCrudTests
             "Концерт симфонического оркестра",
             new DateTime(2026, 3, 19, 19, 0, 0),
             new DateTime(2026, 3, 19, 21, 30, 0),
-            "Исполнение классических произведений Чайковского"
+            120,
+            description: "Исполнение классических произведений Чайковского"
         ),
         new Event
         (
@@ -54,7 +55,8 @@ public partial class MemoryEventCrudTests
             "Выставка современного искусства",
             new DateTime(2026, 3, 20, 11, 0, 0),
             new DateTime(2026, 3, 20, 20, 0, 0),
-            "Работы молодых художников из 10 стран мира"
+            250,
+            description: "Работы молодых художников из 10 стран мира"
         ),
         new Event
         (
@@ -62,7 +64,8 @@ public partial class MemoryEventCrudTests
             "Ночной киномарафон",
             new DateTime(2026, 3, 20, 22, 0, 0),
             new DateTime(2026, 3, 21, 6, 0, 0),
-            "Показ культовых фильмов под открытым небом"
+            140,
+            description: "Показ культовых фильмов под открытым небом"
         ),
         new Event
         (
@@ -70,14 +73,17 @@ public partial class MemoryEventCrudTests
             "Фестиваль уличной еды",
             new DateTime(2026, 3, 21, 12, 0, 0),
             new DateTime(2026, 3, 21, 22, 0, 0),
-            "Дегустация блюд от лучших фудтраков города"
+            75,
+            description: "Дегустация блюд от лучших фудтраков города"
         ),
-        new Event(
+        new Event
+        (
             EventIds.StandupEvening,
             "Вечер стендап-комедии",
             new DateTime(2026, 3, 21, 20, 0, 0),
             new DateTime(2026, 3, 21, 22, 30, 0),
-            "Выступление популярных комиков"
+            50,
+            description: "Выступление популярных комиков"
         ),
         new Event
         (
@@ -85,7 +91,8 @@ public partial class MemoryEventCrudTests
             "Мастер-класс по гончарному делу",
             new DateTime(2026, 3, 22, 14, 0, 0),
             new DateTime(2026, 3, 22, 17, 0, 0),
-            "Создай свою керамическую кружку"
+            4,
+            description: "Создай свою керамическую кружку"
         ),
         new Event
         (
@@ -93,7 +100,8 @@ public partial class MemoryEventCrudTests
             "Джазовый квартирник",
             new DateTime(2026, 3, 22, 19, 0, 0),
             new DateTime(2026, 3, 22, 22, 0, 0),
-            "Уютный вечер с живой музыкой"
+            12,
+            description: "Уютный вечер с живой музыкой"
         ),
         new Event
         (
@@ -101,7 +109,8 @@ public partial class MemoryEventCrudTests
             "Спектакль 'Вишневый сад'",
             new DateTime(2026, 3, 23, 18, 30, 0),
             new DateTime(2026, 3, 23, 21, 0, 0),
-            "Премьера в городском театре"
+            220,
+            description: "Премьера в городском театре"
         ),
         new Event
         (
@@ -109,7 +118,8 @@ public partial class MemoryEventCrudTests
             "Ярмарка мастеров",
             new DateTime(2026, 3, 23, 10, 0, 0),
             new DateTime(2026, 3, 23, 19, 0, 0),
-            null
+            35,
+            description: null
         )
     ];
 
@@ -141,7 +151,8 @@ public partial class MemoryEventCrudTests
                 Title = "Живая музыка в баре 'Ноты и Кофе'",
                 StartAt = new DateTime(2026, 3, 24, 20, 0, 0),
                 EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
-                Description = "Акустический вечер с местными группами. Вход свободный"
+                TotalSeats = 50,
+                Description = "Акустический вечер с местными группами. Вход свободный"       
             },
             new Event
             (
@@ -149,7 +160,8 @@ public partial class MemoryEventCrudTests
                 "Живая музыка в баре 'Ноты и Кофе'",
                 new DateTime(2026, 3, 24, 20, 0, 0),
                 new DateTime(2026, 3, 25, 03, 0, 0),
-                "Акустический вечер с местными группами. Вход свободный"
+                50,
+                description: "Акустический вечер с местными группами. Вход свободный"
             )
         ],
         [
@@ -159,6 +171,7 @@ public partial class MemoryEventCrudTests
                 Title = "Живая музыка в баре 'Ноты и Кофе'",
                 StartAt = new DateTime(2026, 3, 24, 20, 0, 0),
                 EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
+                TotalSeats = 35,
                 Description = null
             },
             new Event
@@ -167,7 +180,8 @@ public partial class MemoryEventCrudTests
                 "Живая музыка в баре 'Ноты и Кофе'",
                 new DateTime(2026, 3, 24, 20, 0, 0),
                 new DateTime(2026, 3, 25, 03, 0, 0),
-                null
+                35,
+                description: null
             )
         ],
         [
@@ -177,6 +191,7 @@ public partial class MemoryEventCrudTests
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
                 StartAt = new DateTime(2026, 3, 26, 18, 30, 0),
                 EndAt = new DateTime(2026, 3, 26, 20, 30, 0),
+                TotalSeats = 20,
                 Description = "Встреча любителей литературы. Обсуждаем роман Булгакова за чашечкой чая"
             },
             new Event
@@ -185,7 +200,8 @@ public partial class MemoryEventCrudTests
                 "Книжный клуб: обсуждение 'Мастера и Маргариты'",
                 new DateTime(2026, 3, 26, 18, 30, 0),
                 new DateTime(2026, 3, 26, 20, 30, 0),
-                "Встреча любителей литературы. Обсуждаем роман Булгакова за чашечкой чая"
+                20,
+                description: "Встреча любителей литературы. Обсуждаем роман Булгакова за чашечкой чая"
             )
         ],
         [
@@ -195,6 +211,7 @@ public partial class MemoryEventCrudTests
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
                 StartAt = new DateTime(2026, 3, 25, 03, 0, 0),
                 EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
+                TotalSeats = 1,
                 Description = null
             },
             new Event
@@ -203,7 +220,8 @@ public partial class MemoryEventCrudTests
                 "Книжный клуб: обсуждение 'Мастера и Маргариты'",
                 new DateTime(2026, 3, 25, 03, 0, 0),
                 new DateTime(2026, 3, 25, 03, 0, 0),
-                null
+                1,
+                description: null
             )
         ],
     ];
@@ -218,6 +236,7 @@ public partial class MemoryEventCrudTests
                 Title = null,
                 StartAt = new DateTime(2026, 3, 24, 20, 0, 0),
                 EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
+                TotalSeats = 10,
                 Description = "Акустический вечер с местными группами. Вход свободный"
             },
             new List<string> 
@@ -233,6 +252,7 @@ public partial class MemoryEventCrudTests
                 Title = "",
                 StartAt = new DateTime(2026, 3, 24, 20, 0, 0),
                 EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
+                TotalSeats = 50,
                 Description = "Акустический вечер с местными группами. Вход свободный"
             },
             new List<string>
@@ -248,6 +268,7 @@ public partial class MemoryEventCrudTests
                 Title = " ",
                 StartAt = new DateTime(2026, 3, 24, 20, 0, 0),
                 EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
+                TotalSeats = 50,
                 Description = "Акустический вечер с местными группами. Вход свободный"
             },
             new List<string>
@@ -263,6 +284,7 @@ public partial class MemoryEventCrudTests
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
                 StartAt = null,
                 EndAt = null,
+                TotalSeats = 9,
                 Description = null
             },
             new List<string>
@@ -279,6 +301,7 @@ public partial class MemoryEventCrudTests
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
                 StartAt = null,
                 EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
+                TotalSeats = 9,
                 Description = null
             },
             new List<string>
@@ -294,6 +317,7 @@ public partial class MemoryEventCrudTests
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
                 StartAt = new DateTime(2026, 3, 25, 03, 0, 0),
                 EndAt = null,
+                TotalSeats = 9,
                 Description = null
             },
             new List<string>
@@ -309,11 +333,60 @@ public partial class MemoryEventCrudTests
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
                 StartAt = new DateTime(2026, 3, 25, 04, 0, 0),
                 EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
+                TotalSeats = 9,
                 Description = null
             },
             new List<string>
             {
                 EventErrors.StartAfterEndForbidden
+            }
+        ],
+        // Не передано число мест
+        [
+            Enumerable.Empty<Event>(),
+            new CreateEventRequest
+            {
+                Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
+                StartAt = new DateTime(2026, 3, 25, 04, 0, 0),
+                EndAt = new DateTime(2026, 3, 26, 03, 0, 0),
+                TotalSeats = null,
+                Description = null
+            },
+            new List<string>
+            {
+                EventErrors.TotalSeatsMustPositive
+            }
+        ],
+        // Число мест 0
+        [
+            Enumerable.Empty<Event>(),
+            new CreateEventRequest
+            {
+                Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
+                StartAt = new DateTime(2026, 3, 25, 04, 0, 0),
+                EndAt = new DateTime(2026, 3, 26, 03, 0, 0),
+                TotalSeats = 0,
+                Description = null
+            },
+            new List<string>
+            {
+                EventErrors.TotalSeatsMustPositive
+            }
+        ],
+        // Число мест меньше 0
+        [
+            Enumerable.Empty<Event>(),
+            new CreateEventRequest
+            {
+                Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
+                StartAt = new DateTime(2026, 3, 25, 04, 0, 0),
+                EndAt = new DateTime(2026, 3, 26, 03, 0, 0),
+                TotalSeats = 0,
+                Description = null
+            },
+            new List<string>
+            {
+                EventErrors.TotalSeatsMustPositive
             }
         ],
         // Полностью пустой объект
@@ -324,13 +397,15 @@ public partial class MemoryEventCrudTests
                 Title = null,
                 StartAt = null,
                 EndAt = null,
+                TotalSeats = null,
                 Description = null
             },
             new List<string>
             {
                 EventErrors.TitleNeed,
                 EventErrors.StartDateNeed,
-                EventErrors.EndDateNeed
+                EventErrors.EndDateNeed,
+                EventErrors.TotalSeatsMustPositive
             }
         ],
     ];
@@ -373,6 +448,7 @@ public partial class MemoryEventCrudTests
                 Title = "Вечер джазовой музыки",
                 StartAt = new DateTime(2026, 3, 25, 21, 0, 0),
                 EndAt = new DateTime(2026, 3, 26, 01, 0, 0),
+                TotalSeats = 69,
                 Description = null
             },
             new Event
@@ -380,7 +456,9 @@ public partial class MemoryEventCrudTests
                 EventIds.JazzNight,
                 "Вечер джазовой музыки",
                 new DateTime(2026, 3, 25, 21, 0, 0),
-                new DateTime(2026, 3, 26, 01, 0, 0)
+                new DateTime(2026, 3, 26, 01, 0, 0),
+                69,
+                description: null
             )
         ],
         [
@@ -391,6 +469,7 @@ public partial class MemoryEventCrudTests
                 Title = "Ярмарка мастеров",
                 StartAt = new DateTime(2026, 3, 23, 10, 0, 0),
                 EndAt = new DateTime(2026, 3, 23, 19, 0, 0),
+                TotalSeats = 10,
                 Description = string.Empty
             },
             new Event
@@ -399,7 +478,8 @@ public partial class MemoryEventCrudTests
                 "Ярмарка мастеров",
                 new DateTime(2026, 3, 23, 10, 0, 0),
                 new DateTime(2026, 3, 23, 19, 0, 0),
-                null
+                10,
+                description: null
             )
         ],
         [
@@ -407,18 +487,20 @@ public partial class MemoryEventCrudTests
             EventIds.FoodFestival,
             new ModifyEventRequest
             {
-                Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
+                Title = "Фестиваль уличной еды. Вход свободный",
                 StartAt = new DateTime(2026, 3, 25, 03, 0, 0),
                 EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
+                TotalSeats = 150,
                 Description = null
             },
             new Event
             (
                 EventIds.FoodFestival,
-                "Книжный клуб: обсуждение 'Мастера и Маргариты'",
+                "Фестиваль уличной еды. Вход свободный",
                 new DateTime(2026, 3, 25, 03, 0, 0),
                 new DateTime(2026, 3, 25, 03, 0, 0),
-                null
+                150,
+                description: null
             )
         ],
     ];
@@ -433,6 +515,7 @@ public partial class MemoryEventCrudTests
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
                 StartAt = new DateTime(2026, 3, 24, 20, 0, 0),
                 EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
+                TotalSeats = 15,
                 Description = null
             }
         ],
@@ -444,6 +527,7 @@ public partial class MemoryEventCrudTests
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
                 StartAt = new DateTime(2026, 3, 24, 20, 0, 0),
                 EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
+                TotalSeats = 1,
                 Description = string.Empty
             }
         ],
@@ -455,6 +539,7 @@ public partial class MemoryEventCrudTests
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
                 StartAt = new DateTime(2026, 3, 24, 20, 0, 0),
                 EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
+                TotalSeats = 150,
                 Description = "Акустический вечер с местными группами. Вход свободный"
             }
         ],
@@ -471,6 +556,7 @@ public partial class MemoryEventCrudTests
                 Title = null,
                 StartAt = new DateTime(2026, 3, 24, 20, 0, 0),
                 EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
+                TotalSeats = 15,
                 Description = "Акустический вечер с местными группами. Вход свободный"
             },
             new List<string>
@@ -487,6 +573,7 @@ public partial class MemoryEventCrudTests
                 Title = string.Empty,
                 StartAt = new DateTime(2026, 3, 24, 20, 0, 0),
                 EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
+                TotalSeats = 15,
                 Description = "Акустический вечер с местными группами. Вход свободный"
             },
             new List<string>
@@ -503,6 +590,7 @@ public partial class MemoryEventCrudTests
                 Title = " ",
                 StartAt = new DateTime(2026, 3, 24, 20, 0, 0),
                 EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
+                TotalSeats = 15,
                 Description = "Акустический вечер с местными группами. Вход свободный"
             },
             new List<string>
@@ -519,6 +607,7 @@ public partial class MemoryEventCrudTests
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
                 StartAt = null,
                 EndAt = null,
+                TotalSeats = 15,
                 Description = null
             },
             new List<string>
@@ -536,6 +625,7 @@ public partial class MemoryEventCrudTests
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
                 StartAt = null,
                 EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
+                TotalSeats = 15,
                 Description = null
             },
             new List<string>
@@ -552,6 +642,7 @@ public partial class MemoryEventCrudTests
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
                 StartAt = new DateTime(2026, 3, 25, 03, 0, 0),
                 EndAt = null,
+                TotalSeats = 15,
                 Description = null
             },
             new List<string>
@@ -568,11 +659,46 @@ public partial class MemoryEventCrudTests
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
                 StartAt = new DateTime(2026, 3, 25, 12, 0, 0),
                 EndAt = new DateTime(2026, 3, 24, 15, 0, 0),
+                TotalSeats = 15,
                 Description = null
             },
             new List<string>
             {
                 EventErrors.StartAfterEndForbidden
+            }
+        ],
+        // Количество мест 0
+        [
+            BasicEventList,
+            EventIds.FoodFestival,
+            new ModifyEventRequest
+            {
+                Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
+                StartAt = new DateTime(2026, 3, 24, 20, 0, 0),
+                EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
+                TotalSeats = 0,
+                Description = null
+            },
+            new List<string>
+            {
+                EventErrors.TotalSeatsMustPositive
+            }
+        ],
+        // Количество мест меньше 0
+        [
+            BasicEventList,
+            EventIds.FoodFestival,
+            new ModifyEventRequest
+            {
+                Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
+                StartAt = new DateTime(2026, 3, 24, 20, 0, 0),
+                EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
+                TotalSeats = -10,
+                Description = null
+            },
+            new List<string>
+            {
+                EventErrors.TotalSeatsMustPositive
             }
         ],
         // Полностью пустой объект
@@ -584,13 +710,15 @@ public partial class MemoryEventCrudTests
                 Title = null,
                 StartAt = null,
                 EndAt = null,
+                TotalSeats = null,
                 Description = null
             },
             new List<string>
             {
                 EventErrors.TitleNeed,
                 EventErrors.StartDateNeed,
-                EventErrors.EndDateNeed
+                EventErrors.EndDateNeed,
+                EventErrors.TotalSeatsMustPositive
             }
         ],
     ];

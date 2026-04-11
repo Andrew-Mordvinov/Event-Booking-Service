@@ -1,7 +1,6 @@
-
 using Microsoft.AspNetCore.Mvc;
 
-namespace EventBookingService.Middleware;
+namespace Web.Middleware;
 
 /// <summary>
 /// Глобальный перехватчик исключений с логгированием и формированием

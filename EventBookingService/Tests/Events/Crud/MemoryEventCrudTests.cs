@@ -1,10 +1,10 @@
-﻿using EventBookingService.Application.Events.Implementation;
-using EventBookingService.Common.Storage;
-using EventBookingService.Common.Validations.Results;
-using EventBookingService.Models.Events;
-using EventBookingService.Models.Events.Requests;
+﻿using DataAccess.Storage;
+using DTO.Events.Requests;
+using Events.Models;
+using Events.Service.Implementation;
 using FluentAssertions;
 using Moq;
+using Validation;
 
 namespace Tests.Events.Crud;
 

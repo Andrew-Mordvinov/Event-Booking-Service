@@ -1,12 +1,14 @@
-using EventBookingService.Application.Bookings;
-using EventBookingService.Application.Bookings.Implementation;
-using EventBookingService.Application.Events;
-using EventBookingService.Application.Events.Implementation;
-using EventBookingService.Common.Storage;
-using EventBookingService.Models.Bookings;
-using EventBookingService.Models.Events;
+using Bookings.Models;
+using Bookings.Service;
+using Bookings.Service.Implementation;
 
-namespace EventBookingService.Application;
+using DataAccess.Storage;
+
+using Events.Models;
+using Events.Service;
+using Events.Service.Implementation;
+
+namespace Web.Application;
 
 public static class DependencyInjection
 {

@@ -1,4 +1,4 @@
-﻿namespace EventBookingService.Middleware;
+namespace Web.Middleware;
 
 public static class MiddlewareExtensions
 {

@@ -1,6 +1,6 @@
-using EventBookingService.Infrastructure.Bookings;
+using Web.Infrastructure.Bookings;
 
-namespace EventBookingService.Infrastructure;
+namespace Web.Infrastructure;
 
 public static class DependencyInjection
 {
