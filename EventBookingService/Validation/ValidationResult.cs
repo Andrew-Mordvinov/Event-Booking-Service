@@ -8,15 +8,15 @@ public class ValidationResult
 {
     #region Protected fields
 
-    protected List<string> _errors = [];
+    protected List<ValidationItem> _items = [];
 
     #endregion
 
     #region Properties
 
-    public IReadOnlyCollection<string> Errors => _errors.AsReadOnly();
+    public IReadOnlyCollection<ValidationItem> Errors => _items.AsReadOnly();
 
-    public bool IsSuccessful => _errors.Count == 0;
+    public bool IsSuccessful => !_items.Any(t => t.IsError);
 
     #endregion
 
@@ -31,13 +31,23 @@ public class ValidationResult
 
     public ValidationResult(string error) => AddError(error);
 
+    public ValidationResult(IEnumerable<ValidationItem> errors) => AddItems(errors);
+
+    public ValidationResult(ValidationItem error) => AddItem(error);
+
     #endregion
 
     #region Public methods
 
-    public void AddError(string error) => _errors.Add(error);
+    public void AddError(string error) => _items.Add(new ValidationItem(error));
 
-    public void AddErrors(IEnumerable<string> errors) => _errors.AddRange(errors);
+    public void AddItem(ValidationItem error) => _items.Add(error);
+
+    public void AddItems(IEnumerable<ValidationItem> errors) => _items.AddRange(errors);
+
+    public void AddErrors(IEnumerable<string> errors) => _items.AddRange(errors.Select(t => new ValidationItem(t)));
+
+    public bool HasCategory(ItemCategory category) => _items.Any(t => t.Category == category);
 
     #endregion
 }
@@ -58,4 +68,10 @@ public class ValidationResult<T> : ValidationResult
 
     public ValidationResult(T? val, string error)
         :this(val) => AddError(error);
+
+    public ValidationResult(T? val, IEnumerable<ValidationItem> errors)
+        :this(val) => AddItems(errors);
+
+    public ValidationResult(T? val, ValidationItem error)
+        :this(val) => AddItem(error);
 }

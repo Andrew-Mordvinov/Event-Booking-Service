@@ -27,4 +27,16 @@ public class Booking(Guid id, Guid eventId, BookingStatus status, DateTime creat
         CreatedAt = source.CreatedAt;
         ProcessedAt = source.ProcessedAt;
     }
+
+    public void Confirm()
+    {
+        Status = BookingStatus.Confirmed;
+        ProcessedAt = DateTime.UtcNow;
+    }
+
+    public void Reject()
+    {
+        Status = BookingStatus.Rejected;
+        ProcessedAt = DateTime.UtcNow;
+    }
 }

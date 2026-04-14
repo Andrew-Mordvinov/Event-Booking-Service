@@ -31,4 +31,12 @@ public interface IBookingService
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Результат выполнения операции</returns>
     Task<ValidationResult> ProcessPendingBookingsAsync(int maxCount = 100, CancellationToken token = default);
+
+    /// <summary>
+    /// Обработка конкретной брони
+    /// </summary>
+    /// <param name="booking">Бронь для обработки</param>
+    /// <param name="token">Токен отмены операции</param>
+    /// <returns>Асинхронная задача</returns>
+    Task ProcessBookingAsync(Booking booking, CancellationToken token = default);
 }

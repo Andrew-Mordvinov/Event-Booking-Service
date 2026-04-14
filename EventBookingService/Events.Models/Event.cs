@@ -106,7 +106,10 @@ public class Event : IHasId, IFillable<Event>, ICopyable<Event>
                 errors.Add(EventErrors.AvailableSeatsMustPositive);
             }
 
-            if (availableSeats is not null && totalSeats < availableSeats)
+            if (availableSeats is not null
+                && availableSeats > 0 
+                && totalSeats > 0 
+                && totalSeats < availableSeats)
             {
                 errors.Add(EventErrors.TotalSeatsCantBeLessAvailableSeats);
             }
@@ -139,6 +142,11 @@ public class Event : IHasId, IFillable<Event>, ICopyable<Event>
 
     public bool TryReserveSeats(int count = 1)
     {
+        if (count < 1)
+        {
+            return false;
+        }
+
         int current, updated;
         do
         {
@@ -156,6 +164,11 @@ public class Event : IHasId, IFillable<Event>, ICopyable<Event>
 
     public bool TryReleaseSeats(int count = 1)
     {
+        if (count < 1)
+        {
+            return false;
+        }
+
         int current, updated;
         do
         {

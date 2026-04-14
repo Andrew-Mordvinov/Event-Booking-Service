@@ -6,18 +6,18 @@ using Validation;
 namespace DataAccess.Storage;
 
 /// <summary>
-/// Хранилище List
+/// Хранилище Dictionary
 /// </summary>
-public class ListStorage<T> : IStorage<T> where T : IHasId, IFillable<T>, ICopyable<T>
+public class DictionaryStorage<T> : IStorage<T> where T : IHasId, IFillable<T>, ICopyable<T>
 {
     private readonly Dictionary<Guid, T> _dictionary = [];
 
-    public ListStorage()
+    public DictionaryStorage()
     {
         
     }
 
-    public ListStorage(IEnumerable<T> items)
+    public DictionaryStorage(IEnumerable<T> items)
     {
         foreach (var item in items)
         {

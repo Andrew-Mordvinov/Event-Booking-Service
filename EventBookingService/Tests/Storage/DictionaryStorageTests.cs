@@ -1,10 +1,11 @@
 ﻿using DataAccess.Storage;
 using FluentAssertions;
 using System.Linq.Expressions;
+using Validation;
 
 namespace Tests.Storage;
 
-public partial class ListStorageTests
+public partial class DictionaryStorageTests
 {
     #region Constructor Test
 
@@ -19,7 +20,7 @@ public partial class ListStorageTests
             new TestItem { Id = Guid.NewGuid(), IntField = 2187, TextField = "Third" },
         };
 
-        var action = () => new ListStorage<TestItem>(duplicateCollection);
+        var action = () => new DictionaryStorage<TestItem>(duplicateCollection);
 
         action.Should().Throw<ArgumentException>();
     }
@@ -31,7 +32,7 @@ public partial class ListStorageTests
     [Fact]
     public async Task AddAsync_SomeObject_SuccessfullyAdded()
     {
-        var storage = new ListStorage<TestItem>();
+        var storage = new DictionaryStorage<TestItem>();
         var item = new TestItem { Id = Guid.NewGuid(), IntField = 5, TextField = "SomeText" };
 
         var result = await storage.AddAsync(item, TestContext.Current.CancellationToken);
@@ -45,7 +46,7 @@ public partial class ListStorageTests
     [Fact]
     public async Task AddAsync_ObjectModifiedAfter_DoesNotAffect()
     {
-        var storage = new ListStorage<TestItem>();
+        var storage = new DictionaryStorage<TestItem>();
         var item = new TestItem { Id = Guid.NewGuid(), IntField = 5, TextField = "SomeText" };
 
         var result = await storage.AddAsync(item, TestContext.Current.CancellationToken);
@@ -64,13 +65,13 @@ public partial class ListStorageTests
     public async Task AddAsync_ObjectExits_ErrorReturn()
     {
         var item = new TestItem { Id = Guid.NewGuid(), IntField = 5, TextField = "SomeText" };
-        var storage = new ListStorage<TestItem>([item]);
+        var storage = new DictionaryStorage<TestItem>([item]);
 
         var result = await storage.AddAsync(item, TestContext.Current.CancellationToken);
 
         result.IsSuccessful.Should().BeFalse();
         result.Errors.Count.Should().Be(1);
-        result.Errors.First().Should().Be(StorageErrors.ItemWithIdAlreadyExist(item.Id));
+        result.Errors.First().Should().BeEquivalentTo(new ValidationItem(StorageErrors.ItemWithIdAlreadyExist(item.Id)));
     }
 
     #endregion
@@ -81,7 +82,7 @@ public partial class ListStorageTests
     public async Task GetByIdAsync_ValidId_SuccessfullyGet()
     {
         var itemToGet = new TestItem { Id = Guid.NewGuid(), IntField = 10, TextField = "First" };
-        var storage = new ListStorage<TestItem>
+        var storage = new DictionaryStorage<TestItem>
         ([
             itemToGet,
             new TestItem { Id = Guid.NewGuid(), IntField = -6, TextField = "Second" },
@@ -100,7 +101,7 @@ public partial class ListStorageTests
     {
         // Arrange
         var itemToGet = new TestItem { Id = Guid.NewGuid(), IntField = 10, TextField = "First" };
-        var storage = new ListStorage<TestItem>
+        var storage = new DictionaryStorage<TestItem>
         ([
             itemToGet,
             new TestItem { Id = Guid.NewGuid(), IntField = -6, TextField = "Second" },
@@ -129,7 +130,7 @@ public partial class ListStorageTests
     public async Task GetByIdAsync_WrongId_EmptySuccessfulResult()
     {
         var wrongId = Guid.NewGuid();
-        var storage = new ListStorage<TestItem>
+        var storage = new DictionaryStorage<TestItem>
         ([
             new TestItem { Id = Guid.NewGuid(), IntField = 10, TextField = "First" },
             new TestItem { Id = Guid.NewGuid(), IntField = -6, TextField = "Second" },
@@ -146,7 +147,7 @@ public partial class ListStorageTests
     public async Task GetByIdAsync_StorageEmpty_EmptySuccessfulResult()
     {
         var wrongId = Guid.NewGuid();
-        var storage = new ListStorage<TestItem>();
+        var storage = new DictionaryStorage<TestItem>();
 
         var getResult = await storage.GetByIdAsync(wrongId, TestContext.Current.CancellationToken);
 
@@ -163,7 +164,7 @@ public partial class ListStorageTests
     {
         // Arrange
         var itemToRemove = new TestItem { Id = Guid.NewGuid(), IntField = -6, TextField = "Second" };
-        var storage = new ListStorage<TestItem>
+        var storage = new DictionaryStorage<TestItem>
         ([
             new TestItem { Id = Guid.NewGuid(), IntField = 10, TextField = "First" },
             itemToRemove,
@@ -189,7 +190,7 @@ public partial class ListStorageTests
     public async Task RemoveAsync_WrongId_ReturnFalse()
     {
         var wrongId = Guid.NewGuid();
-        var storage = new ListStorage<TestItem>
+        var storage = new DictionaryStorage<TestItem>
         ([
             new TestItem { Id = Guid.NewGuid(), IntField = 10, TextField = "First" },
             new TestItem { Id = Guid.NewGuid(), IntField = -6, TextField = "Second" },
@@ -211,7 +212,7 @@ public partial class ListStorageTests
     {
         // Assert
         var itemToUpdate = new TestItem { Id = Guid.NewGuid(), IntField = 10, TextField = "First" };
-        var storage = new ListStorage<TestItem>
+        var storage = new DictionaryStorage<TestItem>
         ([
             itemToUpdate,
             new TestItem { Id = Guid.NewGuid(), IntField = -6, TextField = "Second" },
@@ -238,7 +239,7 @@ public partial class ListStorageTests
     public async Task UpdateAsync_WrongObject_ReturnSuccessfulFalse()
     {
         var itemToUpdate = new TestItem { Id = Guid.NewGuid(), IntField = 10, TextField = "SomeText" };
-        var storage = new ListStorage<TestItem>
+        var storage = new DictionaryStorage<TestItem>
         ([
             new TestItem { Id = Guid.NewGuid(), IntField = 115, TextField = "First" },
             new TestItem { Id = Guid.NewGuid(), IntField = -6, TextField = "Second" },
@@ -266,7 +267,7 @@ public partial class ListStorageTests
         int filteredCount,
         int totalPages)
     {
-        var storage = new ListStorage<TestItem>(items);
+        var storage = new DictionaryStorage<TestItem>(items);
 
         var pageResult = await storage.GetPageAsync(filter, page, pageSize, TestContext.Current.CancellationToken);
 
@@ -287,13 +288,13 @@ public partial class ListStorageTests
         int pageSize,
         string[] errors)
     {
-        var storage = new ListStorage<TestItem>(items);
+        var storage = new DictionaryStorage<TestItem>(items);
 
         var pageResult = await storage.GetPageAsync(filter, page, pageSize, TestContext.Current.CancellationToken);
 
         pageResult.IsSuccessful.Should().BeFalse();
         pageResult.Value.Should().BeNull();
-        pageResult.Errors.Should().BeEquivalentTo(errors);
+        pageResult.Errors.Should().BeEquivalentTo(errors.Select(t => new ValidationItem(t)));
     }
 
     [Theory]
@@ -304,7 +305,7 @@ public partial class ListStorageTests
         int page,
         int pageSize)
     {
-        var storage = new ListStorage<TestItem>(items);
+        var storage = new DictionaryStorage<TestItem>(items);
 
         var pageResult = await storage.GetPageAsync(filter, page, pageSize, TestContext.Current.CancellationToken);
 

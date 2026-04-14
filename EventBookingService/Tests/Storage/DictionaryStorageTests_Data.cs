@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace Tests.Storage;
 
-public partial class ListStorageTests
+public partial class DictionaryStorageTests
 {
     #region Common
 

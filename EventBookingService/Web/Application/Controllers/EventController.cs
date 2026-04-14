@@ -10,6 +10,8 @@ using Events.Service;
 
 using Microsoft.AspNetCore.Mvc;
 
+using Validation;
+
 using Web.Common.Validations;
 
 namespace Web.Application.Controllers;
@@ -119,7 +121,10 @@ public class EventController(
 
         if (!result.IsSuccessful)
         {
-            return BadRequest(result.ToProblemDetails(HttpContext));
+            // Если среди сообщений есть категория "конфликт", считаем ее приоритетной
+            return result.HasCategory(ItemCategory.ConflictError) 
+                ? Conflict(result.ToProblemDetails(HttpContext))
+                : BadRequest(result.ToProblemDetails(HttpContext));
         }
 
         if (result.Value is null)

@@ -10,26 +10,27 @@ namespace Web.Common.Validations;
 /// </summary>
 public static class ErrorToProblemDetailsConverter
 {
-    // В будущем возможно error будет не просто строкой и код будет маппиться внутри по своим признакам, но пока
-    // для стандарта вывода ошибок хватает строки
-
     /// <summary>
     /// Конвертация ошибок в результате валидации, если они есть, в список с элементами <see cref="ProblemDetails"/>
     /// для стандартизованного вывода ошибок
     /// </summary>
     /// <param name="result">Результат валидации</param>
-    /// <param name="code">Код ошибки, который присваивается каждому элементу полученной коллекции по умолчанию. 
-    /// Если не указано явно, то 400</param>
     /// <returns>Массив <see cref="ProblemDetails"/></returns>
     public static IEnumerable<ProblemDetails> ToProblemDetails<T>(
         this ValidationResult<T> result,
-        HttpContext context,
-        int code = StatusCodes.Status400BadRequest) =>
+        HttpContext context) =>
         result.Errors.Select(e => new ProblemDetails
         {
             Instance = context.Request.Path,
-            Detail = e,
-            Status = code,
+            Detail = e.Text,
+            Status = CategoryToCode(e.Category),
             Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
         });
+
+    private static int? CategoryToCode(ItemCategory category) => category switch
+    {
+        ItemCategory.ValidationError => StatusCodes.Status400BadRequest,
+        ItemCategory.ConflictError => StatusCodes.Status409Conflict,
+        _ => null
+    };
 }

@@ -107,7 +107,7 @@ public partial class MemoryEventFilterTests
         mock.Verify();
         result.IsSuccessful.Should().BeFalse();
         result.Value.Should().BeNull();
-        result.Errors.Should().BeEquivalentTo(errors);
+        result.Errors.Should().BeEquivalentTo(errors.Select(t => new ValidationItem(t)));
     }
 
     [Theory]
@@ -136,6 +136,6 @@ public partial class MemoryEventFilterTests
         mock.Verify();
         result.IsSuccessful.Should().BeFalse();
         result.Value.Should().BeNull();
-        result.Errors.Should().BeEquivalentTo(errors);
+        result.Errors.Should().BeEquivalentTo(errors.Select(t => new ValidationItem(t)));
     }
 }
