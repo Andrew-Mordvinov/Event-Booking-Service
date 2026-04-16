@@ -6,6 +6,8 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shared.Locking;
+using Shared.Paging;
+using System.Linq.Expressions;
 using Validation;
 
 namespace Tests.Bookings;
@@ -361,8 +363,193 @@ public partial class BookingTests
         arrayOfRequests.Select(t => t.Result.Value!.Id).Distinct().Count().Should().Be(10);
     }
 
-    //TODO тест на обработку одной брони
-    //Тесты на общий запуск обработки броней
+    [Fact]
+    public async Task ProcessBookingAsync_NotPending_DeclineWithoutProcess()
+    {
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var _, out var _, out var processMock);
+        var book = new Booking(Guid.NewGuid(), Guid.NewGuid(), BookingStatus.Confirmed, DateTime.UtcNow);
+
+        // Не вызвали семафор для блокировки, потом для разблокировки
+        processMock.Setup(s => s.SemaphoreSlim)
+            .Verifiable(Times.Never);
+
+        // Не запрашивали событие
+        eventStorageMock.Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), TestContext.Current.CancellationToken))
+            .Verifiable(Times.Never);
+
+        // Не обновляли бронь в хранилище
+        bookingStorageMock.Setup(s => s.UpdateAsync(
+                It.IsAny<Booking>(),
+                TestContext.Current.CancellationToken))
+            .Verifiable(Times.Never);
+   
+        await service.ProcessBookingAsync(book, TestContext.Current.CancellationToken);
+        // Меняем на Rejected и вызываем повторно
+        book.Status = BookingStatus.Rejected;
+        await service.ProcessBookingAsync(book, TestContext.Current.CancellationToken);
+
+        processMock.Verify();
+        bookingStorageMock.Verify();
+        eventStorageMock.Verify();
+        book.ProcessedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ProcessBookingAsync_EventExits_ConfirmBook()
+    {
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var _, out var _, out var processMock);
+        var eventId = Guid.NewGuid();
+        var book = new Booking(Guid.NewGuid(), eventId, BookingStatus.Pending, DateTime.UtcNow);
+
+        // Вызвали семафор для блокировки, потом для разблокировки
+        processMock.Setup(s => s.SemaphoreSlim)
+            .Returns(new SemaphoreSlim(1, 1))
+            .Verifiable(Times.Exactly(2));
+
+        // Получили событие
+        eventStorageMock.Setup(s => s.GetByIdAsync(eventId, TestContext.Current.CancellationToken))
+            .ReturnsAsync(ResultCreator.Success(new Event(eventId, "Some text", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 1)))
+            .Verifiable(Times.Once);
+
+        // Обновили бронь в хранилище
+        bookingStorageMock.Setup(s => s.UpdateAsync(book, TestContext.Current.CancellationToken))
+            .ReturnsAsync(ResultCreator.Success(true))
+            .Verifiable(Times.Once);
+
+        await service.ProcessBookingAsync(book, TestContext.Current.CancellationToken);
+
+        processMock.Verify();
+        bookingStorageMock.Verify();
+        eventStorageMock.Verify();
+        book.ProcessedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(10));
+        book.Status.Should().Be(BookingStatus.Confirmed);
+    }
+
+    [Fact]
+    public async Task ProcessBookingAsync_EventNotExits_RejectBook()
+    {
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var _, out var _, out var processMock);
+        var eventId = Guid.NewGuid();
+        var book = new Booking(Guid.NewGuid(), eventId, BookingStatus.Pending, DateTime.UtcNow);
+
+        // Вызвали семафор для блокировки, потом для разблокировки
+        processMock.Setup(s => s.SemaphoreSlim)
+            .Returns(new SemaphoreSlim(1, 1))
+            .Verifiable(Times.Exactly(2));
+
+        // Событие не получено 
+        eventStorageMock.Setup(s => s.GetByIdAsync(eventId, TestContext.Current.CancellationToken))
+            .ReturnsAsync(ResultCreator.Success<Event?>(null))
+            .Verifiable(Times.Once);
+
+        // Обновили бронь в хранилище
+        bookingStorageMock.Setup(s => s.UpdateAsync(book, TestContext.Current.CancellationToken))
+            .ReturnsAsync(ResultCreator.Success(true))
+            .Verifiable(Times.Once);
+
+        await service.ProcessBookingAsync(book, TestContext.Current.CancellationToken);
+
+        processMock.Verify();
+        bookingStorageMock.Verify();
+        eventStorageMock.Verify();
+        book.ProcessedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(10));
+        book.Status.Should().Be(BookingStatus.Rejected);
+    }
+
+    [Fact]
+    public async Task ProcessPendingBookingsAsync_InvalidCount_Fail()
+    {
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var _, out var _, out var processMock);
+
+        // Не пытались получить страницу
+        bookingStorageMock.Setup(s => s.GetPageAsync(
+                It.IsAny<Expression<Func<Booking, bool>>?>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                TestContext.Current.CancellationToken))
+            .Verifiable(Times.Never);
+
+        var result = await service.ProcessPendingBookingsAsync(0, TestContext.Current.CancellationToken);
+
+        bookingStorageMock.Verify();
+        result.IsSuccessful.Should().BeFalse();
+        result.Errors.Should().BeEquivalentTo([new ValidationItem(BookingServiceErrors.InvalidMaxCount)]);
+    }
+
+    [Fact]
+    public async Task ProcessPendingBookingsAsync_StorageHasNoItems_SuccessWithoutProcess()
+    {
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var _, out var _, out var processMock);
+        var count = 100;
+        // Вернулось 0 элементов
+        bookingStorageMock.Setup(s => s.GetPageAsync(
+                It.IsAny<Expression<Func<Booking, bool>>?>(),
+                1,
+                count,
+                TestContext.Current.CancellationToken))
+            .ReturnsAsync(ResultCreator.Success(new PaginatedResult<Booking> { CurrentPage = 1, FilteredCount = 0, Items = [], TotalPages = 0 }))
+            .Verifiable(Times.Once);
+
+        var result = await service.ProcessPendingBookingsAsync(count, TestContext.Current.CancellationToken);
+
+        bookingStorageMock.Verify();
+        result.IsSuccessful.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ProcessPendingBookingsAsync_StorageDropError_ReturnError()
+    {
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var _, out var _, out var processMock);
+        var error = "Ошибка";
+        var count = 100;
+
+        // Вернулась ошибка
+        bookingStorageMock.Setup(s => s.GetPageAsync(
+                It.IsAny<Expression<Func<Booking, bool>>?>(),
+                1,
+                count,
+                TestContext.Current.CancellationToken))
+            .ReturnsAsync(ResultCreator.Fail<PaginatedResult<Booking>>(null, error))
+            .Verifiable(Times.Once);
+
+        var result = await service.ProcessPendingBookingsAsync(count, TestContext.Current.CancellationToken);
+
+        bookingStorageMock.Verify();
+        result.IsSuccessful.Should().BeFalse();
+        result.Errors.Should().BeEquivalentTo([new ValidationItem(error)]);
+    }
+
+    // Положительный сценарий особо не протестируешь, возможено разнести методы по разным классам и замокать
+    [Fact]
+    public async Task ProcessPendingBookingsAsync_SomePendingBookings_ReturnSuccess()
+    {
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var _, out var _, out var processMock);
+        var count = 100;
+        // Вернулось несколько элементов
+        bookingStorageMock.Setup(s => s.GetPageAsync(
+                It.IsAny<Expression<Func<Booking, bool>>?>(),
+                1,
+                count,
+                TestContext.Current.CancellationToken))
+            .ReturnsAsync(ResultCreator.Success(new PaginatedResult<Booking> 
+            { 
+                CurrentPage = 1,
+                FilteredCount = 3,
+                Items = 
+                [
+                    new Booking(Guid.NewGuid(), Guid.NewGuid(), BookingStatus.Pending, DateTime.UtcNow),
+                    new Booking(Guid.NewGuid(), Guid.NewGuid(), BookingStatus.Pending, DateTime.UtcNow),
+                    new Booking(Guid.NewGuid(), Guid.NewGuid(), BookingStatus.Pending, DateTime.UtcNow),
+                ],
+                TotalPages = 1
+            }))
+            .Verifiable(Times.Once);
+
+        var result = await service.ProcessPendingBookingsAsync(count, TestContext.Current.CancellationToken);
+
+        bookingStorageMock.Verify();
+        result.IsSuccessful.Should().BeTrue();
+    }
 
     #endregion
 }
