@@ -12,10 +12,10 @@ namespace Bookings.Service.Implementation;
 // Проверить работу веба
 // Дописать readme
 public class BookingService(
-    IStorage<Booking> _storageBooking,
-    IStorage<Event> _storageEvent,
+    [FromKeyedServices("Mem")] IStorage<Booking> _storageBooking,
+    [FromKeyedServices("Mem")] IStorage<Event> _storageEvent,
     ILogger<BookingService> _logger,
-    [FromKeyedServices("CreateBooking")]ISemaphoreGetter _createBookingSemaphore,
+    [FromKeyedServices("CreateBooking")] ISemaphoreGetter _createBookingSemaphore,
     [FromKeyedServices("ProcessBooking")] ISemaphoreGetter _processBookingSemaphore) : IBookingService
 {
     private static readonly int _imitationDelay = 2000;
@@ -138,7 +138,7 @@ public class BookingService(
                 if (eventResult.Value is null)
                 {
                     booking.Reject();
-                    _logger.LogWarning("Событие {EventId} не удалось получить. Бронь {BookId} отклонена.", booking.Id, booking.EventId);
+                    _logger.LogWarning("Событие {EventId} не удалось получить. Бронь {BookId} отклонена.", booking.EventId, booking.Id);
                 }
                 else
                 {

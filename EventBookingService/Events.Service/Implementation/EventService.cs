@@ -2,6 +2,7 @@ using DataAccess.Storage;
 using DTO.Events.Requests;
 using Events.Models;
 using LinqExtensions;
+using Microsoft.Extensions.DependencyInjection;
 using Shared;
 using Shared.Paging;
 using System.Linq.Expressions;
@@ -13,7 +14,7 @@ namespace Events.Service.Implementation;
 /// <summary>
 /// Реализация <see cref="IEventService"/> с хранением данных в памяти приложения
 /// </summary>
-public class EventService(IStorage<Event> events) : IEventService
+public class EventService([FromKeyedServices("Mem")]IStorage<Event> events) : IEventService
 {
     #region Private fields
 
