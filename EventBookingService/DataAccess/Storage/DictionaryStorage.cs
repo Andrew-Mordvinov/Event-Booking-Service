@@ -1,7 +1,7 @@
+using Shared.Exceptions;
 using Shared.Interfaces;
 using Shared.Paging;
 using System.Linq.Expressions;
-using Validation;
 
 namespace DataAccess.Storage;
 
@@ -27,51 +27,51 @@ public class DictionaryStorage<T> : IStorage<T> where T : IHasId, IFillable<T>, 
 
     public bool HasAny => _dictionary.Count > 0;
 
-    public Task<ValidationResult<bool>> RemoveAsync(Guid id, CancellationToken token = default) => Task.FromResult(ResultCreator.Success(_dictionary.Remove(id)));
+    public Task<bool> RemoveAsync(Guid id, CancellationToken token = default) => Task.FromResult(_dictionary.Remove(id));
 
-    public Task<ValidationResult> AddAsync(T item, CancellationToken token = default)
+    public Task AddAsync(T item, CancellationToken token = default)
     {
-        var added = _dictionary.TryAdd(item.Id, item.Copy());
-
-        return added ? 
-            Task.FromResult(ResultCreator.Success())
-            : Task.FromResult(ResultCreator.Fail(StorageErrors.ItemWithIdAlreadyExist(item.Id)));
-    }
-
-    public Task<ValidationResult<bool>> UpdateAsync(T item, CancellationToken token = default)
-    {
-        if (!_dictionary.ContainsKey(item.Id))
+        if (_dictionary.TryAdd(item.Id, item.Copy()))
         {
-            return Task.FromResult(ResultCreator.Success(false));
+            return Task.CompletedTask;
         }
 
-        _dictionary[item.Id].FillFrom(item);
-
-        return Task.FromResult(ResultCreator.Success(true));
+        throw new ConflictException(StorageErrors.ItemWithIdAlreadyExist(item.Id));
     }
 
-    public Task<ValidationResult<PaginatedResult<T>?>> GetPageAsync(Expression<Func<T, bool>>? filter, int page, int pageSize, CancellationToken token = default)
+    public Task<bool> UpdateAsync(T item, CancellationToken token = default)
     {
-        var result = ResultCreator.Success<PaginatedResult<T>?>(null);
+        if (_dictionary.TryGetValue(item.Id, out var value))
+        {
+            value.FillFrom(item);
 
+            return Task.FromResult(true);
+        }
+
+        return Task.FromResult(false);
+    }
+
+    public Task<PaginatedResult<T>?> GetPageAsync(Expression<Func<T, bool>>? filter, int page, int pageSize, CancellationToken token = default)
+    {
+        var errors = new List<string>();
         if (page < 1)
         {
-            result.AddError(StorageErrors.PageMustBePositive);
+            errors.Add(StorageErrors.PageMustBePositive);
         }
 
         if (pageSize < 1)
         {
-            result.AddError(StorageErrors.PageSizeMustBePositive);
+            errors.Add(StorageErrors.PageSizeMustBePositive);
         }
 
-        if (!result.IsSuccessful)
+        if (errors.Count > 0)
         {
-            return Task.FromResult(result);
+            throw new ValidationException(errors);
         }
 
         if (!HasAny)
         {
-            return Task.FromResult(result);
+            return Task.FromResult<PaginatedResult<T>?>(null);
         }
 
         var filtered = filter is not null ? _dictionary.Values.Where(filter.Compile()) : _dictionary.Values;
@@ -80,19 +80,19 @@ public class DictionaryStorage<T> : IStorage<T> where T : IHasId, IFillable<T>, 
 
         if (count < 1)
         {
-            return Task.FromResult(result);
+            return Task.FromResult<PaginatedResult<T>?>(null);
         }
 
         var totalPages = (count + pageSize - 1) / pageSize;
 
         if (totalPages < page)
         {
-            result.AddError(StorageErrors.PageNotFound(page, totalPages));
-            return Task.FromResult(result);
+            errors.Add(StorageErrors.PageNotFound(page, totalPages));
+            throw new ValidationException(errors);
         }
 
         var dataPage = filtered.Skip((page - 1) * pageSize).Take(pageSize);
-        result.Value = new PaginatedResult<T>
+        var result = new PaginatedResult<T>
         {
             CurrentPage = page,
             TotalPages = totalPages,
@@ -100,16 +100,16 @@ public class DictionaryStorage<T> : IStorage<T> where T : IHasId, IFillable<T>, 
             Items = [.. dataPage]
         };
 
-        return Task.FromResult(result);
+        return Task.FromResult<PaginatedResult<T>?>(result);
     }
 
-    public Task<ValidationResult<T?>> GetByIdAsync(Guid id, CancellationToken token = default)
+    public Task<T?> GetByIdAsync(Guid id, CancellationToken token = default)
     {
-        if (!_dictionary.ContainsKey(id))
+        if (_dictionary.TryGetValue(id, out var item))
         {
-            return Task.FromResult(ResultCreator.Success<T?>(default));
+            return Task.FromResult<T?>(item.Copy());
         }
 
-        return Task.FromResult(ResultCreator.Success(_dictionary[id].Copy()));
+        return Task.FromResult<T?>(default);
     }
 }

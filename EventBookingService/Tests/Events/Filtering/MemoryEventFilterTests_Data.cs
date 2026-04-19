@@ -347,7 +347,6 @@ public partial class MemoryEventFilterTests
             new EventFilters(),
             4, // page
             5, // pageSize
-            3, // totalPages
             new List<string>
             {
                 StorageErrors.PageNotFound(4, 3)
@@ -359,7 +358,6 @@ public partial class MemoryEventFilterTests
             new EventFilters { Title = "фестиваль" },
             2,
             5,
-            1,
             new List<string>
             {
                 StorageErrors.PageNotFound(2, 1)

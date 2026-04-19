@@ -4,10 +4,10 @@ using Events.Models;
 using LinqExtensions;
 using Microsoft.Extensions.DependencyInjection;
 using Shared;
+using Shared.Exceptions;
 using Shared.Paging;
 using System.Linq.Expressions;
 using System.Reflection;
-using Validation;
 
 namespace Events.Service.Implementation;
 
@@ -27,48 +27,48 @@ public class EventService([FromKeyedServices("Mem")]IStorage<Event> events) : IE
 
     #region Base overrides
 
-    public Task<ValidationResult<Event?>> GetEventByIdAsync(Guid id, CancellationToken token = default) =>
+    public Task<Event?> GetEventByIdAsync(Guid id, CancellationToken token = default) =>
         _events.GetByIdAsync(id, token);
 
-    public Task<ValidationResult<bool>> DeleteEventByIdAsync(Guid id, CancellationToken token = default) =>
+    public Task<bool> DeleteEventByIdAsync(Guid id, CancellationToken token = default) =>
         _events.RemoveAsync(id, token);
 
-    public async Task<ValidationResult<Event?>> CreateEventAsync(
+    public async Task<Event> CreateEventAsync(
         CreateEventRequest request,
         CancellationToken token = default)
     {
         var (entity, errors) = Event.TryCreate(Guid.NewGuid(), request.Title, request.StartAt, request.EndAt, request.TotalSeats, description: request.Description);
         if (entity is null)
         {
-            return ResultCreator.Fail<Event?>(null, errors);
+            throw new ValidationException(errors);
         }
 
-        var result = await _events.AddAsync(entity, token);
+        await _events.AddAsync(entity, token);
 
-        return result.ToGeneric(entity);
+        return entity;
     }
 
-    public Task<ValidationResult<PaginatedResult<Event>?>> GetEventsAsync(
+    public Task<PaginatedResult<Event>?> GetEventsAsync(
         EventFilters filters,
         int page,
         int pageSize,
         CancellationToken token = default)
     {
-        var result = ResultCreator.Success<PaginatedResult<Event>?>(null);
+        var errors = new List<string>();
 
         if (page < 1)
         {
-            result.AddError(EventServiceErrors.InvalidPageNumber);
+            errors.Add(EventServiceErrors.InvalidPageNumber);
         }
 
         if (pageSize < GlobalConst.MinPageSize || pageSize > GlobalConst.MaxPageSize)
         {
-            result.AddError(EventServiceErrors.PageSizeOutOfRange(GlobalConst.MinPageSize, GlobalConst.MaxPageSize));
+            errors.Add(EventServiceErrors.PageSizeOutOfRange(GlobalConst.MinPageSize, GlobalConst.MaxPageSize));
         }
 
-        if (!result.IsSuccessful)
+        if (errors.Count > 0)
         {
-            return Task.FromResult(result);
+            throw new ValidationException(errors);
         }
 
         var expression = GetFilterExpression(filters);
@@ -76,23 +76,36 @@ public class EventService([FromKeyedServices("Mem")]IStorage<Event> events) : IE
         return _events.GetPageAsync(expression, page, pageSize, token);
     }
 
-    public async Task<ValidationResult<Event?>> ModifyEventAsync(
+    public async Task<Event?> ModifyEventAsync(
         Guid id,
         ModifyEventRequest request,
         CancellationToken token = default)
     {
+        var baseEvent = await _events.GetByIdAsync(id, token);
+
+        if (baseEvent is null)
+        {
+            return null;
+        }
+
         // Создаем объект, чтобы прогнать все валидации, т.к. поля в ModifyEventRequest nullable
-        var (source, errors) = Event.TryCreate(id, request.Title, request.StartAt, request.EndAt, request.TotalSeats, description: request.Description);
+        var (source, errors) = Event.TryCreate(
+            id, 
+            request.Title,
+            request.StartAt,
+            request.EndAt,
+            request.TotalSeats,
+            request.TotalSeats - baseEvent.TotalSeats + baseEvent.AvailableSeats,
+            description: request.Description);
+
         if (source is null)
         {
-            return ResultCreator.Fail<Event?>(null, errors);
+            throw new ValidationException(errors);
         }
 
         var result = await _events.UpdateAsync(source, token);
 
-        return result.IsSuccessful ? 
-            ResultCreator.Success(result.Value ? source : null) 
-            : ResultCreator.Fail<Event?>(null, result.Errors);
+        return result ? source : null;
     }
 
     #endregion

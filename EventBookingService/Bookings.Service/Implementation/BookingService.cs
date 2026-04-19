@@ -3,8 +3,8 @@ using DataAccess.Storage;
 using Events.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Shared.Exceptions;
 using Shared.Locking;
-using Validation;
 
 namespace Bookings.Service.Implementation;
 // TODO
@@ -20,57 +20,41 @@ public class BookingService(
 {
     private static readonly int _imitationDelay = 2000;
 
-    public Task<ValidationResult<Booking?>> GetBookingByIdAsync(
+    public Task<Booking?> GetBookingByIdAsync(
         Guid bookingId,
         CancellationToken token = default) =>
         _storageBooking.GetByIdAsync(bookingId, token);
 
-    public async Task<ValidationResult<Booking?>> CreateBookingAsync(
+    public async Task<Booking?> CreateBookingAsync(
         Guid eventId,
         CancellationToken token = default)
     {
         await _createBookingSemaphore.SemaphoreSlim.WaitAsync(token);
         try
         {
-            var eventResult = await _storageEvent.GetByIdAsync(eventId, token);
-
-            if (!eventResult.IsSuccessful)
+            var entity = await _storageEvent.GetByIdAsync(eventId, token) ?? throw new NotFoundException(BookingServiceErrors.EventNotFound(eventId));
+            if (!entity.TryReserveSeats())
             {
-                return ResultCreator.Fail<Booking?>(null, eventResult.Errors);
-            }
-
-            if (eventResult.Value is null)
-            {
-                return ResultCreator.Success<Booking?>(null);
-            }
-
-            if (!eventResult.Value.TryReserveSeats())
-            {
-                return ResultCreator.Fail<Booking?>(null, new ValidationItem(BookingServiceErrors.NoAvailableSeats, ItemCategory.ConflictError));
+                throw new ConflictException(BookingServiceErrors.NoAvailableSeats);
             }
 
             var booking = new Booking(Guid.NewGuid(), eventId, BookingStatus.Pending, DateTime.UtcNow);
 
             // Сначала букинг сохраним, потому что откатить апдейт ивента на текущий момент проблематично, а удалить айтем из хранилища проще
-            var bookingResult = await _storageBooking.AddAsync(booking, token);
+            await _storageBooking.AddAsync(booking, token);
 
-            if (!bookingResult.IsSuccessful)
-            {
-                return bookingResult.ToGeneric<Booking?>(null);
-            }
-
-            var eventUpdateResult = await _storageEvent.UpdateAsync(eventResult.Value, token);
+            var eventUpdateResult = await _storageEvent.UpdateAsync(entity, token);
             // Примитивная отмена изменений в хранилище, если вдруг апдейт упал (хотя если кто-то удалил событие,
             // пока мы создавали бронь, то вернется false без ошибок, и тогда бронь обработается в фоне). 
-            if (!eventUpdateResult.IsSuccessful)
+            if (!eventUpdateResult)
             {
                 // Пока не думаем о том, что RemoveAsync может упасть
                 await _storageBooking.RemoveAsync(booking.Id, token);
 
-                return ResultCreator.Fail<Booking?>(null, eventUpdateResult.Errors);
+                throw new NotFoundException(BookingServiceErrors.EventNotFound(eventId));
             }
 
-            return ResultCreator.Success(booking);
+            return booking;
         }
         finally
         {
@@ -78,12 +62,9 @@ public class BookingService(
         }
     }
 
-    public async Task<ValidationResult> ProcessPendingBookingsAsync(int maxCount = 100, CancellationToken token = default)
+    public async Task ProcessPendingBookingsAsync(int maxCount = 100, CancellationToken token = default)
     {
-        if (maxCount < 1)
-        {
-            return ResultCreator.Fail(BookingServiceErrors.InvalidMaxCount);
-        }
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxCount, 1);
 
         var pageResult = await _storageBooking.GetPageAsync(
                 b => b.Status == BookingStatus.Pending,
@@ -91,27 +72,21 @@ public class BookingService(
                 maxCount,
                 token);
 
-        if (!pageResult.IsSuccessful)
-        {
-            _logger.LogError("При получении броней возникли ошибки: {@Errors}", pageResult.Errors);
-            return pageResult;
-        }
-
-        if (pageResult.Value is null || pageResult.Value.Items.Count < 1)
+        if (pageResult is null || pageResult.Items.Count < 1)
         {
             _logger.LogInformation("Бронирований для обработки не найдено");
-            return ResultCreator.Success();
+            return;
         }
 
-        _logger.LogInformation("Найдено {Count} броней для обработки", pageResult.Value.Items.Count);
+        _logger.LogInformation("Найдено {Count} броней для обработки", pageResult.Items.Count);
 
         token.ThrowIfCancellationRequested();
 
-        var tasks = pageResult.Value.Items.Select(booking => ProcessBookingAsync(booking, token));
+        var tasks = pageResult.Items.Select(booking => ProcessBookingAsync(booking, token));
         // Исключения обрабатываются внутри отдельно для каждой брони
         await Task.WhenAll(tasks);
 
-        return ResultCreator.Success();
+        return;
     }
 
     public async Task ProcessBookingAsync(Booking booking, CancellationToken token = default)
@@ -135,7 +110,7 @@ public class BookingService(
                 var eventResult = await _storageEvent.GetByIdAsync(booking.EventId, token);
                 token.ThrowIfCancellationRequested();
 
-                if (eventResult.Value is null)
+                if (eventResult is null)
                 {
                     booking.Reject();
                     _logger.LogWarning("Событие {EventId} не удалось получить. Бронь {BookId} отклонена.", booking.EventId, booking.Id);

@@ -5,10 +5,10 @@ using Events.Models;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Shared.Exceptions;
 using Shared.Locking;
 using Shared.Paging;
 using System.Linq.Expressions;
-using Validation;
 
 namespace Tests.Bookings;
 
@@ -50,14 +50,13 @@ public partial class BookingTests
         );
 
         bookingStorageMock.Setup(s => s.GetByIdAsync(bookingToReturn.Id, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(bookingToReturn))
+            .ReturnsAsync(bookingToReturn)
             .Verifiable(Times.Once);
 
         var result = await service.GetBookingByIdAsync(bookingToReturn.Id, TestContext.Current.CancellationToken);
 
         bookingStorageMock.Verify();
-        result.IsSuccessful.Should().BeTrue();
-        result.Value.Should().BeEquivalentTo(bookingToReturn);
+        result.Should().BeEquivalentTo(bookingToReturn);
     }
 
     [Fact]
@@ -66,14 +65,13 @@ public partial class BookingTests
         var service = CreateService(out var bookingStorageMock, out var _, out var _, out var _, out var _);
         var bookId = Guid.NewGuid();
         bookingStorageMock.Setup(s => s.GetByIdAsync(bookId, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success<Booking>(null))
+            .ReturnsAsync((Booking?)null)
             .Verifiable(Times.Once);
 
         var result = await service.GetBookingByIdAsync(bookId, TestContext.Current.CancellationToken);
 
         bookingStorageMock.Verify();
-        result.IsSuccessful.Should().BeTrue();
-        result.Value.Should().BeNull();
+        result.Should().BeNull();
     }
 
     #endregion
@@ -96,19 +94,18 @@ public partial class BookingTests
 
         // Успешно получили событие
         eventStorageMock.Setup(s => s.GetByIdAsync(eventId, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(bookEvent))
+            .ReturnsAsync(bookEvent)
             .Verifiable(Times.Once);
 
         // Успешно добавили бронь в хранилище
         bookingStorageMock.Setup(s => s.AddAsync(
                 Capture.In(bookingList),
                 TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success<Booking>(null))
             .Verifiable(Times.Once);
 
         // Успешно обновили событие
         eventStorageMock.Setup(s => s.UpdateAsync(bookEvent, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(true))
+            .ReturnsAsync(true)
             .Verifiable(Times.Once);
 
         var result = await service.CreateBookingAsync(eventId, TestContext.Current.CancellationToken);
@@ -116,8 +113,7 @@ public partial class BookingTests
         semaphoreMock.Verify();
         bookingStorageMock.Verify();
         eventStorageMock.Verify();
-        result.IsSuccessful.Should().BeTrue();
-        result.Value.Should().BeEquivalentTo(bookingList.First());
+        result.Should().BeEquivalentTo(bookingList.First());
         bookingList.First().ProcessedAt.Should().BeNull();
         bookingList.First().CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         bookingList.First().EventId.Should().Be(eventId);
@@ -125,7 +121,7 @@ public partial class BookingTests
     }
 
     [Fact]
-    public async Task CreateBookingAsync_EventDoesNotExists_SuccessWithoutValue()
+    public async Task CreateBookingAsync_EventDoesNotExists_NotFoundException()
     {
         var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var _, out var semaphoreMock, out var _);
         var eventId = Guid.NewGuid();
@@ -137,7 +133,7 @@ public partial class BookingTests
 
         // Попытались получить событие, но его не оказалось
         eventStorageMock.Setup(s => s.GetByIdAsync(eventId, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success<Event>(null))
+            .ReturnsAsync((Event?)null)
             .Verifiable(Times.Once);
 
         // Не создали бронь и не пытались добавить ничего в хранилище
@@ -148,80 +144,15 @@ public partial class BookingTests
         eventStorageMock.Setup(s => s.UpdateAsync(It.IsAny<Event>(), TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
-        var result = await service.CreateBookingAsync(eventId, TestContext.Current.CancellationToken);
+        var act = async () => await service.CreateBookingAsync(eventId, TestContext.Current.CancellationToken);
+
+        await act.Should()
+            .ThrowExactlyAsync<NotFoundException>()
+            .WithMessage(BookingServiceErrors.EventNotFound(eventId));
 
         semaphoreMock.Verify();
         bookingStorageMock.Verify();
         eventStorageMock.Verify();
-        result.IsSuccessful.Should().BeTrue();
-        result.Value.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task CreateBookingAsync_GetEventFailed_ReturnErrors()
-    {
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var _, out var semaphoreMock, out var _);
-        var eventId = Guid.NewGuid();
-
-        // Вызвали семафор для блокировки, потом для разблокировки
-        semaphoreMock.Setup(s => s.SemaphoreSlim)
-            .Returns(new SemaphoreSlim(1, 1))
-            .Verifiable(Times.Exactly(2));
-
-        // Попытались получить событие, но ошибка
-        eventStorageMock.Setup(s => s.GetByIdAsync(eventId, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Fail<Event>(null, "Произошла ошибка"))
-            .Verifiable(Times.Once);
-
-        // Не создали бронь и не пытались добавить ничего в хранилище
-        bookingStorageMock.Setup(s => s.AddAsync(It.IsAny<Booking>(), TestContext.Current.CancellationToken))
-            .Verifiable(Times.Never);
-
-        // Обновление события не вызывалось
-        eventStorageMock.Setup(s => s.UpdateAsync(It.IsAny<Event>(), TestContext.Current.CancellationToken))
-            .Verifiable(Times.Never);
-
-        var result = await service.CreateBookingAsync(eventId, TestContext.Current.CancellationToken);
-
-        semaphoreMock.Verify();
-        bookingStorageMock.Verify();
-        eventStorageMock.Verify();
-        result.IsSuccessful.Should().BeFalse();
-        result.Value.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task CreateBookingAsync_BookingStorageErrorOccured_ReturnErrors()
-    {
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var _, out var semaphoreMock, out var _);
-        var eventId = Guid.NewGuid();
-
-        // Вызвали семафор для блокировки, потом для разблокировки
-        semaphoreMock.Setup(s => s.SemaphoreSlim)
-            .Returns(new SemaphoreSlim(1, 1))
-            .Verifiable(Times.Exactly(2));
-
-        // Успешно получили событие
-        eventStorageMock.Setup(s => s.GetByIdAsync(eventId, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(new Event(eventId, "SomeTitle", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), CorrectSeatsCount)))
-            .Verifiable(Times.Once);
-
-        // Попытались сохранить бронь - ошибка
-        bookingStorageMock.Setup(s => s.AddAsync(It.IsAny<Booking>(), TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Fail<Booking>(null, "Ошибка сохранения"))
-            .Verifiable(Times.Once);
-
-        // Обновление события не вызывалось
-        eventStorageMock.Setup(s => s.UpdateAsync(It.IsAny<Event>(), TestContext.Current.CancellationToken))
-            .Verifiable(Times.Never);
-
-        var result = await service.CreateBookingAsync(eventId, TestContext.Current.CancellationToken);
-
-        semaphoreMock.Verify();
-        bookingStorageMock.Verify();
-        eventStorageMock.Verify(); 
-        result.IsSuccessful.Should().BeFalse();
-        result.Value.Should().BeNull();
     }
 
     [Fact]
@@ -237,7 +168,7 @@ public partial class BookingTests
 
         // Успешно получили событие без свободных мест
         eventStorageMock.Setup(s => s.GetByIdAsync(eventId, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(new Event(eventId, "SomeTitle", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), CorrectSeatsCount, 0)))
+            .ReturnsAsync(new Event(eventId, "SomeTitle", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), CorrectSeatsCount, 0))
             .Verifiable(Times.Once);
 
         // Не попытались сохранить бронь, потому что свободных мест нет
@@ -248,14 +179,15 @@ public partial class BookingTests
         eventStorageMock.Setup(s => s.UpdateAsync(It.IsAny<Event>(), TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
-        var result = await service.CreateBookingAsync(eventId, TestContext.Current.CancellationToken);
+        var act = async () => await service.CreateBookingAsync(eventId, TestContext.Current.CancellationToken);
+
+        await act.Should()
+            .ThrowExactlyAsync<ConflictException>()
+            .WithMessage(BookingServiceErrors.NoAvailableSeats);
 
         semaphoreMock.Verify();
         bookingStorageMock.Verify();
         eventStorageMock.Verify();
-        result.IsSuccessful.Should().BeFalse();
-        result.Errors.Should().BeEquivalentTo([new ValidationItem(BookingServiceErrors.NoAvailableSeats, ItemCategory.ConflictError)]);
-        result.Value.Should().BeNull();
     }
 
     [Fact]
@@ -278,36 +210,43 @@ public partial class BookingTests
 
         // Успешно получили событие
         eventStorageMock.Setup(s => s.GetByIdAsync(eventId, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(bookEvent))
+            .ReturnsAsync(bookEvent)
             .Verifiable(Times.Exactly(20));
 
         // Успешно добавили бронь в хранилище (только 5 мест)
         bookingStorageMock.Setup(s => s.AddAsync(
                 It.IsAny<Booking>(),
                 TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success<Booking>(null))
             .Verifiable(Times.Exactly(5));
 
         // Успешно обновили событие (только 5 мест)
         eventStorageMock.Setup(s => s.UpdateAsync(bookEvent, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(true))
+            .ReturnsAsync(true)
             .Verifiable(Times.Exactly(5));
 
-        var arrayOfRequests = new Task<ValidationResult<Booking?>>[20];
+        var arrayOfRequests = new Task<Booking?>[20];
 
         for (int i = 0; i < 20; i++)
         {
             arrayOfRequests[i] = Task.Run(() => service.CreateBookingAsync(eventId, TestContext.Current.CancellationToken));
         }
 
-        await Task.WhenAll(arrayOfRequests);
+        try
+        {
+            // Игнор исключения здесь, проверяем ниже
+            await Task.WhenAll(arrayOfRequests);
+        }
+        catch
+        {
+
+        }
 
         semaphoreMock.Verify();
         bookingStorageMock.Verify();
         eventStorageMock.Verify();
         bookEvent.AvailableSeats.Should().Be(0);
-        arrayOfRequests.Where(t => t.Result.Value is not null && t.Result.IsSuccessful is true).Count().Should().Be(5);
-        arrayOfRequests.Where(t => t.Result.Value is null && t.Result.HasCategory(ItemCategory.ConflictError)).Count().Should().Be(15);
+        arrayOfRequests.Count(t => t.Status == TaskStatus.RanToCompletion && t.Result is not null).Should().Be(5);
+        arrayOfRequests.Count(t => t.Status == TaskStatus.Faulted && t.Exception?.InnerException is ConflictException).Should().Be(15);
     }
 
 
@@ -331,22 +270,21 @@ public partial class BookingTests
 
         // Успешно получили событие
         eventStorageMock.Setup(s => s.GetByIdAsync(eventId, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(bookEvent))
+            .ReturnsAsync(bookEvent)
             .Verifiable(Times.Exactly(10));
 
         // Успешно добавили бронь в хранилище
         bookingStorageMock.Setup(s => s.AddAsync(
                 It.IsAny<Booking>(),
                 TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success<Booking>(null))
             .Verifiable(Times.Exactly(10));
 
         // Успешно обновили событие
         eventStorageMock.Setup(s => s.UpdateAsync(bookEvent, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(true))
+            .ReturnsAsync(true)
             .Verifiable(Times.Exactly(10));
 
-        var arrayOfRequests = new Task<ValidationResult<Booking?>>[10];
+        var arrayOfRequests = new Task<Booking?>[10];
 
         for (int i = 0; i < 10; i++)
         {
@@ -359,8 +297,8 @@ public partial class BookingTests
         bookingStorageMock.Verify();
         eventStorageMock.Verify();
         bookEvent.AvailableSeats.Should().Be(0);
-        arrayOfRequests.Count(t => t.Result.Value is not null && t.Result.IsSuccessful is true).Should().Be(10);
-        arrayOfRequests.Select(t => t.Result.Value!.Id).Distinct().Count().Should().Be(10);
+        arrayOfRequests.Count(t => t.Result is not null).Should().Be(10);
+        arrayOfRequests.Select(t => t.Result!.Id).Distinct().Count().Should().Be(10);
     }
 
     [Fact]
@@ -408,12 +346,12 @@ public partial class BookingTests
 
         // Получили событие
         eventStorageMock.Setup(s => s.GetByIdAsync(eventId, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(new Event(eventId, "Some text", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 1)))
+            .ReturnsAsync(new Event(eventId, "Some text", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 1))
             .Verifiable(Times.Once);
 
         // Обновили бронь в хранилище
         bookingStorageMock.Setup(s => s.UpdateAsync(book, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(true))
+            .ReturnsAsync(true)
             .Verifiable(Times.Once);
 
         await service.ProcessBookingAsync(book, TestContext.Current.CancellationToken);
@@ -439,12 +377,12 @@ public partial class BookingTests
 
         // Событие не получено 
         eventStorageMock.Setup(s => s.GetByIdAsync(eventId, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success<Event?>(null))
+            .ReturnsAsync((Event?)null)
             .Verifiable(Times.Once);
 
         // Обновили бронь в хранилище
         bookingStorageMock.Setup(s => s.UpdateAsync(book, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(true))
+            .ReturnsAsync(true)
             .Verifiable(Times.Once);
 
         await service.ProcessBookingAsync(book, TestContext.Current.CancellationToken);
@@ -457,7 +395,7 @@ public partial class BookingTests
     }
 
     [Fact]
-    public async Task ProcessPendingBookingsAsync_InvalidCount_Fail()
+    public async Task ProcessPendingBookingsAsync_InvalidCount_ThrowException()
     {
         var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var _, out var _, out var processMock);
 
@@ -469,38 +407,18 @@ public partial class BookingTests
                 TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
-        var result = await service.ProcessPendingBookingsAsync(0, TestContext.Current.CancellationToken);
+        var act = async () => await service.ProcessPendingBookingsAsync(0, TestContext.Current.CancellationToken);
+
+        await act.Should()
+            .ThrowExactlyAsync<ArgumentOutOfRangeException>();
 
         bookingStorageMock.Verify();
-        result.IsSuccessful.Should().BeFalse();
-        result.Errors.Should().BeEquivalentTo([new ValidationItem(BookingServiceErrors.InvalidMaxCount)]);
-    }
-
-    [Fact]
-    public async Task ProcessPendingBookingsAsync_StorageHasNoItems_SuccessWithoutProcess()
-    {
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var _, out var _, out var processMock);
-        var count = 100;
-        // Вернулось 0 элементов
-        bookingStorageMock.Setup(s => s.GetPageAsync(
-                It.IsAny<Expression<Func<Booking, bool>>?>(),
-                1,
-                count,
-                TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(new PaginatedResult<Booking> { CurrentPage = 1, FilteredCount = 0, Items = [], TotalPages = 0 }))
-            .Verifiable(Times.Once);
-
-        var result = await service.ProcessPendingBookingsAsync(count, TestContext.Current.CancellationToken);
-
-        bookingStorageMock.Verify();
-        result.IsSuccessful.Should().BeTrue();
     }
 
     [Fact]
     public async Task ProcessPendingBookingsAsync_StorageDropError_ReturnError()
     {
         var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var _, out var _, out var processMock);
-        var error = "Ошибка";
         var count = 100;
 
         // Вернулась ошибка
@@ -509,14 +427,15 @@ public partial class BookingTests
                 1,
                 count,
                 TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Fail<PaginatedResult<Booking>>(null, error))
+            .ThrowsAsync(new Exception())
             .Verifiable(Times.Once);
 
-        var result = await service.ProcessPendingBookingsAsync(count, TestContext.Current.CancellationToken);
+        var act = async () => await service.ProcessPendingBookingsAsync(count, TestContext.Current.CancellationToken);
+
+        await act.Should()
+            .ThrowExactlyAsync<Exception>();
 
         bookingStorageMock.Verify();
-        result.IsSuccessful.Should().BeFalse();
-        result.Errors.Should().BeEquivalentTo([new ValidationItem(error)]);
     }
 
     // Положительный сценарий особо не протестируешь, возможено разнести методы по разным классам и замокать
@@ -531,7 +450,7 @@ public partial class BookingTests
                 1,
                 count,
                 TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(new PaginatedResult<Booking> 
+            .ReturnsAsync(new PaginatedResult<Booking> 
             { 
                 CurrentPage = 1,
                 FilteredCount = 3,
@@ -542,13 +461,13 @@ public partial class BookingTests
                     new Booking(Guid.NewGuid(), Guid.NewGuid(), BookingStatus.Pending, DateTime.UtcNow),
                 ],
                 TotalPages = 1
-            }))
+            })
             .Verifiable(Times.Once);
 
-        var result = await service.ProcessPendingBookingsAsync(count, TestContext.Current.CancellationToken);
+        var act = async () => await service.ProcessPendingBookingsAsync(count, TestContext.Current.CancellationToken);
 
+        await act.Should().NotThrowAsync();
         bookingStorageMock.Verify();
-        result.IsSuccessful.Should().BeTrue();
     }
 
     #endregion

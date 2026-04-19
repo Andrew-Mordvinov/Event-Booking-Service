@@ -8,6 +8,5 @@
   <Project Path="LinqExtensions/LinqExtensions.csproj" Id="1b5e061f-3ac9-4f68-9261-53b216a4afdc" />
   <Project Path="Shared/Shared.csproj" Id="9c894035-9eb8-4304-8d9b-d4c3c7282599" />
   <Project Path="Tests/Tests.csproj" />
-  <Project Path="Validation/Validation.csproj" Id="8e9501ec-b2bc-4fbd-bb16-e49ab6f24630" />
   <Project Path="Web/Web.csproj" />
 </Solution>

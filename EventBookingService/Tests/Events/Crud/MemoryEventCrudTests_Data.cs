@@ -1,5 +1,6 @@
 ﻿using DTO.Events.Requests;
 using Events.Models;
+using Events.Service.Implementation;
 
 namespace Tests.Events.Crud;
 
@@ -447,16 +448,25 @@ public partial class MemoryEventCrudTests
             {
                 Title = "Вечер джазовой музыки",
                 StartAt = new DateTime(2026, 3, 25, 21, 0, 0),
-                EndAt = new DateTime(2026, 3, 26, 01, 0, 0),
+                EndAt = new DateTime(2026, 3, 26, 02, 0, 0),
                 TotalSeats = 69,
                 Description = null
             },
             new Event
             (
                 EventIds.JazzNight,
-                "Вечер джазовой музыки",
+                "Вечер музыки",
                 new DateTime(2026, 3, 25, 21, 0, 0),
                 new DateTime(2026, 3, 26, 01, 0, 0),
+                69,
+                description: null
+            ),
+            new Event
+            (
+                EventIds.JazzNight,
+                "Вечер джазовой музыки",
+                new DateTime(2026, 3, 25, 21, 0, 0),
+                new DateTime(2026, 3, 26, 02, 0, 0),
                 69,
                 description: null
             )
@@ -467,7 +477,7 @@ public partial class MemoryEventCrudTests
             new ModifyEventRequest
             {
                 Title = "Ярмарка мастеров",
-                StartAt = new DateTime(2026, 3, 23, 10, 0, 0),
+                StartAt = new DateTime(2026, 3, 23, 12, 0, 0),
                 EndAt = new DateTime(2026, 3, 23, 19, 0, 0),
                 TotalSeats = 10,
                 Description = string.Empty
@@ -475,10 +485,21 @@ public partial class MemoryEventCrudTests
             new Event
             (
                 EventIds.CraftFair,
-                "Ярмарка мастеров",
+                "Ярмарка",
                 new DateTime(2026, 3, 23, 10, 0, 0),
                 new DateTime(2026, 3, 23, 19, 0, 0),
                 10,
+                9,
+                description: null
+            ),
+            new Event
+            (
+                EventIds.CraftFair,
+                "Ярмарка мастеров",
+                new DateTime(2026, 3, 23, 12, 0, 0),
+                new DateTime(2026, 3, 23, 19, 0, 0),
+                10,
+                9,
                 description: null
             )
         ],
@@ -488,17 +509,28 @@ public partial class MemoryEventCrudTests
             new ModifyEventRequest
             {
                 Title = "Фестиваль уличной еды. Вход свободный",
-                StartAt = new DateTime(2026, 3, 25, 03, 0, 0),
-                EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
-                TotalSeats = 150,
+                StartAt = new DateTime(2026, 3, 25, 09, 0, 0),
+                EndAt = new DateTime(2026, 3, 25, 12, 0, 0),
+                TotalSeats = 200,
                 Description = null
             },
             new Event
             (
                 EventIds.FoodFestival,
                 "Фестиваль уличной еды. Вход свободный",
-                new DateTime(2026, 3, 25, 03, 0, 0),
-                new DateTime(2026, 3, 25, 03, 0, 0),
+                new DateTime(2026, 3, 25, 10, 0, 0),
+                new DateTime(2026, 3, 25, 13, 0, 0),
+                150,
+                100,
+                description: null
+            ),
+            new Event
+            (
+                EventIds.FoodFestival,
+                "Фестиваль уличной еды. Вход свободный",
+                new DateTime(2026, 3, 25, 09, 0, 0),
+                new DateTime(2026, 3, 25, 12, 0, 0),
+                200,
                 150,
                 description: null
             )
@@ -698,7 +730,8 @@ public partial class MemoryEventCrudTests
             },
             new List<string>
             {
-                EventErrors.TotalSeatsMustPositive
+                EventErrors.TotalSeatsMustPositive,
+                EventErrors.AvailableSeatsMustPositive
             }
         ],
         // Полностью пустой объект

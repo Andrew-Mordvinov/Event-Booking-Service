@@ -70,70 +70,63 @@ public class Event : IHasId, IFillable<Event>, ICopyable<Event>
         int? availableSeats = null,
         string? description = null)
     {
-        try
+        var errors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(title))
         {
-            var errors = new List<string>();
-
-            if (string.IsNullOrWhiteSpace(title))
-            {
-                errors.Add(EventErrors.TitleNeed);
-            }
-
-            if (start is null)
-            {
-                errors.Add(EventErrors.StartDateNeed);
-            }
-
-            if (end is null)
-            {
-                errors.Add(EventErrors.EndDateNeed);
-            }
-
-            if (start is not null
-                && end is not null
-                && start > end)
-            {
-                errors.Add(EventErrors.StartAfterEndForbidden);
-            }
-
-            if (totalSeats is null || totalSeats < 1)
-            {
-                errors.Add(EventErrors.TotalSeatsMustPositive);
-            }
-
-            if (availableSeats is not null && availableSeats < 1)
-            {
-                errors.Add(EventErrors.AvailableSeatsMustPositive);
-            }
-
-            if (availableSeats is not null
-                && availableSeats > 0 
-                && totalSeats > 0 
-                && totalSeats < availableSeats)
-            {
-                errors.Add(EventErrors.TotalSeatsCantBeLessAvailableSeats);
-            }
-
-            if (errors.Count != 0)
-            {
-                return (null, errors);
-            }
-
-            var value = new Event(
-                id,
-                title!,
-                start.GetValueOrDefault(),
-                end.GetValueOrDefault(),
-                totalSeats.GetValueOrDefault(),
-                availableSeats,
-                description);
-
-            return (value, []);
+            errors.Add(EventErrors.TitleNeed);
         }
-        catch (ArgumentException e)
+
+        if (start is null)
         {
-            return (null, [e.Message]);
+            errors.Add(EventErrors.StartDateNeed);
         }
+
+        if (end is null)
+        {
+            errors.Add(EventErrors.EndDateNeed);
+        }
+
+        if (start is not null
+            && end is not null
+            && start > end)
+        {
+            errors.Add(EventErrors.StartAfterEndForbidden);
+        }
+
+        if (totalSeats is null || totalSeats < 1)
+        {
+            errors.Add(EventErrors.TotalSeatsMustPositive);
+        }
+
+        if (availableSeats is not null && availableSeats < 0)
+        {
+            errors.Add(EventErrors.AvailableSeatsMustPositive);
+        }
+
+        if (availableSeats is not null
+            && availableSeats > 0 
+            && totalSeats > 0 
+            && totalSeats < availableSeats)
+        {
+            errors.Add(EventErrors.TotalSeatsCantBeLessAvailableSeats);
+        }
+
+        if (errors.Count != 0)
+        {
+            return (null, errors);
+        }
+
+        var value = new Event(
+            id,
+            title!,
+            start.GetValueOrDefault(),
+            end.GetValueOrDefault(),
+            totalSeats.GetValueOrDefault(),
+            availableSeats,
+            description);
+
+        return (value, []);
     }
 
     #endregion
@@ -147,17 +140,12 @@ public class Event : IHasId, IFillable<Event>, ICopyable<Event>
             return false;
         }
 
-        int current, updated;
-        do
+        if (AvailableSeats < count)
         {
-            current = AvailableSeats;
-            updated = current - count;
-            if (updated < 0)
-            {
-                return false;
-            }
+            return false;
         }
-        while (Interlocked.CompareExchange(ref _availableSeats, updated, current) != current);
+
+        AvailableSeats -= count;
 
         return true;
     }
@@ -169,17 +157,12 @@ public class Event : IHasId, IFillable<Event>, ICopyable<Event>
             return false;
         }
 
-        int current, updated;
-        do
+        if ((AvailableSeats + count) > TotalSeats)
         {
-            current = AvailableSeats;
-            updated = current + count;
-            if (updated > TotalSeats)
-            {
-                return false;
-            }
+            return false;
         }
-        while (Interlocked.CompareExchange(ref _availableSeats, updated, current) != current);
+
+        AvailableSeats += count;
 
         return true;
     }

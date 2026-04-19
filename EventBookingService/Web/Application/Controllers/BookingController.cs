@@ -4,8 +4,6 @@ using DTO.Bookings.Response;
 
 using Microsoft.AspNetCore.Mvc;
 
-using Web.Common.Validations;
-
 namespace Web.Application.Controllers;
 
 [Route("bookings")]
@@ -17,13 +15,11 @@ public class BookingController(IBookingService _bookingService) : ControllerBase
     {
         var result = await _bookingService.GetBookingByIdAsync(id, cancellationToken);
 
-        if (result.Value is null)
+        if (result is null)
         {
-            return result.IsSuccessful
-                ? NotFound()
-                : BadRequest(result.ToProblemDetails(HttpContext));
+            return NotFound();
         }
 
-        return Ok(BaseBookingResponse.FromBooking(result.Value));
+        return Ok(BaseBookingResponse.FromBooking(result));
     }
 }

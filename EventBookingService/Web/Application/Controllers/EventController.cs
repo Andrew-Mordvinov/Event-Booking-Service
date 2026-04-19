@@ -10,10 +10,6 @@ using Events.Service;
 
 using Microsoft.AspNetCore.Mvc;
 
-using Validation;
-
-using Web.Common.Validations;
-
 namespace Web.Application.Controllers;
 
 [ApiController]
@@ -27,14 +23,12 @@ public class EventController(
     {
         var result = await _eventService.GetEventByIdAsync(id, cancellationToken);
 
-        if (result.Value is null)
+        if (result is null)
         {
-            return result.IsSuccessful
-                ? NotFound()
-                : BadRequest(result.ToProblemDetails(HttpContext));
+            return NotFound();
         }
 
-        return Ok(BaseEventResponse.FromEvent(result.Value));
+        return Ok(BaseEventResponse.FromEvent(result));
     }
 
     [HttpGet]
@@ -49,19 +43,14 @@ public class EventController(
 
         var result = await _eventService.GetEventsAsync(eventFilers, request.EffectivePage, request.EffectivePageSize, cancellationToken);
 
-        if (!result.IsSuccessful)
-        {
-            return BadRequest(result.ToProblemDetails(HttpContext));
-        }
-
-        return result.Value is { } value
+        return result is { } value
             ? Ok(PaginatedResponse<BaseEventResponse>.FromPaginatedResult(value, request.EffectivePageSize, BaseEventResponse.FromEvent))
             : Ok(new PaginatedResponse<BaseEventResponse>
             {
                 CurrentPage = 1,
                 FilteredCount = 0,
                 TotalPages = 1,
-                PageSize = 10,
+                PageSize = request.EffectivePageSize,
                 Items = []
             });
     }
@@ -71,16 +60,11 @@ public class EventController(
     {
         var result = await _eventService.CreateEventAsync(request, cancellationToken);
 
-        if (result.Value is null)
-        {
-            return BadRequest(result.ToProblemDetails(HttpContext));
-        }
-
         return CreatedAtAction
         (
             nameof(GetEventByIdAsync),
-            new { id = result.Value.Id },
-            BaseEventResponse.FromEvent(result.Value)
+            new { id = result.Id },
+            BaseEventResponse.FromEvent(result)
         );
     }
 
@@ -89,14 +73,12 @@ public class EventController(
     {
         var result = await _eventService.ModifyEventAsync(id, request, cancellationToken);
 
-        if (result.Value is null)
+        if (result is null)
         {
-            return result.IsSuccessful
-                ? NotFound()
-                : BadRequest(result.ToProblemDetails(HttpContext));
+            return NotFound();
         }
 
-        return Ok(BaseEventResponse.FromEvent(result.Value));
+        return Ok(BaseEventResponse.FromEvent(result));
     }
 
     [HttpDelete("{id}")]
@@ -104,14 +86,9 @@ public class EventController(
     {
         var result = await _eventService.DeleteEventByIdAsync(id, cancellationToken);
 
-        if (result.Value != true)
-        {
-            return result.IsSuccessful
-                ? NotFound()
-                : BadRequest(result.ToProblemDetails(HttpContext));
-        }
-
-        return Ok();
+        return result
+            ? Ok()
+            : NotFound();
     }
 
     [HttpPost("{eventId}/book")]
@@ -119,23 +96,15 @@ public class EventController(
     {
         var result = await _bookingService.CreateBookingAsync(eventId, cancellationToken);
 
-        if (!result.IsSuccessful)
+        if (result is null)
         {
-            // Если среди сообщений есть категория "конфликт", считаем ее приоритетной
-            return result.HasCategory(ItemCategory.ConflictError) 
-                ? Conflict(result.ToProblemDetails(HttpContext))
-                : BadRequest(result.ToProblemDetails(HttpContext));
-        }
 
-        if (result.Value is null)
-        {
-            return NotFound();
         }
 
         return AcceptedAtRoute(
             nameof(BookingController.GetBookingByIdAsync),
-            new { id = result.Value.Id },
-            BookingAcceptedResponse.FromBooking(result.Value));
+            new { id = result.Id },
+            BookingAcceptedResponse.FromBooking(result));
     }
 }
 

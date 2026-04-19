@@ -1,7 +1,7 @@
 ﻿using DataAccess.Storage;
 using FluentAssertions;
+using Shared.Exceptions;
 using System.Linq.Expressions;
-using Validation;
 
 namespace Tests.Storage;
 
@@ -35,12 +35,10 @@ public partial class DictionaryStorageTests
         var storage = new DictionaryStorage<TestItem>();
         var item = new TestItem { Id = Guid.NewGuid(), IntField = 5, TextField = "SomeText" };
 
-        var result = await storage.AddAsync(item, TestContext.Current.CancellationToken);
+        await storage.AddAsync(item, TestContext.Current.CancellationToken);
         var getResult = await storage.GetByIdAsync(item.Id, TestContext.Current.CancellationToken);
 
-        result.IsSuccessful.Should().BeTrue();
-        getResult.IsSuccessful.Should().BeTrue();
-        getResult.Value.Should().BeEquivalentTo(item);
+        getResult.Should().BeEquivalentTo(item);
     }
 
     [Fact]
@@ -49,29 +47,27 @@ public partial class DictionaryStorageTests
         var storage = new DictionaryStorage<TestItem>();
         var item = new TestItem { Id = Guid.NewGuid(), IntField = 5, TextField = "SomeText" };
 
-        var result = await storage.AddAsync(item, TestContext.Current.CancellationToken);
+        await storage.AddAsync(item, TestContext.Current.CancellationToken);
         item.IntField = 10;
         item.TextField = "AnotherText";
         var getResult = await storage.GetByIdAsync(item.Id, TestContext.Current.CancellationToken);
 
-        result.IsSuccessful.Should().BeTrue();
-        getResult.IsSuccessful.Should().BeTrue();
-        getResult.Value.Should().NotBeNull();
-        getResult.Value.IntField.Should().Be(5);
-        getResult.Value.TextField.Should().Be("SomeText");
+        getResult.Should().NotBeNull();
+        getResult.IntField.Should().Be(5);
+        getResult.TextField.Should().Be("SomeText");
     }
 
     [Fact]
-    public async Task AddAsync_ObjectExits_ErrorReturn()
+    public async Task AddAsync_ObjectExits_ThrowException()
     {
         var item = new TestItem { Id = Guid.NewGuid(), IntField = 5, TextField = "SomeText" };
         var storage = new DictionaryStorage<TestItem>([item]);
 
-        var result = await storage.AddAsync(item, TestContext.Current.CancellationToken);
+        var act = async () => await storage.AddAsync(item, TestContext.Current.CancellationToken);
 
-        result.IsSuccessful.Should().BeFalse();
-        result.Errors.Count.Should().Be(1);
-        result.Errors.First().Should().BeEquivalentTo(new ValidationItem(StorageErrors.ItemWithIdAlreadyExist(item.Id)));
+        await act.Should()
+            .ThrowExactlyAsync<ConflictException>()
+            .WithMessage(StorageErrors.ItemWithIdAlreadyExist(item.Id));
     }
 
     #endregion
@@ -91,9 +87,7 @@ public partial class DictionaryStorageTests
         
         var getResult = await storage.GetByIdAsync(itemToGet.Id, TestContext.Current.CancellationToken);
 
-        getResult.IsSuccessful.Should().BeTrue();
-        getResult.Value.Should().NotBeNull();
-        getResult.Value.Should().BeEquivalentTo(itemToGet);
+        getResult.Should().BeEquivalentTo(itemToGet);
     }
 
     [Fact]
@@ -112,22 +106,19 @@ public partial class DictionaryStorageTests
         var getResult = await storage.GetByIdAsync(itemToGet.Id, TestContext.Current.CancellationToken);
 
         // Assert
-        getResult.IsSuccessful.Should().BeTrue();
-        getResult.Value.Should().NotBeNull();
-        getResult.Value.Should().BeEquivalentTo(itemToGet);
+        getResult.Should().BeEquivalentTo(itemToGet);
 
         // Act
-        getResult.Value.IntField = 0;
+        getResult.IntField = 0;
         var getResultAfterModify = await storage.GetByIdAsync(itemToGet.Id, TestContext.Current.CancellationToken);
 
         // Assert
-        getResultAfterModify.IsSuccessful.Should().BeTrue();
-        getResultAfterModify.Value.Should().NotBeNull();
-        getResultAfterModify.Value.IntField.Should().Be(itemToGet.IntField);
+        getResultAfterModify.Should().NotBeNull();
+        getResultAfterModify.IntField.Should().Be(itemToGet.IntField);
     }
 
     [Fact]
-    public async Task GetByIdAsync_WrongId_EmptySuccessfulResult()
+    public async Task GetByIdAsync_WrongId_ReturnNull()
     {
         var wrongId = Guid.NewGuid();
         var storage = new DictionaryStorage<TestItem>
@@ -139,20 +130,18 @@ public partial class DictionaryStorageTests
 
         var getResult = await storage.GetByIdAsync(wrongId, TestContext.Current.CancellationToken);
 
-        getResult.IsSuccessful.Should().BeTrue();
-        getResult.Value.Should().BeNull();
+        getResult.Should().BeNull();
     }
 
     [Fact]
-    public async Task GetByIdAsync_StorageEmpty_EmptySuccessfulResult()
+    public async Task GetByIdAsync_StorageEmpty_ReturnNull()
     {
         var wrongId = Guid.NewGuid();
         var storage = new DictionaryStorage<TestItem>();
 
         var getResult = await storage.GetByIdAsync(wrongId, TestContext.Current.CancellationToken);
 
-        getResult.IsSuccessful.Should().BeTrue();
-        getResult.Value.Should().BeNull();
+        getResult.Should().BeNull();
     }
 
     #endregion
@@ -175,15 +164,13 @@ public partial class DictionaryStorageTests
         var removeResult = await storage.RemoveAsync(itemToRemove.Id, TestContext.Current.CancellationToken);
 
         // Assert
-        removeResult.IsSuccessful.Should().BeTrue();
-        removeResult.Value.Should().BeTrue();
+        removeResult.Should().BeTrue();
 
         // Act
         var tryGetAfterDelete = await storage.GetByIdAsync(itemToRemove.Id, TestContext.Current.CancellationToken);
 
         // Assert
-        tryGetAfterDelete.IsSuccessful.Should().BeTrue();
-        tryGetAfterDelete.Value.Should().BeNull();
+        tryGetAfterDelete.Should().BeNull();
     }
 
     [Fact]
@@ -199,8 +186,7 @@ public partial class DictionaryStorageTests
 
         var removeResult = await storage.RemoveAsync(wrongId, TestContext.Current.CancellationToken);
 
-        removeResult.IsSuccessful.Should().BeTrue();
-        removeResult.Value.Should().BeFalse();
+        removeResult.Should().BeFalse();
     }
 
     #endregion
@@ -224,19 +210,17 @@ public partial class DictionaryStorageTests
         var updateResult = await storage.UpdateAsync(itemToUpdate, TestContext.Current.CancellationToken);
 
         // Arrange
-        updateResult.IsSuccessful.Should().BeTrue();
-        updateResult.Value.Should().BeTrue();
+        updateResult.Should().BeTrue();
 
         // Act
         var getAfterUpdate = await storage.GetByIdAsync(itemToUpdate.Id, TestContext.Current.CancellationToken);
 
         // Arrange
-        getAfterUpdate.IsSuccessful.Should().BeTrue();
-        getAfterUpdate.Value.Should().BeEquivalentTo(itemToUpdate);
+        getAfterUpdate.Should().BeEquivalentTo(itemToUpdate);
     }
 
     [Fact]
-    public async Task UpdateAsync_WrongObject_ReturnSuccessfulFalse()
+    public async Task UpdateAsync_WrongObject_ReturnFalse()
     {
         var itemToUpdate = new TestItem { Id = Guid.NewGuid(), IntField = 10, TextField = "SomeText" };
         var storage = new DictionaryStorage<TestItem>
@@ -248,8 +232,7 @@ public partial class DictionaryStorageTests
 
         var updateResult = await storage.UpdateAsync(itemToUpdate, TestContext.Current.CancellationToken);
 
-        updateResult.IsSuccessful.Should().BeTrue();
-        updateResult.Value.Should().BeFalse();
+        updateResult.Should().BeFalse();
     }
 
     #endregion
@@ -271,17 +254,16 @@ public partial class DictionaryStorageTests
 
         var pageResult = await storage.GetPageAsync(filter, page, pageSize, TestContext.Current.CancellationToken);
 
-        pageResult.IsSuccessful.Should().BeTrue();
-        pageResult.Value.Should().NotBeNull();
-        pageResult.Value.CurrentPage.Should().Be(page);
-        pageResult.Value.TotalPages.Should().Be(totalPages);
-        pageResult.Value.FilteredCount.Should().Be(filteredCount);
-        pageResult.Value.Items.Select(t => t.Id).Should().BeEquivalentTo(expectedIds);
+        pageResult.Should().NotBeNull();
+        pageResult.CurrentPage.Should().Be(page);
+        pageResult.TotalPages.Should().Be(totalPages);
+        pageResult.FilteredCount.Should().Be(filteredCount);
+        pageResult.Items.Select(t => t.Id).Should().BeEquivalentTo(expectedIds);
     }
 
     [Theory]
     [MemberData(nameof(GetPageAsync_BadPaging))]
-    public async Task GetPageAsync_BadPaging_ErrorReturn(
+    public async Task GetPageAsync_BadPaging_ThrowException(
         IEnumerable<TestItem> items,
         Expression<Func<TestItem, bool>>? filter,
         int page,
@@ -290,16 +272,17 @@ public partial class DictionaryStorageTests
     {
         var storage = new DictionaryStorage<TestItem>(items);
 
-        var pageResult = await storage.GetPageAsync(filter, page, pageSize, TestContext.Current.CancellationToken);
+        var act = async () => await storage.GetPageAsync(filter, page, pageSize, TestContext.Current.CancellationToken);
 
-        pageResult.IsSuccessful.Should().BeFalse();
-        pageResult.Value.Should().BeNull();
-        pageResult.Errors.Should().BeEquivalentTo(errors.Select(t => new ValidationItem(t)));
+        var assertion = await act.Should()
+            .ThrowExactlyAsync<ValidationException>();
+
+        assertion.Which.Errors.Should().BeEquivalentTo(errors);
     }
 
     [Theory]
     [MemberData(nameof(GetPageAsync_NoElementAfterFilter))]
-    public async Task GetPageAsync_NoElementAfterFilter_SuccessfulEmpty(
+    public async Task GetPageAsync_NoElementAfterFilter_ReturnNull(
         IEnumerable<TestItem> items,
         Expression<Func<TestItem, bool>>? filter,
         int page,
@@ -309,8 +292,7 @@ public partial class DictionaryStorageTests
 
         var pageResult = await storage.GetPageAsync(filter, page, pageSize, TestContext.Current.CancellationToken);
 
-        pageResult.IsSuccessful.Should().BeTrue();
-        pageResult.Value.Should().BeNull();
+        pageResult.Should().BeNull();
     }
 
     #endregion
