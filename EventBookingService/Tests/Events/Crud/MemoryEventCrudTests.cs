@@ -1,10 +1,10 @@
-﻿using EventBookingService.Application.Events.Implementation;
-using EventBookingService.Common.Storage;
-using EventBookingService.Common.Validations.Results;
-using EventBookingService.Models.Events;
-using EventBookingService.Models.Events.Requests;
+﻿using DataAccess.Storage;
+using DTO.Events.Requests;
+using Events.Models;
+using Events.Service.Implementation;
 using FluentAssertions;
 using Moq;
+using Shared.Exceptions;
 
 namespace Tests.Events.Crud;
 
@@ -30,31 +30,29 @@ public partial class MemoryEventCrudTests
         var service = GetMemoryEventService(baseCollection, out var mock, out var scopedCollection);
 
         mock.Setup(s => s.GetByIdAsync(id, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(scopedCollection.FirstOrDefault(e => e.Id == id)))
+            .ReturnsAsync(scopedCollection.FirstOrDefault(e => e.Id == id))
             .Verifiable(Times.Once);
 
         var result = await service.GetEventByIdAsync(id, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        result.IsSuccessful.Should().BeTrue();
-        result.Value.Should().BeEquivalentTo(expected);
+        result.Should().BeEquivalentTo(expected);
     }
 
     [Theory]
     [MemberData(nameof(GetEvent_BadId))]
-    public async Task GetEvent_BadId_SuccessWithNull(IEnumerable<Event> baseCollection, Guid id)
+    public async Task GetEvent_BadId_ReturnNull(IEnumerable<Event> baseCollection, Guid id)
     {
         var service = GetMemoryEventService(baseCollection, out var mock, out var scopedCollection);
 
         mock.Setup(s => s.GetByIdAsync(id, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success<Event>(null))
+            .ReturnsAsync((Event?)null)
             .Verifiable(Times.Once);
 
         var result = await service.GetEventByIdAsync(id, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        result.IsSuccessful.Should().BeTrue();
-        result.Value.Should().BeNull();
+        result.Should().BeNull();
     }
 
     #endregion
@@ -68,30 +66,29 @@ public partial class MemoryEventCrudTests
         var service = GetMemoryEventService(baseCollection, out var mock, out var _);
 
         mock.Setup(s => s.AddAsync(It.Is<Event>(e => e.Equivalent(expected)), TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success())
             .Verifiable(Times.Once);
 
         var result = await service.CreateEventAsync(request, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        result.IsSuccessful.Should().BeTrue();
-        result.Value.Should().NotBeNull();
-        result.Value.Equivalent(expected);
+        result.Should().NotBeNull();
+        result.Equivalent(expected);
         // Id выделяется динамически, его не проверяем
-        result.Value.Should().BeEquivalentTo(expected, options => options.Excluding(e => e.Id));
+        result.Should().BeEquivalentTo(expected, options => options.Excluding(e => e.Id));
     }
 
     [Theory]
     [MemberData(nameof(CreateEvent_InvalidModel))]
-    public async Task CreateEvent_InvalidModel_FailWithError(IEnumerable<Event> baseCollection, CreateEventRequest request, List<string> errors)
+    public async Task CreateEvent_InvalidModel_ThrowException(IEnumerable<Event> baseCollection, CreateEventRequest request, List<string> errors)
     {
         var service = GetMemoryEventService(baseCollection, out var _, out var _);
 
-        var result = await service.CreateEventAsync(request, TestContext.Current.CancellationToken);
+        var act = async () => await service.CreateEventAsync(request, TestContext.Current.CancellationToken);
 
-        result.IsSuccessful.Should().BeFalse();
-        result.Value.Should().BeNull();
-        result.Errors.Should().BeEquivalentTo(errors);
+        var assertion = await act.Should()
+            .ThrowExactlyAsync<ValidationException>();
+
+        assertion.Which.Errors.Should().BeEquivalentTo(errors);
     }
 
     #endregion
@@ -105,31 +102,29 @@ public partial class MemoryEventCrudTests
         var service = GetMemoryEventService(baseCollection, out var mock, out var scopedCollection);
 
         mock.Setup(s => s.RemoveAsync(id, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(true))
+            .ReturnsAsync(true)
             .Verifiable(Times.Once);
 
         var result = await service.DeleteEventByIdAsync(id, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        result.IsSuccessful.Should().BeTrue();
-        result.Value.Should().BeTrue();
+        result.Should().BeTrue();
     }
 
     [Theory]
     [MemberData(nameof(DeleteEvent_BadId))]
-    public async Task DeleteEvent_BadId_SuccessWithFalse(IEnumerable<Event> baseCollection, Guid id)
+    public async Task DeleteEvent_BadId_ReturnFalse(IEnumerable<Event> baseCollection, Guid id)
     {
         var service = GetMemoryEventService(baseCollection, out var mock, out var _);
 
         mock.Setup(s => s.RemoveAsync(id, TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(false))
+            .ReturnsAsync(false)
             .Verifiable(Times.Once);
 
         var result = await service.DeleteEventByIdAsync(id, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        result.IsSuccessful.Should().BeTrue();
-        result.Value.Should().BeFalse();
+        result.Should().BeFalse();
     }
 
     #endregion
@@ -138,44 +133,33 @@ public partial class MemoryEventCrudTests
 
     [Theory]
     [MemberData(nameof(ModifyEvent_ValidDataAndId))]
-    public async Task ModifyEvent_ValidDataAndId_SuccessfullyReturned(IEnumerable<Event> baseCollection, Guid id, ModifyEventRequest request, Event expected)
+    public async Task ModifyEvent_ValidDataAndId_SuccessfullyReturned(IEnumerable<Event> baseCollection, Guid id, ModifyEventRequest request, Event stored, Event expected)
     {
-        var service = GetMemoryEventService(baseCollection, out var mock, out var scopedCollection);
+        var service = GetMemoryEventService(baseCollection, out var mock, out var _);
+
+        mock.Setup(s => s.GetByIdAsync(id, TestContext.Current.CancellationToken))
+            .ReturnsAsync(stored)
+            .Verifiable(Times.Once);
 
         mock.Setup(s => s.UpdateAsync(It.Is<Event>(e => e.Equivalent(expected)), TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(true))
+            .ReturnsAsync(true)
             .Verifiable(Times.Once);
 
         var result = await service.ModifyEventAsync(id, request, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        result.IsSuccessful.Should().BeTrue();
-        result.Value.Should().BeEquivalentTo(expected);
+        result.Should().BeEquivalentTo(expected);
     }
 
     [Theory]
     [MemberData(nameof(ModifyEvent_ValidDataAndBadId))]
-    public async Task ModifyEvent_ValidDataAndBadId_SuccessWithNull(IEnumerable<Event> baseCollection, Guid id, ModifyEventRequest request)
+    public async Task ModifyEvent_ValidDataAndBadId_ReturnNull(IEnumerable<Event> baseCollection, Guid id, ModifyEventRequest request)
     {
         var service = GetMemoryEventService(baseCollection, out var mock, out var _);
 
-        mock.Setup(s => s.UpdateAsync(It.IsAny<Event>(), TestContext.Current.CancellationToken))
-            .ReturnsAsync(ResultCreator.Success(false))
+        mock.Setup(s => s.GetByIdAsync(id, TestContext.Current.CancellationToken))
+            .ReturnsAsync((Event?)null)
             .Verifiable(Times.Once);
-
-        var result = await service.ModifyEventAsync(id, request, TestContext.Current.CancellationToken);
-
-        mock.Verify();
-        result.IsSuccessful.Should().BeTrue();
-        result.Value.Should().BeNull();
-    }
-
-
-    [Theory]
-    [MemberData(nameof(ModifyEvent_InvalidData))]
-    public async Task ModifyEvent_InvalidData_FailWithError(IEnumerable<Event> baseCollection, Guid id, ModifyEventRequest request, List<string> errors)
-    {
-        var service = GetMemoryEventService(baseCollection, out var mock, out var scopedCollection);
 
         mock.Setup(s => s.UpdateAsync(It.IsAny<Event>(), TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
@@ -183,9 +167,30 @@ public partial class MemoryEventCrudTests
         var result = await service.ModifyEventAsync(id, request, TestContext.Current.CancellationToken);
 
         mock.Verify();
-        result.IsSuccessful.Should().BeFalse();
-        result.Value.Should().BeNull();
-        result.Errors.Should().BeEquivalentTo(errors);
+        result.Should().BeNull();
+    }
+
+    [Theory]
+    [MemberData(nameof(ModifyEvent_InvalidData))]
+    public async Task ModifyEvent_InvalidData_ThrowException(IEnumerable<Event> baseCollection, Guid id, ModifyEventRequest request, List<string> errors)
+    {
+        var service = GetMemoryEventService(baseCollection, out var mock, out var _);
+
+        mock.Setup(s => s.GetByIdAsync(id, TestContext.Current.CancellationToken))
+            // Не важно что вернуть
+            .ReturnsAsync(baseCollection.First())
+            .Verifiable(Times.Once);
+
+        mock.Setup(s => s.UpdateAsync(It.IsAny<Event>(), TestContext.Current.CancellationToken))
+            .Verifiable(Times.Never);
+
+        var act = async () => await service.ModifyEventAsync(id, request, TestContext.Current.CancellationToken);
+
+        var assertion = await act.Should()
+            .ThrowExactlyAsync<ValidationException>();
+
+        assertion.Which.Errors.Should().BeEquivalentTo(errors);
+        mock.Verify();
     }
 
     #endregion

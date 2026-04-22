@@ -23,7 +23,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Web\EventBookingService.csproj" />
+    <ProjectReference Include="..\Bookings.Models\Bookings.Models.csproj" />
+    <ProjectReference Include="..\Bookings.Service\Bookings.Service.csproj" />
+    <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
+    <ProjectReference Include="..\DTO\DTO.csproj" />
+    <ProjectReference Include="..\Events.Models\Events.Models.csproj" />
+    <ProjectReference Include="..\Events.Service\Events.Service.csproj" />
+    <ProjectReference Include="..\LinqExtensions\LinqExtensions.csproj" />
+    <ProjectReference Include="..\Shared\Shared.csproj" />
+    <ProjectReference Include="..\Validation\Validation.csproj" />
+    <ProjectReference Include="..\Web\Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>

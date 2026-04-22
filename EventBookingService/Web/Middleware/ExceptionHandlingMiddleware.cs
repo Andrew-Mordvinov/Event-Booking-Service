@@ -1,7 +1,10 @@
+using System.Net.NetworkInformation;
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace EventBookingService.Middleware;
+using Shared.Exceptions;
+
+namespace Web.Middleware;
 
 /// <summary>
 /// Глобальный перехватчик исключений с логгированием и формированием
@@ -55,22 +58,75 @@ public class ExceptionHandlingMiddleware(
         context.Response.StatusCode = code;
         context.Response.ContentType = "application/json";
 
-        await context.Response.WriteAsJsonAsync(new ProblemDetails
-        {
-            Title = "Unexpected error",
-            Status = code,
-            Detail = exception.Message,
-            Instance = context.Request.Path,
-            Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
-        });
+        await context.Response.WriteAsJsonAsync(GetProblemDetails(context, exception));
     }
 
     #endregion
 
     #region Private static methods
 
-    // Пока все ошибки обрабатываются без исключений и любое исключение - внутренняя ошибка сервера
-    private static int GetStatusCode(Exception exception) => StatusCodes.Status500InternalServerError;
+    private static int GetStatusCode(Exception exception) =>
+        (exception) switch
+        {
+            ValidationException ex => StatusCodes.Status400BadRequest,
+            ConflictException ex => StatusCodes.Status409Conflict,
+            NotFoundException ex => StatusCodes.Status404NotFound,
+            _ => StatusCodes.Status500InternalServerError,
+        };
 
+    private static IEnumerable<ProblemDetails> GetProblemDetails(HttpContext context, Exception exception) =>
+        (exception) switch
+        {
+            ValidationException ex => GetValidationProblemDetails(context, ex),
+            ConflictException ex => GetConflictProblemDetails(context, ex),
+            NotFoundException ex => GetNotFoundProblemDetails(context, ex),
+            _ => GetBaseProblemDetails(context, exception),
+        };   
+
+    private static IEnumerable<ProblemDetails> GetValidationProblemDetails(HttpContext context, ValidationException exception) =>
+        exception.Errors.Select(e => new ProblemDetails
+        {
+            Title = "Validation error",
+            Instance = context.Request.Path,
+            Detail = e,
+            Status = StatusCodes.Status400BadRequest,
+            Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
+        });
+
+    private static IEnumerable<ProblemDetails> GetNotFoundProblemDetails(HttpContext context, NotFoundException exception) =>
+        [
+            new ProblemDetails
+            {
+                Title = "Not found",
+                Instance = context.Request.Path,
+                Detail = exception.Message,
+                Status = StatusCodes.Status404NotFound,
+                Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
+            }
+        ];
+
+    private static IEnumerable<ProblemDetails> GetConflictProblemDetails(HttpContext context, ConflictException exception) =>
+        [
+            new ProblemDetails
+            {
+                Title = "Conflict found",
+                Instance = context.Request.Path,
+                Detail = exception.Message,
+                Status = StatusCodes.Status409Conflict,
+                Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
+            }
+        ];
+
+    private static IEnumerable<ProblemDetails> GetBaseProblemDetails(HttpContext context, Exception exception) =>
+        [
+            new ProblemDetails
+            {
+                Title = "Unexpected error",
+                Instance = context.Request.Path,
+                Detail = exception.Message,
+                Status = StatusCodes.Status500InternalServerError,
+                Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
+            }
+        ];
     #endregion
 }

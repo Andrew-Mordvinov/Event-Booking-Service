@@ -1,10 +1,10 @@
-using EventBookingService.Application.Bookings;
-using EventBookingService.Common.Validations.Converters;
-using EventBookingService.Models.Bookings.Response;
+using Bookings.Service;
+
+using DTO.Bookings.Response;
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace EventBookingService.Application.Controllers;
+namespace Web.Application.Controllers;
 
 [Route("bookings")]
 [ApiController]
@@ -15,13 +15,11 @@ public class BookingController(IBookingService _bookingService) : ControllerBase
     {
         var result = await _bookingService.GetBookingByIdAsync(id, cancellationToken);
 
-        if (result.Value is null)
+        if (result is null)
         {
-            return result.IsSuccessful
-                ? NotFound()
-                : BadRequest(result.ToProblemDetails(HttpContext));
+            return NotFound();
         }
 
-        return Ok(BaseBookingResponse.FromBooking(result.Value));
+        return Ok(BaseBookingResponse.FromBooking(result));
     }
 }

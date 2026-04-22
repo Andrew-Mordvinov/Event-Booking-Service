@@ -1,12 +1,16 @@
-using EventBookingService.Application.Bookings;
-using EventBookingService.Application.Bookings.Implementation;
-using EventBookingService.Application.Events;
-using EventBookingService.Application.Events.Implementation;
-using EventBookingService.Common.Storage;
-using EventBookingService.Models.Bookings;
-using EventBookingService.Models.Events;
+using Bookings.Models;
+using Bookings.Service;
+using Bookings.Service.Implementation;
 
-namespace EventBookingService.Application;
+using DataAccess.Storage;
+
+using Events.Models;
+using Events.Service;
+using Events.Service.Implementation;
+
+using Shared.Locking;
+
+namespace Web.Application;
 
 public static class DependencyInjection
 {
@@ -14,8 +18,10 @@ public static class DependencyInjection
     {
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IBookingService, BookingService>();
-        services.AddKeyedSingleton<IStorage<Event>, ListStorage<Event>>("Mem");
-        services.AddKeyedSingleton<IStorage<Booking>, ListStorage<Booking>>("Mem");
+        services.AddKeyedSingleton<IStorage<Event>, DictionaryStorage<Event>>("Mem");
+        services.AddKeyedSingleton<IStorage<Booking>, DictionaryStorage<Booking>>("Mem");
+        services.AddKeyedSingleton<ISemaphoreGetter, SemaphoreGetter>("CreateBooking");
+        services.AddKeyedSingleton<ISemaphoreGetter, SemaphoreGetter>("ProcessBooking");
 
         return services;
     }
