@@ -1,4 +1,4 @@
-namespace Bookings.Models;
+namespace Entities.Bookings;
 
 /// <summary>
 /// Статусы бронирования события

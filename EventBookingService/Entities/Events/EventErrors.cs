@@ -1,4 +1,4 @@
-namespace Events.Models;
+namespace Entities.Events;
 
 public static class EventErrors
 {

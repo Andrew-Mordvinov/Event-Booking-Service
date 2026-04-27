@@ -1,6 +1,6 @@
 ﻿using DataAccess.Abstract;
 using DataAccess.Memory.Storage;
-using Events.Models;
+using Entities.Events;
 
 namespace DataAccess.Memory;
 

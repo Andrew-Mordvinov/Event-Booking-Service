@@ -1,5 +1,5 @@
 ﻿using DataAccess.Abstract.Common;
-using Events.Models;
+using Entities.Events;
 
 namespace DataAccess.Abstract;
 

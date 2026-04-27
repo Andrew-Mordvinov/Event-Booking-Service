@@ -1,7 +1,7 @@
-using Bookings.Models;
 using DataAccess.Abstract;
 using DataAccess.Abstract.Common;
 using DataAccess.Abstract.Enums;
+using Entities.Bookings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Shared.Exceptions;

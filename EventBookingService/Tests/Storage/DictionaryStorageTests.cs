@@ -8,10 +8,12 @@ namespace Tests.Storage;
 
 public partial class DictionaryStorageTests
 {
+    private const string obsoleteMessage = "Хранение в памяти не используется и не развивается, тесты не актуальны";
+
     #region Constructor Test
 
     [Fact]
-    [Obsolete]
+    [Obsolete(obsoleteMessage)]
     public async Task Constructor_DuplicateObjectsGiven_ThrowException()
     {
         var dupliucateId = Guid.NewGuid();
@@ -32,7 +34,7 @@ public partial class DictionaryStorageTests
     #region AddAsync
 
     [Fact]
-    [Obsolete]
+    [Obsolete(obsoleteMessage)]
     public async Task AddAsync_SomeObject_SuccessfullyAdded()
     {
         var storage = new DictionaryRepository<TestItem>();
@@ -45,7 +47,7 @@ public partial class DictionaryStorageTests
     }
 
     [Fact]
-    [Obsolete]
+    [Obsolete(obsoleteMessage)]
     public async Task AddAsync_ObjectExits_ThrowException()
     {
         var item = new TestItem { Id = Guid.NewGuid(), IntField = 5, TextField = "SomeText" };
@@ -63,7 +65,7 @@ public partial class DictionaryStorageTests
     #region GetByIdAsync
 
     [Fact]
-    [Obsolete]
+    [Obsolete(obsoleteMessage)]
     public async Task GetByIdAsync_ValidId_SuccessfullyGet()
     {
         var itemToGet = new TestItem { Id = Guid.NewGuid(), IntField = 10, TextField = "First" };
@@ -82,7 +84,7 @@ public partial class DictionaryStorageTests
     }
 
     [Fact]
-    [Obsolete]
+    [Obsolete(obsoleteMessage)]
     public async Task GetByIdAsync_ObjectModifiedAfter_DoesNotAffect()
     {
         // Arrange
@@ -110,7 +112,7 @@ public partial class DictionaryStorageTests
     }
 
     [Fact]
-    [Obsolete]
+    [Obsolete(obsoleteMessage)]
     public async Task GetByIdAsync_WrongId_ReturnNull()
     {
         var wrongId = Guid.NewGuid();
@@ -127,7 +129,7 @@ public partial class DictionaryStorageTests
     }
 
     [Fact]
-    [Obsolete]
+    [Obsolete(obsoleteMessage)]
     public async Task GetByIdAsync_StorageEmpty_ReturnNull()
     {
         var wrongId = Guid.NewGuid();
@@ -143,7 +145,7 @@ public partial class DictionaryStorageTests
     #region RemoveAsync
 
     [Fact]
-    [Obsolete]
+    [Obsolete(obsoleteMessage)]
     public async Task RemoveAsync_ValidId_SuccessfullyRemoved()
     {
         // Arrange
@@ -169,7 +171,7 @@ public partial class DictionaryStorageTests
     }
 
     [Fact]
-    [Obsolete]
+    [Obsolete(obsoleteMessage)]
     public async Task RemoveAsync_WrongId_ReturnFalse()
     {
         var wrongId = Guid.NewGuid();
@@ -191,7 +193,7 @@ public partial class DictionaryStorageTests
 
     [Theory]
     [MemberData(nameof(GetPageAsync_ValidFilterAndPageParams))]
-    [Obsolete]
+    [Obsolete(obsoleteMessage)]
     public async Task GetPageAsync_ValidFilterAndPageParams_ValidPageReturns(
         IEnumerable<TestItem> items,
         Expression<Func<TestItem, bool>>? filter,
@@ -214,7 +216,7 @@ public partial class DictionaryStorageTests
 
     [Theory]
     [MemberData(nameof(GetPageAsync_BadPaging))]
-    [Obsolete]
+    [Obsolete(obsoleteMessage)]
     public async Task GetPageAsync_BadPaging_ThrowException(
         IEnumerable<TestItem> items,
         Expression<Func<TestItem, bool>>? filter,
@@ -234,7 +236,7 @@ public partial class DictionaryStorageTests
 
     [Theory]
     [MemberData(nameof(GetPageAsync_NoElementAfterFilter))]
-    [Obsolete]
+    [Obsolete(obsoleteMessage)]
     public async Task GetPageAsync_NoElementAfterFilter_ReturnNull(
         IEnumerable<TestItem> items,
         Expression<Func<TestItem, bool>>? filter,

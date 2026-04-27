@@ -1,4 +1,4 @@
-﻿using Events.Models;
+﻿using Entities.Events;
 using FluentAssertions;
 
 namespace Tests.Events.Model;

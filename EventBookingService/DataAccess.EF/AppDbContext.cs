@@ -1,5 +1,5 @@
-﻿using Bookings.Models;
-using Events.Models;
+﻿using Entities.Bookings;
+using Entities.Events;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.EF;

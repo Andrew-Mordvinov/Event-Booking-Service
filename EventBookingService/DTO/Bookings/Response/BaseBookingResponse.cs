@@ -1,4 +1,4 @@
-using Bookings.Models;
+using Entities.Bookings;
 
 namespace DTO.Presentation.Bookings.Response;
 

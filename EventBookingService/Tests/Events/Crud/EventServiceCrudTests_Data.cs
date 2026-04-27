@@ -1,5 +1,5 @@
 ﻿using DTO.Presentation.Events.Requests;
-using Events.Models;
+using Entities.Events;
 
 namespace Tests.Events.Crud;
 

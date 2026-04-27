@@ -1,5 +1,5 @@
 ﻿using DataAccess.Memory.Storage;
-using Events.Models;
+using Entities.Events;
 using Events.Service.Implementation;
 using Shared;
 

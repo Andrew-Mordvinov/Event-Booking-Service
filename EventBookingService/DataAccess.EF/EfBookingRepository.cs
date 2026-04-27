@@ -1,6 +1,6 @@
-﻿using Bookings.Models;
-using DataAccess.Abstract;
+﻿using DataAccess.Abstract;
 using DataAccess.EF.EfRepository;
+using Entities.Bookings;
 
 namespace DataAccess.EF;
 

@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Bookings.Models\Bookings.Models.csproj" />
     <ProjectReference Include="..\DataAccess.Abstract\DataAccess.Abstract.csproj" />
     <ProjectReference Include="..\Events.Service\Events.Service.csproj" />
   </ItemGroup>

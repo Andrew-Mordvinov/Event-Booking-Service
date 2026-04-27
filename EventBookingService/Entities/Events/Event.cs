@@ -1,37 +1,39 @@
+using Entities.Bookings;
 using Shared.Interfaces;
 
-namespace Events.Models;
+namespace Entities.Events;
 
 /// <summary>
 /// Модель мероприятия, реализующая непосредственно бизнес-логику
 /// </summary>
 public class Event : IHasId, ICopyable<Event>
 {
-    #region Fields
-
-    private int _availableSeats;
-
-    #endregion
-
     #region Properties
 
-    public Guid Id { get; }
-    public string Title { get; set; }
-    public string Description { get; set; }
-    public DateTime StartAt { get; protected set; }
-    public DateTime EndAt { get; protected set; }
+    public Guid Id { get; protected set; }
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public DateTimeOffset StartAt { get; protected set; }
+    public DateTimeOffset EndAt { get; protected set; }
     public int TotalSeats { get; protected set; }
-    public int AvailableSeats { get => _availableSeats; protected set => _availableSeats = value; }
+    public int AvailableSeats { get; protected set; }
+    public List<Booking> Bookings { get; protected set; } = [];
 
     #endregion
 
     #region Constructors
 
+    protected Event()
+    {
+        // Для Ef Core. Разделение сущностей довольно геморройное занятие, так как change tracker работать не будет
+        // Поэтому пока что сущность будет одна
+    }
+
     internal Event(
         Guid id,
         string title,
-        DateTime start,
-        DateTime end,
+        DateTimeOffset start,
+        DateTimeOffset end,
         int totalSeats,
         int? availableSeats = null,
         string? description = null)
@@ -63,8 +65,8 @@ public class Event : IHasId, ICopyable<Event>
     public static (Event? value, IEnumerable<string> errors) TryCreate(
         Guid id,
         string? title,
-        DateTime? start,
-        DateTime? end,
+        DateTimeOffset? start,
+        DateTimeOffset? end,
         int? totalSeats,
         int? availableSeats = null,
         string? description = null)

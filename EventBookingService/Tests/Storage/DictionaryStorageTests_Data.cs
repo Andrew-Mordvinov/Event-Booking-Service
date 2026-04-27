@@ -122,8 +122,8 @@ public partial class DictionaryStorageTests
             x => x.TextField == "This text is not suit any item";
     }
 
-    private static readonly IEnumerable<TestItem> BaseListForFilter = new List<TestItem>
-    {
+    private static readonly IEnumerable<TestItem> BaseListForFilter =
+    [
         new()
         {
             Id = TestItemIds.First,
@@ -196,7 +196,7 @@ public partial class DictionaryStorageTests
             IntField = 1,
             TextField = "TEXT"
         }
-    };
+    ];
 
     #endregion
 

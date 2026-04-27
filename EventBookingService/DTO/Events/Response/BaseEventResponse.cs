@@ -1,4 +1,4 @@
-using Events.Models;
+using Entities.Events;
 
 namespace DTO.Presentation.Events.Response;
 
@@ -12,8 +12,8 @@ public class BaseEventResponse
     public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public DateTime StartAt { get; set; }
-    public DateTime EndAt { get; set; }
+    public DateTimeOffset StartAt { get; set; }
+    public DateTimeOffset EndAt { get; set; }
     public int TotalSeats { get; set; }
     public int AvailableSeats { get; set; }
 

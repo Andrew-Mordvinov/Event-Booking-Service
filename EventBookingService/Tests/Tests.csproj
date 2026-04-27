@@ -24,10 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Bookings.Models\Bookings.Models.csproj" />
     <ProjectReference Include="..\Bookings.Service\Bookings.Service.csproj" />
     <ProjectReference Include="..\DataAccess.Memory\DataAccess.Memory.csproj" />
-    <ProjectReference Include="..\Events.Models\Events.Models.csproj" />
     <ProjectReference Include="..\Events.Service\Events.Service.csproj" />
     <ProjectReference Include="..\LinqExtensions\LinqExtensions.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />

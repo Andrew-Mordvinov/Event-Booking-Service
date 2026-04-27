@@ -2,7 +2,7 @@
 using DataAccess.Abstract.Common;
 using DataAccess.Abstract.Enums;
 using DTO.Presentation.Events.Requests;
-using Events.Models;
+using Entities.Events;
 using Events.Service.Implementation;
 using FluentAssertions;
 using Moq;

@@ -1,6 +1,6 @@
 ﻿using DataAccess.Abstract;
 using DataAccess.EF.EfRepository;
-using Events.Models;
+using Entities.Events;
 
 namespace DataAccess.EF;
 

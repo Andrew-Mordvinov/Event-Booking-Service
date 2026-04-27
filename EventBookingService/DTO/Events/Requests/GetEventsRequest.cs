@@ -22,13 +22,13 @@ public class GetEventsRequest
     /// Фильтр по полю StartAt (>= from)
     /// </summary>
     [FromQuery(Name = "from")]
-    public DateTime? From { get; set; }
+    public DateTimeOffset? From { get; set; }
 
     /// <summary>
     /// Фильтр по полю EndAt (<= to)
     /// </summary>
     [FromQuery(Name = "to")]
-    public DateTime? To { get; set; }
+    public DateTimeOffset? To { get; set; }
 
     /// <summary>
     /// Номер страницы

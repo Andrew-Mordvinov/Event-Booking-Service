@@ -1,4 +1,4 @@
-using Bookings.Models;
+using Entities.Bookings;
 
 namespace DTO.Presentation.Bookings.Response;
 
@@ -12,8 +12,8 @@ public class BaseBookingResponse
     public Guid Id { get; set; }
     public Guid EventId { get; set; }
     public BookingStatus Status { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? ProcessedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? ProcessedAt { get; set; }
 
     public static BaseBookingResponse FromBooking(Booking entity) => new()
     {

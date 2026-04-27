@@ -9,7 +9,6 @@
   <ItemGroup>
     <ProjectReference Include="..\DataAccess.Abstract\DataAccess.Abstract.csproj" />
     <ProjectReference Include="..\DTO\DTO.Presentation.csproj" />
-    <ProjectReference Include="..\Events.Models\Events.Models.csproj" />
     <ProjectReference Include="..\LinqExtensions\LinqExtensions.csproj" />
   </ItemGroup>
 

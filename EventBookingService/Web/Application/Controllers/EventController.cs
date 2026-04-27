@@ -5,7 +5,8 @@ using DTO.Presentation.Events.Requests;
 using DTO.Presentation.Events.Response;
 using DTO.Presentation.Generic;
 
-using Events.Models;
+using Entities.Events;
+
 using Events.Service;
 
 using Microsoft.AspNetCore.Mvc;

@@ -1,6 +1,6 @@
 ﻿using DataAccess.Abstract;
 using DataAccess.Abstract.Common;
-using Events.Models;
+using Entities.Events;
 using Events.Service.Implementation;
 using FluentAssertions;
 using Moq;

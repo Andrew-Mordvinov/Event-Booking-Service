@@ -1,16 +1,14 @@
-﻿using Bookings.Models;
-using Bookings.Service.Implementation;
+﻿using Bookings.Service.Implementation;
 using DataAccess.Abstract;
 using DataAccess.Abstract.Common;
 using DataAccess.Abstract.Enums;
-using Events.Models;
+using Entities.Bookings;
+using Entities.Events;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shared.Exceptions;
 using Shared.Locking;
-using Shared.Paging;
-using System.Linq.Expressions;
 
 namespace Tests.Bookings;
 

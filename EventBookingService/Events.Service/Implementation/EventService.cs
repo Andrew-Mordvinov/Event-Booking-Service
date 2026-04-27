@@ -2,7 +2,7 @@ using DataAccess.Abstract;
 using DataAccess.Abstract.Common;
 using DataAccess.Abstract.Enums;
 using DTO.Presentation.Events.Requests;
-using Events.Models;
+using Entities.Events;
 using LinqExtensions;
 using Shared;
 using Shared.Exceptions;

@@ -1,6 +1,6 @@
-﻿using Bookings.Models;
-using DataAccess.Abstract;
+﻿using DataAccess.Abstract;
 using DataAccess.Memory.Storage;
+using Entities.Bookings;
 
 namespace DataAccess.Memory;
 

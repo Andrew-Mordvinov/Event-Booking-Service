@@ -1,5 +1,5 @@
-﻿using Bookings.Models;
-using DataAccess.Abstract.Common;
+﻿using DataAccess.Abstract.Common;
+using Entities.Bookings;
 
 namespace DataAccess.Abstract;
 

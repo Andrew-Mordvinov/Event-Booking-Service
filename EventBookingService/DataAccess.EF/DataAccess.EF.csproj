@@ -13,12 +13,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.7" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Bookings.Models\Bookings.Models.csproj" />
     <ProjectReference Include="..\DataAccess.Abstract\DataAccess.Abstract.csproj" />
-    <ProjectReference Include="..\Events.Models\Events.Models.csproj" />
   </ItemGroup>
 
 </Project>
