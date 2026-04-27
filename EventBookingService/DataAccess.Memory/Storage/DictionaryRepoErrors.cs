@@ -1,6 +1,6 @@
-namespace DataAccess.Storage;
+namespace DataAccess.Memory.Storage;
 
-public static class StorageErrors
+public static class DictionaryRepoErrors
 {
     public static string PageNotFound(int page, int totalPages) =>
         $"Указанная страница {page} не существует. Максимальная в текущем запросе страница - {totalPages}";

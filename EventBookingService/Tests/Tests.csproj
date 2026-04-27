@@ -13,6 +13,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="FluentAssertions" Version="8.9.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.7" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
@@ -25,13 +26,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Bookings.Models\Bookings.Models.csproj" />
     <ProjectReference Include="..\Bookings.Service\Bookings.Service.csproj" />
-    <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
-    <ProjectReference Include="..\DTO\DTO.csproj" />
+    <ProjectReference Include="..\DataAccess.Memory\DataAccess.Memory.csproj" />
     <ProjectReference Include="..\Events.Models\Events.Models.csproj" />
     <ProjectReference Include="..\Events.Service\Events.Service.csproj" />
     <ProjectReference Include="..\LinqExtensions\LinqExtensions.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
-    <ProjectReference Include="..\Validation\Validation.csproj" />
     <ProjectReference Include="..\Web\Web.csproj" />
   </ItemGroup>
 

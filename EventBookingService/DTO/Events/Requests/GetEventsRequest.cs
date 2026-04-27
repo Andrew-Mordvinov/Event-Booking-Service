@@ -5,7 +5,7 @@ using Shared;
 
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace DTO.Events.Requests;
+namespace DTO.Presentation.Events.Requests;
 
 public class GetEventsRequest
 {

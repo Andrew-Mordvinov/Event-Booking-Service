@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Shared.Attributes;
 
-namespace DTO.Events.Requests;
+namespace DTO.Presentation.Events.Requests;
 
 /// <summary>
 /// Dto для входящего запроса модификации события

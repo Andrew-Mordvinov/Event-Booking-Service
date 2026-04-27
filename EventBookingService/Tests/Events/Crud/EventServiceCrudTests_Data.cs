@@ -1,10 +1,9 @@
-﻿using DTO.Events.Requests;
+﻿using DTO.Presentation.Events.Requests;
 using Events.Models;
-using Events.Service.Implementation;
 
 namespace Tests.Events.Crud;
 
-public partial class MemoryEventCrudTests
+public partial class EventServiceCrudTests
 {
     #region Common fields
 

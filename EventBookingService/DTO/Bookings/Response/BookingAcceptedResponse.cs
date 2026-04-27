@@ -1,6 +1,6 @@
 using Bookings.Models;
 
-namespace DTO.Bookings.Response;
+namespace DTO.Presentation.Bookings.Response;
 
 /// <summary>
 /// Базовый ответ на запрос по сущности <see cref="Booking"/>. Представляет собой

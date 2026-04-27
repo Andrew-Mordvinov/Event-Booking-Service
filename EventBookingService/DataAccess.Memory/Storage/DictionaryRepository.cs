@@ -1,23 +1,26 @@
+using DataAccess.Abstract.Common;
+using DataAccess.Abstract.Enums;
 using Shared.Exceptions;
 using Shared.Interfaces;
 using Shared.Paging;
 using System.Linq.Expressions;
 
-namespace DataAccess.Storage;
+namespace DataAccess.Memory.Storage;
 
 /// <summary>
 /// Хранилище Dictionary
 /// </summary>
-public class DictionaryStorage<T> : IStorage<T> where T : IHasId, IFillable<T>, ICopyable<T>
+[Obsolete("Более не актуально хранение в памяти")]
+public class DictionaryRepository<T> : IRepository<T> where T : IHasId, ICopyable<T>
 {
     private readonly Dictionary<Guid, T> _dictionary = [];
 
-    public DictionaryStorage()
+    public DictionaryRepository()
     {
         
     }
 
-    public DictionaryStorage(IEnumerable<T> items)
+    public DictionaryRepository(IEnumerable<T> items)
     {
         foreach (var item in items)
         {
@@ -25,30 +28,16 @@ public class DictionaryStorage<T> : IStorage<T> where T : IHasId, IFillable<T>, 
         }
     }
 
-    public bool HasAny => _dictionary.Count > 0;
-
     public Task<bool> RemoveAsync(Guid id, CancellationToken token = default) => Task.FromResult(_dictionary.Remove(id));
 
     public Task AddAsync(T item, CancellationToken token = default)
     {
-        if (_dictionary.TryAdd(item.Id, item.Copy()))
+        if (_dictionary.TryAdd(item.Id, item))
         {
             return Task.CompletedTask;
         }
 
-        throw new ConflictException(StorageErrors.ItemWithIdAlreadyExist(item.Id));
-    }
-
-    public Task<bool> UpdateAsync(T item, CancellationToken token = default)
-    {
-        if (_dictionary.TryGetValue(item.Id, out var value))
-        {
-            value.FillFrom(item);
-
-            return Task.FromResult(true);
-        }
-
-        return Task.FromResult(false);
+        throw new ConflictException(DictionaryRepoErrors.ItemWithIdAlreadyExist(item.Id));
     }
 
     public Task<PaginatedResult<T>?> GetPageAsync(Expression<Func<T, bool>>? filter, int page, int pageSize, CancellationToken token = default)
@@ -56,12 +45,12 @@ public class DictionaryStorage<T> : IStorage<T> where T : IHasId, IFillable<T>, 
         var errors = new List<string>();
         if (page < 1)
         {
-            errors.Add(StorageErrors.PageMustBePositive);
+            errors.Add(DictionaryRepoErrors.PageMustBePositive);
         }
 
         if (pageSize < 1)
         {
-            errors.Add(StorageErrors.PageSizeMustBePositive);
+            errors.Add(DictionaryRepoErrors.PageSizeMustBePositive);
         }
 
         if (errors.Count > 0)
@@ -69,7 +58,7 @@ public class DictionaryStorage<T> : IStorage<T> where T : IHasId, IFillable<T>, 
             throw new ValidationException(errors);
         }
 
-        if (!HasAny)
+        if (_dictionary.Count < 1)
         {
             return Task.FromResult<PaginatedResult<T>?>(null);
         }
@@ -87,7 +76,7 @@ public class DictionaryStorage<T> : IStorage<T> where T : IHasId, IFillable<T>, 
 
         if (totalPages < page)
         {
-            errors.Add(StorageErrors.PageNotFound(page, totalPages));
+            errors.Add(DictionaryRepoErrors.PageNotFound(page, totalPages));
             throw new ValidationException(errors);
         }
 
@@ -103,11 +92,11 @@ public class DictionaryStorage<T> : IStorage<T> where T : IHasId, IFillable<T>, 
         return Task.FromResult<PaginatedResult<T>?>(result);
     }
 
-    public Task<T?> GetByIdAsync(Guid id, CancellationToken token = default)
+    public Task<T?> GetByIdAsync(Guid id, GetMode getMode = GetMode.Edit, CancellationToken token = default)
     {
         if (_dictionary.TryGetValue(id, out var item))
         {
-            return Task.FromResult<T?>(item.Copy());
+            return Task.FromResult<T?>(getMode == GetMode.Readonly ? item.Copy() : item);
         }
 
         return Task.FromResult<T?>(default);

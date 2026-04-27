@@ -1,4 +1,4 @@
-﻿using DataAccess.Storage;
+﻿using DataAccess.Memory.Storage;
 using Events.Models;
 using Events.Service.Implementation;
 using Shared;
@@ -349,7 +349,7 @@ public partial class MemoryEventFilterTests
             5, // pageSize
             new List<string>
             {
-                StorageErrors.PageNotFound(4, 3)
+                DictionaryRepoErrors.PageNotFound(4, 3)
             }
         ],
         
@@ -360,7 +360,7 @@ public partial class MemoryEventFilterTests
             5,
             new List<string>
             {
-                StorageErrors.PageNotFound(2, 1)
+                DictionaryRepoErrors.PageNotFound(2, 1)
             }
         ]
     ];

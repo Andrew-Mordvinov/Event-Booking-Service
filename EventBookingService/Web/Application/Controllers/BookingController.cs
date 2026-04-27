@@ -1,6 +1,6 @@
 using Bookings.Service;
 
-using DTO.Bookings.Response;
+using DTO.Presentation.Bookings.Response;
 
 using Microsoft.AspNetCore.Mvc;
 

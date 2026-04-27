@@ -1,19 +1,18 @@
 using Bookings.Models;
-using DataAccess.Storage;
-using Events.Models;
+using DataAccess.Abstract;
+using DataAccess.Abstract.Common;
+using DataAccess.Abstract.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Shared.Exceptions;
 using Shared.Locking;
 
 namespace Bookings.Service.Implementation;
-// TODO
-// Дописать тесты для обработки броней
-// Проверить работу веба
-// Дописать readme
+
 public class BookingService(
-    [FromKeyedServices("Mem")] IStorage<Booking> _storageBooking,
-    [FromKeyedServices("Mem")] IStorage<Event> _storageEvent,
+    IBookingRepository _storageBooking,
+    IEventRepository _storageEvent,
+    IUnitOfWork _unitOfWork,
     ILogger<BookingService> _logger,
     [FromKeyedServices("CreateBooking")] ISemaphoreGetter _createBookingSemaphore,
     [FromKeyedServices("ProcessBooking")] ISemaphoreGetter _processBookingSemaphore) : IBookingService
@@ -23,16 +22,16 @@ public class BookingService(
     public Task<Booking?> GetBookingByIdAsync(
         Guid bookingId,
         CancellationToken token = default) =>
-        _storageBooking.GetByIdAsync(bookingId, token);
+        _storageBooking.GetByIdAsync(bookingId, GetMode.Readonly, token);
 
-    public async Task<Booking?> CreateBookingAsync(
+    public async Task<Booking> CreateBookingAsync(
         Guid eventId,
         CancellationToken token = default)
     {
         await _createBookingSemaphore.SemaphoreSlim.WaitAsync(token);
         try
         {
-            var entity = await _storageEvent.GetByIdAsync(eventId, token) ?? throw new NotFoundException(BookingServiceErrors.EventNotFound(eventId));
+            var entity = await _storageEvent.GetByIdAsync(eventId, token: token) ?? throw new NotFoundException(BookingServiceErrors.EventNotFound(eventId));
             if (!entity.TryReserveSeats())
             {
                 throw new ConflictException(BookingServiceErrors.NoAvailableSeats);
@@ -40,19 +39,9 @@ public class BookingService(
 
             var booking = new Booking(Guid.NewGuid(), eventId, BookingStatus.Pending, DateTime.UtcNow);
 
-            // Сначала букинг сохраним, потому что откатить апдейт ивента на текущий момент проблематично, а удалить айтем из хранилища проще
             await _storageBooking.AddAsync(booking, token);
 
-            var eventUpdateResult = await _storageEvent.UpdateAsync(entity, token);
-            // Примитивная отмена изменений в хранилище, если вдруг апдейт упал (хотя если кто-то удалил событие,
-            // пока мы создавали бронь, то вернется false без ошибок, и тогда бронь обработается в фоне). 
-            if (!eventUpdateResult)
-            {
-                // Пока не думаем о том, что RemoveAsync может упасть
-                await _storageBooking.RemoveAsync(booking.Id, token);
-
-                throw new NotFoundException(BookingServiceErrors.EventNotFound(eventId));
-            }
+            await _unitOfWork.SaveChangesAsync(token);
 
             return booking;
         }
@@ -95,8 +84,7 @@ public class BookingService(
         {
             return;
         }
-        // TODO если понадобится обновить event здесь, то блокировка нас не спасет от случая обновления event
-        // например при запросе Put к контроллеру. Надо подумать как решить это
+
         try
         {
             _logger.LogInformation("Обработка бронирования {BookId} для события {EventId}", booking.Id, booking.EventId);
@@ -107,7 +95,7 @@ public class BookingService(
             await _processBookingSemaphore.SemaphoreSlim.WaitAsync(token);
             try
             {
-                var eventResult = await _storageEvent.GetByIdAsync(booking.EventId, token);
+                var eventResult = await _storageEvent.GetByIdAsync(booking.EventId, token: token);
                 token.ThrowIfCancellationRequested();
 
                 if (eventResult is null)
@@ -122,7 +110,7 @@ public class BookingService(
                         "{BookId} получила статус {Status}", booking.EventId, booking.Id, booking.Status);
                 }
 
-                await _storageBooking.UpdateAsync(booking, token);
+                await _unitOfWork.SaveChangesAsync(token);
                 _logger.LogInformation("Обработка бронирования {BookId} для события {EventId} завершена", booking.Id, booking.EventId);
             }
             finally

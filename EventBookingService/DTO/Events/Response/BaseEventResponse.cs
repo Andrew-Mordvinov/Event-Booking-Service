@@ -1,6 +1,6 @@
 using Events.Models;
 
-namespace DTO.Events.Response;
+namespace DTO.Presentation.Events.Response;
 
 /// <summary>
 /// Базовый ответ на запрос с полями как в <see cref="Event"/>. Представляет собой

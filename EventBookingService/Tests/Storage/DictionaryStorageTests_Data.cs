@@ -1,4 +1,4 @@
-﻿using DataAccess.Storage;
+﻿using DataAccess.Memory.Storage;
 using Shared.Interfaces;
 using System.Linq.Expressions;
 
@@ -11,7 +11,7 @@ public partial class DictionaryStorageTests
     /// <summary>
     /// Тестовый айтем для хранилища
     /// </summary>
-    public class TestItem : IHasId, IFillable<TestItem>, ICopyable<TestItem>
+    public class TestItem : IHasId, ICopyable<TestItem>
     {
         public Guid Id { get; set; }
 
@@ -366,7 +366,7 @@ public partial class DictionaryStorageTests
             10,
             new string[] 
             {
-                StorageErrors.PageMustBePositive
+                DictionaryRepoErrors.PageMustBePositive
             }
         ],
 
@@ -377,8 +377,8 @@ public partial class DictionaryStorageTests
             0,
             new string[]
             {
-                StorageErrors.PageMustBePositive,
-                StorageErrors.PageSizeMustBePositive
+                DictionaryRepoErrors.PageMustBePositive,
+                DictionaryRepoErrors.PageSizeMustBePositive
             }
         ],
 
@@ -389,7 +389,7 @@ public partial class DictionaryStorageTests
             -1,
             new string[]
             {
-                StorageErrors.PageSizeMustBePositive
+                DictionaryRepoErrors.PageSizeMustBePositive
             }
         ],
 
@@ -400,7 +400,7 @@ public partial class DictionaryStorageTests
             -1,
             new string[]
             {
-                StorageErrors.PageSizeMustBePositive
+                DictionaryRepoErrors.PageSizeMustBePositive
             }
         ],
 
@@ -411,7 +411,7 @@ public partial class DictionaryStorageTests
             5,
             new string[]
             {
-                StorageErrors.PageNotFound(3, 2)
+                DictionaryRepoErrors.PageNotFound(3, 2)
             }
         ],
 
@@ -422,7 +422,7 @@ public partial class DictionaryStorageTests
             15,
             new string[]
             {
-                StorageErrors.PageNotFound(2, 1)
+                DictionaryRepoErrors.PageNotFound(2, 1)
             }
         ],
     ];

@@ -1,4 +1,4 @@
-using DTO.Events.Requests;
+using DTO.Presentation.Events.Requests;
 using Events.Models;
 using Shared.Paging;
 

@@ -1,6 +1,6 @@
 using Shared.Paging;
 
-namespace DTO.Generic;
+namespace DTO.Presentation.Generic;
 
 public class PaginatedResponse<T>
 {

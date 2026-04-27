@@ -1,4 +1,5 @@
-﻿using DataAccess.Storage;
+﻿using DataAccess.Abstract;
+using DataAccess.Abstract.Common;
 using Events.Models;
 using Events.Service.Implementation;
 using FluentAssertions;
@@ -11,10 +12,12 @@ namespace Tests.Events.Filtering;
 
 public partial class MemoryEventFilterTests
 {
-    private static EventService CreateService(out Mock<IStorage<Event>> storageMock)
+    private static EventService CreateService(out Mock<IEventRepository> storageMock)
     {
-        storageMock = new Mock<IStorage<Event>>();
-        return new EventService(storageMock.Object);
+        storageMock = new Mock<IEventRepository>();
+        var unitOfWorkMock = new Mock<IUnitOfWork>();
+
+        return new EventService(storageMock.Object, unitOfWorkMock.Object);
     }
 
     [Fact]
@@ -69,7 +72,7 @@ public partial class MemoryEventFilterTests
 
         if (capturedFilter.Count != 1)
         {
-            Assert.Fail($"{nameof(IStorage<>.GetPageAsync)} захватилось несколько выражений фильтров, ожидалось одно значение");
+            Assert.Fail($"{nameof(IRepository<>.GetPageAsync)} захватилось несколько выражений фильтров, ожидалось одно значение");
         }
 
         var filtered = capturedFilter.First() is not null

@@ -12,16 +12,20 @@ public interface IBookingService
     /// </summary>
     /// <param name="eventId">Идентификатор события, на которое подается бронь</param>
     /// <param name="token">Токен отмены операции</param>
-    /// <returns>Объект брони или null вместе с возникшими ошибками</returns>
-    Task<Booking?> CreateBookingAsync(Guid eventId, CancellationToken token = default);
+    /// <returns>Объект брони</returns>
+    Task<Booking> CreateBookingAsync(Guid eventId, CancellationToken token = default);
 
     /// <summary>
     /// Возвращает заявку на бронирование с заданным идентификатором
     /// </summary>
     /// <param name="bookingId">Идентификатор брони</param>
     /// <param name="token">Токен отмены операции</param>
-    /// <returns>Объект брони или null вместе с возникшими ошибками</returns>
+    /// <returns>Объект брони или null если не найдено</returns>
     Task<Booking?> GetBookingByIdAsync(Guid bookingId, CancellationToken token = default);
+
+    // TODO как будто все-таки надо разнести групповую обработку. Здесь ей все же не место, иначе
+    // придется тащить сюда и фабрики, и контексты и прочее, что логичнее выполнить все же в другом месте
+    // Возможно пока выкинуть в фоновый сервис, либо придумать отдельный сервис групповой обработки
 
     /// <summary>
     /// Обработка ожидающих броней. Получает брони из хранилища и обрабатывает

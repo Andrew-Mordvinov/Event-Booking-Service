@@ -1,12 +1,11 @@
 using Shared.Interfaces;
-using System.Runtime.CompilerServices;
 
 namespace Events.Models;
 
 /// <summary>
 /// Модель мероприятия, реализующая непосредственно бизнес-логику
 /// </summary>
-public class Event : IHasId, IFillable<Event>, ICopyable<Event>
+public class Event : IHasId, ICopyable<Event>
 {
     #region Fields
 
