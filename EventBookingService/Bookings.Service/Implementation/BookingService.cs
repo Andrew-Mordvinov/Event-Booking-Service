@@ -2,10 +2,8 @@ using DataAccess.Abstract;
 using DataAccess.Abstract.Common;
 using DataAccess.Abstract.Enums;
 using Entities.Bookings;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Shared.Exceptions;
-using Shared.Locking;
 
 namespace Bookings.Service.Implementation;
 
@@ -13,9 +11,7 @@ public class BookingService(
     IBookingRepository _storageBooking,
     IEventRepository _storageEvent,
     IUnitOfWork _unitOfWork,
-    ILogger<BookingService> _logger,
-    [FromKeyedServices("CreateBooking")] ISemaphoreGetter _createBookingSemaphore,
-    [FromKeyedServices("ProcessBooking")] ISemaphoreGetter _processBookingSemaphore) : IBookingService
+    ILogger<BookingService> _logger) : IBookingService
 {
     private static readonly int _imitationDelay = 2000;
 
@@ -28,103 +24,91 @@ public class BookingService(
         Guid eventId,
         CancellationToken token = default)
     {
-        await _createBookingSemaphore.SemaphoreSlim.WaitAsync(token);
-        try
+        var entity = await _storageEvent.GetByIdAsync(eventId, token: token) ?? throw new NotFoundException(BookingServiceErrors.EventNotFound(eventId));
+        if (!entity.TryReserveSeats())
         {
-            var entity = await _storageEvent.GetByIdAsync(eventId, token: token) ?? throw new NotFoundException(BookingServiceErrors.EventNotFound(eventId));
-            if (!entity.TryReserveSeats())
-            {
-                throw new ConflictException(BookingServiceErrors.NoAvailableSeats);
-            }
-
-            var booking = new Booking(Guid.NewGuid(), eventId, BookingStatus.Pending, DateTime.UtcNow);
-
-            await _storageBooking.AddAsync(booking, token);
-
-            await _unitOfWork.SaveChangesAsync(token);
-
-            return booking;
+            throw new ConflictException(BookingServiceErrors.NoAvailableSeats);
         }
-        finally
-        {
-            _createBookingSemaphore.SemaphoreSlim.Release();
-        }
+
+        var booking = new Booking(Guid.NewGuid(), eventId, BookingStatus.Pending, DateTime.UtcNow);
+
+        await _storageBooking.AddAsync(booking, token);
+
+        await _unitOfWork.SaveChangesAsync(token);
+
+        return booking;
     }
 
-    public async Task ProcessPendingBookingsAsync(int maxCount = 100, CancellationToken token = default)
+    //public async Task ProcessPendingBookingsAsync(int maxCount = 100, CancellationToken token = default)
+    //{
+    //    ArgumentOutOfRangeException.ThrowIfLessThan(maxCount, 1);
+
+    //    var pageResult = await _storageBooking.GetPageAsync(
+    //            b => b.Status == BookingStatus.Pending,
+    //            1,
+    //            maxCount,
+    //            token);
+
+    //    if (pageResult is null || pageResult.Items.Count < 1)
+    //    {
+    //        _logger.LogInformation("Бронирований для обработки не найдено");
+    //        return;
+    //    }
+
+    //    _logger.LogInformation("Найдено {Count} броней для обработки", pageResult.Items.Count);
+
+    //    token.ThrowIfCancellationRequested();
+
+    //    var tasks = pageResult.Items.Select(booking => ProcessBookingAsync(booking, token));
+    //    // Исключения обрабатываются внутри отдельно для каждой брони
+    //    await Task.WhenAll(tasks);
+
+    //    return;
+    //}
+
+    public async Task ProcessBookingAsync(Guid bookingId, CancellationToken token = default)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(maxCount, 1);
-
-        var pageResult = await _storageBooking.GetPageAsync(
-                b => b.Status == BookingStatus.Pending,
-                1,
-                maxCount,
-                token);
-
-        if (pageResult is null || pageResult.Items.Count < 1)
-        {
-            _logger.LogInformation("Бронирований для обработки не найдено");
-            return;
-        }
-
-        _logger.LogInformation("Найдено {Count} броней для обработки", pageResult.Items.Count);
-
-        token.ThrowIfCancellationRequested();
-
-        var tasks = pageResult.Items.Select(booking => ProcessBookingAsync(booking, token));
-        // Исключения обрабатываются внутри отдельно для каждой брони
-        await Task.WhenAll(tasks);
-
-        return;
-    }
-
-    public async Task ProcessBookingAsync(Booking booking, CancellationToken token = default)
-    {
-        if (booking.Status != BookingStatus.Pending)
-        {
-            return;
-        }
-
         try
         {
-            _logger.LogInformation("Обработка бронирования {BookId} для события {EventId}", booking.Id, booking.EventId);
+            _logger.LogInformation("Обработка бронирования {BookId}", bookingId);
 
             await Task.Delay(_imitationDelay, token);
             token.ThrowIfCancellationRequested();
 
-            await _processBookingSemaphore.SemaphoreSlim.WaitAsync(token);
-            try
-            {
-                var eventResult = await _storageEvent.GetByIdAsync(booking.EventId, token: token);
-                token.ThrowIfCancellationRequested();
+            var booking = await _storageBooking.GetByIdAsync(bookingId, token: token);
+            token.ThrowIfCancellationRequested();
 
-                if (eventResult is null)
-                {
-                    booking.Reject();
-                    _logger.LogWarning("Событие {EventId} не удалось получить. Бронь {BookId} отклонена.", booking.EventId, booking.Id);
-                }
-                else
-                {
-                    booking.Confirm();
-                    _logger.LogInformation("Бронирование события {EventId} успешно обработано. Заявка с " +
-                        "{BookId} получила статус {Status}", booking.EventId, booking.Id, booking.Status);
-                }
-
-                await _unitOfWork.SaveChangesAsync(token);
-                _logger.LogInformation("Обработка бронирования {BookId} для события {EventId} завершена", booking.Id, booking.EventId);
-            }
-            finally
+            if (booking is null)
             {
-                _processBookingSemaphore.SemaphoreSlim.Release();
+                _logger.LogInformation("Бронирование {BookId} не найдено в хранилище. Возможно оно было удалено", bookingId);
+                return;
             }
+
+            var eventResult = await _storageEvent.GetByIdAsync(booking.EventId, token: token);
+            token.ThrowIfCancellationRequested();
+
+            if (eventResult is null)
+            {
+                booking.Reject();
+                _logger.LogWarning("Событие {EventId} не удалось получить. Бронь {BookId} отклонена.", booking.EventId, booking.Id);
+            }
+            else
+            {
+                booking.Confirm();
+                _logger.LogInformation("Бронирование события {EventId} успешно обработано. Заявка с " +
+                    "{BookId} получила статус {Status}", booking.EventId, booking.Id, booking.Status);
+            }
+
+            await _unitOfWork.SaveChangesAsync(token);
+            _logger.LogInformation("Обработка бронирования {BookId} для события {EventId} завершена", booking.Id, booking.EventId);
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
-            _logger.LogInformation("Бронирование {BookId} для события {EventId} не обработано - операция отменена", booking.Id, booking.EventId);
+            _logger.LogInformation("Бронирование {BookId} не обработано - операция отменена", bookingId);
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Произошло непредвиденное исключение при обработке {Book}", booking);
+            _logger.LogCritical(e, "Произошло непредвиденное исключение при обработке бронирования с идентификатором {BookId}", bookingId);
         }
     }
 }

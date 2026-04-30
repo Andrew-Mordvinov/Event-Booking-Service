@@ -8,6 +8,6 @@
   <Project Path="Events.Service/Events.Service.csproj" Id="347dc335-a6a6-49e3-aa9d-058bae479f10" />
   <Project Path="LinqExtensions/LinqExtensions.csproj" Id="1b5e061f-3ac9-4f68-9261-53b216a4afdc" />
   <Project Path="Shared/Shared.csproj" Id="9c894035-9eb8-4304-8d9b-d4c3c7282599" />
-  <Project Path="Tests/Tests.csproj" />
+  <Project Path="Tests/UnitTests.csproj" />
   <Project Path="Web/Web.csproj" />
 </Solution>

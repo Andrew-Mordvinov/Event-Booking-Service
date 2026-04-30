@@ -3,19 +3,53 @@
 namespace DataAccess.EF;
 
 /// <summary>
-/// Работает с ChangeTracker, а не транзакциями. Все изменения еще только в памяти
+/// Работает с транзакциями и ChangeTracker. Транзакции могут создаваться явно
+/// или неявно в самих репозиториях, но репозиторий сам не сохраняет изменения
 /// </summary>
 public class EfUnitOfWork(AppDbContext appDbContext) : IUnitOfWork
 {
-    public Task RollbackChangesAsync(CancellationToken token = default)
+    public Task EnsureTransactionAsync(CancellationToken token = default)
     {
-        appDbContext.ChangeTracker.Clear();
+        if (appDbContext.Database.CurrentTransaction == null)
+        {
+            return appDbContext.Database.BeginTransactionAsync(token);
+        }
 
         return Task.CompletedTask;
     }
 
-    public Task SaveChangesAsync(CancellationToken token = default)
+    public async Task RollbackChangesAsync(CancellationToken token = default)
     {
-        return appDbContext.SaveChangesAsync(token);
+        if (appDbContext.Database.CurrentTransaction == null)
+        {
+            appDbContext.ChangeTracker.Clear();
+            return;
+        }
+
+        await appDbContext.Database.CurrentTransaction.RollbackAsync(token).ConfigureAwait(false);
+        appDbContext.ChangeTracker.Clear();
+
+        return;
+    }
+
+    public async Task SaveChangesAsync(CancellationToken token = default)
+    {
+        if (appDbContext.Database.CurrentTransaction == null)
+        {
+            await appDbContext.SaveChangesAsync(token).ConfigureAwait(false);
+            return;
+        }
+
+        try
+        {
+            await appDbContext.SaveChangesAsync(token).ConfigureAwait(false);
+            await appDbContext.Database.CurrentTransaction.CommitAsync(token).ConfigureAwait(false);
+        }
+        catch
+        {
+            await appDbContext.Database.CurrentTransaction.RollbackAsync(token).ConfigureAwait(false);
+            appDbContext.ChangeTracker.Clear();
+            throw;
+        }
     }
 }

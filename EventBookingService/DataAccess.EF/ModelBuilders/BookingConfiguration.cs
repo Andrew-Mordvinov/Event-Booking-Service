@@ -12,8 +12,13 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
             .ToTable(nameof(Booking))
             .HasKey(b => b.Id);
 
+        builder.Property(b => b.Id)
+            .ValueGeneratedNever();
+
         builder.Property(b => b.Status)
             .IsRequired();
+
+        builder.HasIndex(b => b.Status);
 
         builder.Property(b => b.CreatedAt)
             .IsRequired()

@@ -1,43 +1,10 @@
-﻿using DataAccess.Memory.Storage;
-using Shared.Interfaces;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
-namespace Tests.Storage;
+namespace Tests.TemplateRepository;
 
-public partial class DictionaryStorageTests
+public class SharedTestData
 {
-    #region Common
-
-    /// <summary>
-    /// Тестовый айтем для хранилища
-    /// </summary>
-    public class TestItem : IHasId, ICopyable<TestItem>
-    {
-        public Guid Id { get; set; }
-
-        public string TextField { get; set; } = string.Empty;
-
-        public int IntField { get; set; }
-
-        public TestItem Copy()
-        {
-            return new TestItem
-            {
-                Id = Id,
-                TextField = TextField,
-                IntField = IntField
-            };
-        }
-
-        public void FillFrom(TestItem source)
-        {
-            Id = source.Id;
-            TextField = source.TextField;
-            IntField = source.IntField;
-        }
-    }
-
-    private static class TestItemIds
+    public static class TestItemIds
     {
         public static readonly Guid First = Guid.Parse("c1f7a9e2-6b4d-4c8a-9f21-3d7e5a2b8c91");
         public static readonly Guid Second = Guid.Parse("a9d3c5b7-2e6f-4b1a-8c9d-5e7f2a4b6c31");
@@ -53,7 +20,7 @@ public partial class DictionaryStorageTests
         public static readonly Guid Twelfth = Guid.Parse("5d1a7c9e-2b4f-4a8c-b6e3-1c2f9a7d5b68");
     }
 
-    private static class Filters
+    public static class Filters
     {
         /// <summary>
         /// x => x.IntField > 0
@@ -122,7 +89,10 @@ public partial class DictionaryStorageTests
             x => x.TextField == "This text is not suit any item";
     }
 
-    private static readonly IEnumerable<TestItem> BaseListForFilter =
+    /// <summary>
+    /// Типовой набор данных для тестирования хранилища
+    /// </summary>
+    public static readonly IEnumerable<TestItem> BaseListForFilter =
     [
         new()
         {
@@ -190,7 +160,7 @@ public partial class DictionaryStorageTests
             IntField = int.MinValue,
             TextField = "edge"
         },
-        new() 
+        new()
         {
             Id = TestItemIds.Twelfth,
             IntField = 1,
@@ -198,11 +168,10 @@ public partial class DictionaryStorageTests
         }
     ];
 
-    #endregion
-
-    #region GetPageAsync
-
-    public static IEnumerable<object?[]> GetPageAsync_ValidFilterAndPageParams =>
+    /// <summary>
+    /// Общий массив данных для тестирования репозитория на получение корректных данных страницы
+    /// </summary>
+    public static readonly IEnumerable<object?[]> TestGetPage_ValidParams =
     [
         // 1
         [
@@ -357,77 +326,11 @@ public partial class DictionaryStorageTests
         ]
     ];
 
-    public static IEnumerable<object?[]> GetPageAsync_BadPaging =>
-    [
-        [
-            BaseListForFilter,
-            Filters.ExactOrEmpty,
-            -2,
-            10,
-            new string[] 
-            {
-                DictionaryRepoErrors.PageMustBePositive
-            }
-        ],
-
-        [
-            BaseListForFilter,
-            null,
-            0,
-            0,
-            new string[]
-            {
-                DictionaryRepoErrors.PageMustBePositive,
-                DictionaryRepoErrors.PageSizeMustBePositive
-            }
-        ],
-
-        [
-            BaseListForFilter,
-            Filters.TextEqualsText,
-            1,
-            -1,
-            new string[]
-            {
-                DictionaryRepoErrors.PageSizeMustBePositive
-            }
-        ],
-
-        [
-            BaseListForFilter,
-            null,
-            1,
-            -1,
-            new string[]
-            {
-                DictionaryRepoErrors.PageSizeMustBePositive
-            }
-        ],
-
-        [
-            BaseListForFilter,
-            Filters.Positive,
-            3,
-            5,
-            new string[]
-            {
-                DictionaryRepoErrors.PageNotFound(3, 2)
-            }
-        ],
-
-        [
-            BaseListForFilter,
-            null,
-            2,
-            15,
-            new string[]
-            {
-                DictionaryRepoErrors.PageNotFound(2, 1)
-            }
-        ],
-    ];
-
-    public static IEnumerable<object?[]> GetPageAsync_NoElementAfterFilter =>
+    /// <summary>
+    /// Общий массив для тестирования репозитория на отсутствие элементов после фильтра
+    /// (или вообще, если в нем и не было элементов)
+    /// </summary>
+    public static readonly IEnumerable<object?[]> TestGetPage_NoElementAfterFilter =
     [
         [
             BaseListForFilter,
@@ -450,6 +353,4 @@ public partial class DictionaryStorageTests
             10
         ],
     ];
-
-    #endregion
 }

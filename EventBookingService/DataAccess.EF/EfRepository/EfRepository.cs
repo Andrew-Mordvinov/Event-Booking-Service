@@ -14,15 +14,17 @@ namespace DataAccess.EF.EfRepository;
 public class EfRepository<T> : IRepository<T> where T : class, IHasId
 {
     private readonly AppDbContext _appDbContext;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly DbSet<T> _items;
 
     protected AppDbContext AppDbContext => _appDbContext;
     protected DbSet<T> Items => _items;
 
-    public EfRepository(AppDbContext dbContext)
+    public EfRepository(AppDbContext dbContext, IUnitOfWork unitOfWork)
     {
         _appDbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         _items = dbContext.Set<T>();
+        _unitOfWork = unitOfWork;
     }
 
     public Task AddAsync(T item, CancellationToken token = default)
@@ -32,16 +34,24 @@ public class EfRepository<T> : IRepository<T> where T : class, IHasId
         return Task.CompletedTask;
     }
 
-    public Task<T?> GetByIdAsync(Guid id, GetMode getMode = GetMode.Edit, CancellationToken token = default)
+    public async Task<T?> GetByIdAsync(Guid id, GetMode getMode = GetMode.Edit, CancellationToken token = default)
     {
-        var query = Items.AsQueryable();
-
         if (getMode == GetMode.Readonly)
         {
-            query.AsNoTracking();
+            return await Items
+                .AsQueryable()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.Id == id, token)
+                .ConfigureAwait(false);
         }
 
-        return query.FirstOrDefaultAsync(e => e.Id == id, token);
+        // FOR UPDATE не работает без транзакции, поэтому создаем, если еще нет
+        await _unitOfWork.EnsureTransactionAsync(token).ConfigureAwait(false);
+
+        return await Items
+            .FromSql($"SELECT * FROM {nameof(T)} WHERE Id = {id} FOR UPDATE")
+            .FirstOrDefaultAsync(token)
+            .ConfigureAwait(false);
     }
 
     public async Task<PaginatedResult<T>?> GetPageAsync(Expression<Func<T, bool>>? filter, int page, int pageSize, CancellationToken token = default)
@@ -79,7 +89,8 @@ public class EfRepository<T> : IRepository<T> where T : class, IHasId
             throw new ValidationException(errors);
         }
 
-        var dataPage = filtered.Skip((page - 1) * pageSize).Take(pageSize);
+        // Сортировка нужна для стабильности вывода. В будущем нужно будет добавить отдельный селектор сюда
+        var dataPage = filtered.OrderBy(t => t.Id.ToString()).Skip((page - 1) * pageSize).Take(pageSize);
         var result = new PaginatedResult<T>
         {
             CurrentPage = page,
@@ -93,14 +104,14 @@ public class EfRepository<T> : IRepository<T> where T : class, IHasId
 
     public async Task<bool> RemoveAsync(Guid id, CancellationToken token = default)
     {
-        var @event = await Items.FindAsync([id], token).ConfigureAwait(false);
+        var item = await Items.FindAsync([id], token).ConfigureAwait(false);
 
-        if (@event is null)
+        if (item is null)
         {
             return false;
         }
 
-        Items.Remove(@event);
+        Items.Remove(item);
 
         return true;
     }

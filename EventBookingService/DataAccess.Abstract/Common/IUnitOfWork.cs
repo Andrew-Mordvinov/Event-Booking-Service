@@ -6,6 +6,13 @@
 public interface IUnitOfWork
 {
     /// <summary>
+    /// Открывает транзакцию, если она еще не была открыта
+    /// </summary>
+    /// <param name="token">Токен отмены асинхронной операции</param>
+    /// <returns>Асинхронная задача</returns>
+    Task EnsureTransactionAsync(CancellationToken token = default);
+
+    /// <summary>
     /// Сохраняет все изменения в рамках одной транзакции
     /// </summary>
     /// <param name="token">Токен отмены асинхронной операции</param>

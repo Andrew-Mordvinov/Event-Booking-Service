@@ -8,7 +8,6 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shared.Exceptions;
-using Shared.Locking;
 
 namespace Tests.Bookings;
 
@@ -18,24 +17,18 @@ public partial class BookingTests
         out Mock<IBookingRepository> bookingStorageMock,
         out Mock<IEventRepository> eventStorageMock,
         out Mock<IUnitOfWork> unitOfWorkMock,
-        out Mock<ILogger<BookingService>> loggerMock,
-        out Mock<ISemaphoreGetter> createMock,
-        out Mock<ISemaphoreGetter> processMock)
+        out Mock<ILogger<BookingService>> loggerMock)
     {
         bookingStorageMock = new Mock<IBookingRepository>();
         eventStorageMock = new Mock<IEventRepository>();
         unitOfWorkMock = new Mock<IUnitOfWork>();
         loggerMock = new Mock<ILogger<BookingService>>();
-        createMock = new Mock<ISemaphoreGetter>();
-        processMock = new Mock<ISemaphoreGetter>();
 
         return new BookingService(
             bookingStorageMock.Object,
             eventStorageMock.Object,
             unitOfWorkMock.Object,
-            loggerMock.Object,
-            createMock.Object,
-            processMock.Object);
+            loggerMock.Object);
     }
 
     #region GetBookingByIdAsync
@@ -43,7 +36,7 @@ public partial class BookingTests
     [Fact]
     public async Task GetBookingByIdAsync_ValidId_ReturnSuccess()
     {
-        var service = CreateService(out var bookingStorageMock, out var _, out var _, out var _, out var _, out var _);
+        var service = CreateService(out var bookingStorageMock, out var _, out var _, out var _);
         var bookingToReturn = new Booking
         (
             Guid.NewGuid(),
@@ -65,7 +58,7 @@ public partial class BookingTests
     [Fact]
     public async Task GetBookingByIdAsync_InvalidId_SuccessWithoutValue()
     {
-        var service = CreateService(out var bookingStorageMock, out var _, out var _, out var _, out var _, out var _);
+        var service = CreateService(out var bookingStorageMock, out var _, out var _, out var _);
         var bookId = Guid.NewGuid();
         bookingStorageMock.Setup(s => s.GetByIdAsync(bookId, GetMode.Readonly, TestContext.Current.CancellationToken))
             .ReturnsAsync((Booking?)null)
@@ -84,16 +77,11 @@ public partial class BookingTests
     [Fact]
     public async Task CreateBookingAsync_EventExistsAndHasSeats_ReturnSuccess()
     {
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _, out var semaphoreMock, out var _);
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _);
         var eventId = Guid.NewGuid();
         var bookingList = new List<Booking>();
         var bookEvent = new Event(eventId, "SomeTitle", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), CorrectSeatsCount);
         var beforeCount = bookEvent.AvailableSeats;
-
-        // Вызвали семафор для блокировки, потом для разблокировки
-        semaphoreMock.Setup(s => s.SemaphoreSlim)
-            .Returns(new SemaphoreSlim(1, 1))
-            .Verifiable(Times.Exactly(2));
 
         // Успешно получили событие
         eventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
@@ -112,7 +100,6 @@ public partial class BookingTests
 
         var result = await service.CreateBookingAsync(eventId, TestContext.Current.CancellationToken);
 
-        semaphoreMock.Verify();
         bookingStorageMock.Verify();
         eventStorageMock.Verify();
         unitOfWorkMock.Verify();
@@ -126,13 +113,8 @@ public partial class BookingTests
     [Fact]
     public async Task CreateBookingAsync_EventDoesNotExists_NotFoundException()
     {
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _, out var semaphoreMock, out var _);
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _);
         var eventId = Guid.NewGuid();
-
-        // Вызвали семафор для блокировки, потом для разблокировки
-        semaphoreMock.Setup(s => s.SemaphoreSlim)
-            .Returns(new SemaphoreSlim(1, 1))
-            .Verifiable(Times.Exactly(2));
 
         // Попытались получить событие, но его не оказалось
         eventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
@@ -153,7 +135,6 @@ public partial class BookingTests
             .ThrowExactlyAsync<NotFoundException>()
             .WithMessage(BookingServiceErrors.EventNotFound(eventId));
 
-        semaphoreMock.Verify();
         bookingStorageMock.Verify();
         eventStorageMock.Verify();
         unitOfWorkMock.Verify();
@@ -162,13 +143,8 @@ public partial class BookingTests
     [Fact]
     public async Task CreateBookingAsync_NoSeatsAvailable_ReturnConflictError()
     {
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _, out var semaphoreMock, out var _);
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _);
         var eventId = Guid.NewGuid();
-
-        // Вызвали семафор для блокировки, потом для разблокировки
-        semaphoreMock.Setup(s => s.SemaphoreSlim)
-            .Returns(new SemaphoreSlim(1, 1))
-            .Verifiable(Times.Exactly(2));
 
         // Успешно получили событие без свободных мест
         eventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
@@ -189,7 +165,6 @@ public partial class BookingTests
             .ThrowExactlyAsync<ConflictException>()
             .WithMessage(BookingServiceErrors.NoAvailableSeats);
 
-        semaphoreMock.Verify();
         bookingStorageMock.Verify();
         eventStorageMock.Verify();
         unitOfWorkMock.Verify();
@@ -198,7 +173,7 @@ public partial class BookingTests
     [Fact]
     public async Task CreateBookingAsync_ParallelBookMoreThanSeats_NoOverbookingOccurs()
     {
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _, out var semaphoreMock, out var _);
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _);
         var semaphore = new SemaphoreSlim(1, 1);
         var eventId = Guid.NewGuid();
         var bookEvent = new Event(
@@ -207,11 +182,6 @@ public partial class BookingTests
             DateTime.UtcNow,
             DateTime.UtcNow.AddDays(1),
             5);
-
-        // Вызвали семафор для блокировки, потом для разблокировки
-        semaphoreMock.Setup(s => s.SemaphoreSlim)
-            .Returns(semaphore)
-            .Verifiable(Times.Exactly(40));
 
         // Успешно получили событие
         eventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
@@ -245,7 +215,6 @@ public partial class BookingTests
 
         }
 
-        semaphoreMock.Verify();
         bookingStorageMock.Verify();
         eventStorageMock.Verify();
         unitOfWorkMock.Verify();
@@ -258,7 +227,7 @@ public partial class BookingTests
     [Fact]
     public async Task CreateBookingAsync_ParallelBook_UniqueIdOfBooks()
     {
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _, out var semaphoreMock, out var _);
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _);
         var semaphore = new SemaphoreSlim(1, 1);
         var eventId = Guid.NewGuid();
         var bookEvent = new Event(
@@ -267,11 +236,6 @@ public partial class BookingTests
             DateTime.UtcNow,
             DateTime.UtcNow.AddDays(1),
             10);
-
-        // Вызвали семафор для блокировки, потом для разблокировки
-        semaphoreMock.Setup(s => s.SemaphoreSlim)
-            .Returns(semaphore)
-            .Verifiable(Times.Exactly(20));
 
         // Успешно получили событие
         eventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
@@ -297,7 +261,6 @@ public partial class BookingTests
 
         await Task.WhenAll(arrayOfRequests);
 
-        semaphoreMock.Verify();
         bookingStorageMock.Verify();
         eventStorageMock.Verify();
         unitOfWorkMock.Verify();
@@ -311,45 +274,16 @@ public partial class BookingTests
     #region ProcessBookingAsync
 
     [Fact]
-    public async Task ProcessBookingAsync_NotPending_DeclineWithoutProcess()
-    {
-        var service = CreateService(out var _, out var eventStorageMock, out var unitOfWorkMock, out var _, out var _, out var processMock);
-        var book = new Booking(Guid.NewGuid(), Guid.NewGuid(), BookingStatus.Confirmed, DateTime.UtcNow);
-
-        // Не вызвали семафор для блокировки, потом для разблокировки
-        processMock.Setup(s => s.SemaphoreSlim)
-            .Verifiable(Times.Never);
-
-        // Не запрашивали событие
-        eventStorageMock.Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), GetMode.Edit, TestContext.Current.CancellationToken))
-            .Verifiable(Times.Never);
-
-        // Не сохраняли изменения
-        unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
-            .Verifiable(Times.Never);
-   
-        await service.ProcessBookingAsync(book, TestContext.Current.CancellationToken);
-        // Меняем на Rejected и вызываем повторно
-        book.Status = BookingStatus.Rejected;
-        await service.ProcessBookingAsync(book, TestContext.Current.CancellationToken);
-
-        processMock.Verify();
-        eventStorageMock.Verify();
-        unitOfWorkMock.Verify();
-        book.ProcessedAt.Should().BeNull();
-    }
-
-    [Fact]
     public async Task ProcessBookingAsync_EventExits_ConfirmBook()
     {
-        var service = CreateService(out var _, out var eventStorageMock, out var unitOfWorkMock, out var _, out var _, out var processMock);
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _);
         var eventId = Guid.NewGuid();
         var book = new Booking(Guid.NewGuid(), eventId, BookingStatus.Pending, DateTime.UtcNow);
 
-        // Вызвали семафор для блокировки, потом для разблокировки
-        processMock.Setup(s => s.SemaphoreSlim)
-            .Returns(new SemaphoreSlim(1, 1))
-            .Verifiable(Times.Exactly(2));
+        // Получили бронь
+        bookingStorageMock.Setup(s => s.GetByIdAsync(book.Id, GetMode.Edit, TestContext.Current.CancellationToken))
+            .ReturnsAsync(book)
+            .Verifiable(Times.Once);
 
         // Получили событие
         eventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
@@ -360,9 +294,9 @@ public partial class BookingTests
         unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
-        await service.ProcessBookingAsync(book, TestContext.Current.CancellationToken);
+        await service.ProcessBookingAsync(book.Id, TestContext.Current.CancellationToken);
 
-        processMock.Verify();
+        bookingStorageMock.Verify();
         eventStorageMock.Verify();
         unitOfWorkMock.Verify();
         book.ProcessedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(10));
@@ -372,14 +306,14 @@ public partial class BookingTests
     [Fact]
     public async Task ProcessBookingAsync_EventNotExits_RejectBook()
     {
-        var service = CreateService(out var _, out var eventStorageMock, out var unitOfWorkMock, out var _, out var _, out var processMock);
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _);
         var eventId = Guid.NewGuid();
         var book = new Booking(Guid.NewGuid(), eventId, BookingStatus.Pending, DateTime.UtcNow);
 
-        // Вызвали семафор для блокировки, потом для разблокировки
-        processMock.Setup(s => s.SemaphoreSlim)
-            .Returns(new SemaphoreSlim(1, 1))
-            .Verifiable(Times.Exactly(2));
+        // Получили бронь
+        bookingStorageMock.Setup(s => s.GetByIdAsync(book.Id, GetMode.Edit, TestContext.Current.CancellationToken))
+            .ReturnsAsync(book)
+            .Verifiable(Times.Once);
 
         // Событие не получено 
         eventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
@@ -390,89 +324,39 @@ public partial class BookingTests
         unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
-        await service.ProcessBookingAsync(book, TestContext.Current.CancellationToken);
+        await service.ProcessBookingAsync(book.Id, TestContext.Current.CancellationToken);
 
-        processMock.Verify();
+        bookingStorageMock.Verify();
         unitOfWorkMock.Verify();
         eventStorageMock.Verify();
         book.ProcessedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(10));
         book.Status.Should().Be(BookingStatus.Rejected);
     }
 
-    /*    [Fact]
-        public async Task ProcessPendingBookingsAsync_InvalidCount_ThrowException()
-        {
-            var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var _, out var _, out var processMock);
+    [Fact]
+    public async Task ProcessBookingAsync_BookNotExits_RejectBook()
+    {
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _);
+        var bookId = Guid.NewGuid();
+        // Бронь не найдена
+        bookingStorageMock.Setup(s => s.GetByIdAsync(bookId, GetMode.Edit, TestContext.Current.CancellationToken))
+            .ReturnsAsync((Booking?)null)
+            .Verifiable(Times.Once);
 
-            // Не пытались получить страницу
-            bookingStorageMock.Setup(s => s.GetPageAsync(
-                    It.IsAny<Expression<Func<Booking, bool>>?>(),
-                    It.IsAny<int>(),
-                    It.IsAny<int>(),
-                    TestContext.Current.CancellationToken))
-                .Verifiable(Times.Never);
+        // Не получали событие 
+        eventStorageMock.Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), GetMode.Edit, TestContext.Current.CancellationToken))
+            .Verifiable(Times.Never);
 
-            var act = async () => await service.ProcessPendingBookingsAsync(0, TestContext.Current.CancellationToken);
+        // Не сохраняли (нечего сохранять)
+        unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
+            .Verifiable(Times.Never);
 
-            await act.Should()
-                .ThrowExactlyAsync<ArgumentOutOfRangeException>();
+        await service.ProcessBookingAsync(bookId, TestContext.Current.CancellationToken);
 
-            bookingStorageMock.Verify();
-        }
+        bookingStorageMock.Verify();
+        unitOfWorkMock.Verify();
+        eventStorageMock.Verify();
+    }
 
-        [Fact]
-        public async Task ProcessPendingBookingsAsync_StorageDropError_ReturnError()
-        {
-            var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var _, out var _, out var processMock);
-            var count = 100;
-
-            // Вернулась ошибка
-            bookingStorageMock.Setup(s => s.GetPageAsync(
-                    It.IsAny<Expression<Func<Booking, bool>>?>(),
-                    1,
-                    count,
-                    TestContext.Current.CancellationToken))
-                .ThrowsAsync(new Exception())
-                .Verifiable(Times.Once);
-
-            var act = async () => await service.ProcessPendingBookingsAsync(count, TestContext.Current.CancellationToken);
-
-            await act.Should()
-                .ThrowExactlyAsync<Exception>();
-
-            bookingStorageMock.Verify();
-        }
-
-        // Положительный сценарий особо не протестируешь, возможено разнести методы по разным классам и замокать
-        [Fact]
-        public async Task ProcessPendingBookingsAsync_SomePendingBookings_ReturnSuccess()
-        {
-            var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var _, out var _, out var processMock);
-            var count = 100;
-            // Вернулось несколько элементов
-            bookingStorageMock.Setup(s => s.GetPageAsync(
-                    It.IsAny<Expression<Func<Booking, bool>>?>(),
-                    1,
-                    count,
-                    TestContext.Current.CancellationToken))
-                .ReturnsAsync(new PaginatedResult<Booking> 
-                { 
-                    CurrentPage = 1,
-                    FilteredCount = 3,
-                    Items = 
-                    [
-                        new Booking(Guid.NewGuid(), Guid.NewGuid(), BookingStatus.Pending, DateTime.UtcNow),
-                        new Booking(Guid.NewGuid(), Guid.NewGuid(), BookingStatus.Pending, DateTime.UtcNow),
-                        new Booking(Guid.NewGuid(), Guid.NewGuid(), BookingStatus.Pending, DateTime.UtcNow),
-                    ],
-                    TotalPages = 1
-                })
-                .Verifiable(Times.Once);
-
-            var act = async () => await service.ProcessPendingBookingsAsync(count, TestContext.Current.CancellationToken);
-
-            await act.Should().NotThrowAsync();
-            bookingStorageMock.Verify();
-        }*/
     #endregion
 }

@@ -10,7 +10,7 @@ namespace DataAccess.Memory.Storage;
 /// <summary>
 /// Хранилище Dictionary
 /// </summary>
-[Obsolete("Более не актуально хранение в памяти")]
+[Obsolete("Более не актуально хранение в памяти, не поддерживается и не развивается")]
 public class DictionaryRepository<T> : IRepository<T> where T : IHasId, ICopyable<T>
 {
     private readonly Dictionary<Guid, T> _dictionary = [];

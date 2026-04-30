@@ -274,7 +274,6 @@ public partial class MemoryEventFilterTests
                 EventIds.ReadingClub
             }
         ],
-
     ];
 
     #endregion

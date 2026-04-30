@@ -3,9 +3,11 @@ using DataAccess.Memory.Storage;
 using FluentAssertions;
 using Shared.Exceptions;
 using System.Linq.Expressions;
+using Tests.TemplateRepository;
 
 namespace Tests.Storage;
 
+[Obsolete(obsoleteMessage)]
 public partial class DictionaryStorageTests
 {
     private const string obsoleteMessage = "Хранение в памяти не используется и не развивается, тесты не актуальны";
