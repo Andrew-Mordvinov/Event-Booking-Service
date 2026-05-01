@@ -105,6 +105,7 @@ public class BookingServiceTests
     [Fact]
     public async Task CreateBookingAsync_ParallelBookMoreThanSeats_NoOverbookingOccurs()
     {
+        // Arrange
         await using var pgsql = new PostgresFixture();
         await pgsql.InitializeAsync();
 
@@ -120,6 +121,7 @@ public class BookingServiceTests
 
         await PrepareTestDbAsync(container, @event, TestContext.Current.CancellationToken);
 
+        // Act
         var arrayOfRequests = new Task<Booking>[20];
 
         for (int i = 0; i < 20; i++)
@@ -144,6 +146,7 @@ public class BookingServiceTests
 
         }
 
+        // Assert
         var storedEvent = await GetEventAsync(container, @event.Id, TestContext.Current.CancellationToken);
 
         storedEvent.Should().NotBeNull();
