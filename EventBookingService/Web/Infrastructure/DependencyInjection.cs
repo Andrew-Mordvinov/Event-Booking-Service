@@ -15,7 +15,11 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("Default")
             ?? throw new InvalidOperationException("Connection string 'Default' not found.");
 
-        services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddDbContext<AppDbContext>(options => options
+            .UseNpgsql(connectionString)
+            .LogTo(message => Serilog.Log.Information(message), LogLevel.Debug)
+            .EnableDetailedErrors()
+            .EnableSensitiveDataLogging());
 
         services.AddHostedService<BookingManagerBackgroundService>();
 

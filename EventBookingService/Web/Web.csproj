@@ -25,6 +25,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Bookings.Service\Bookings.Service.csproj" />
     <ProjectReference Include="..\DataAccess.EF\DataAccess.EF.csproj" />
+    <ProjectReference Include="..\DTO.Presentation\DTO.Presentation.csproj" />
+    <ProjectReference Include="..\Events.Service\Events.Service.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 

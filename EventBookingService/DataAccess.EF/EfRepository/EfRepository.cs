@@ -49,7 +49,7 @@ public class EfRepository<T> : IRepository<T> where T : class, IHasId
         await _unitOfWork.EnsureTransactionAsync(token).ConfigureAwait(false);
 
         return await Items
-            .FromSql($"SELECT * FROM {nameof(T)} WHERE Id = {id} FOR UPDATE")
+            .FromSqlRaw($"SELECT * FROM \"{typeof(T).Name}\" WHERE \"Id\" = {{0}} FOR UPDATE", id)
             .FirstOrDefaultAsync(token)
             .ConfigureAwait(false);
     }

@@ -8,7 +8,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.csproj" />
-	<InternalsVisibleTo Include="UnitTests" />
+	<InternalsVisibleTo Include="Tests.Unit" />
+	<InternalsVisibleTo Include="Tests.Integration" />
   </ItemGroup>
 
 </Project>

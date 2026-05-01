@@ -14,11 +14,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddScoped<IEventService, EventService>();
-        services.AddScoped<IBookingService, BookingService>();
+        services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<IEventRepository, EfEventRepository>();
         services.AddScoped<IBookingRepository, EfBookingRepository>();
-        services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+        services.AddScoped<IEventService, EventService>();
+        services.AddScoped<IBookingService, BookingService>();
 
         return services;
     }

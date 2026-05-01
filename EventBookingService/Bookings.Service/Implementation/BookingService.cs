@@ -39,33 +39,6 @@ public class BookingService(
         return booking;
     }
 
-    //public async Task ProcessPendingBookingsAsync(int maxCount = 100, CancellationToken token = default)
-    //{
-    //    ArgumentOutOfRangeException.ThrowIfLessThan(maxCount, 1);
-
-    //    var pageResult = await _storageBooking.GetPageAsync(
-    //            b => b.Status == BookingStatus.Pending,
-    //            1,
-    //            maxCount,
-    //            token);
-
-    //    if (pageResult is null || pageResult.Items.Count < 1)
-    //    {
-    //        _logger.LogInformation("Бронирований для обработки не найдено");
-    //        return;
-    //    }
-
-    //    _logger.LogInformation("Найдено {Count} броней для обработки", pageResult.Items.Count);
-
-    //    token.ThrowIfCancellationRequested();
-
-    //    var tasks = pageResult.Items.Select(booking => ProcessBookingAsync(booking, token));
-    //    // Исключения обрабатываются внутри отдельно для каждой брони
-    //    await Task.WhenAll(tasks);
-
-    //    return;
-    //}
-
     public async Task ProcessBookingAsync(Guid bookingId, CancellationToken token = default)
     {
         try
