@@ -9,7 +9,7 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
     public void Configure(EntityTypeBuilder<Event> builder)
     {
         builder
-            .ToTable(nameof(Event))
+            .ToTable(TableNames.Events)
             .HasKey(e => e.Id);
 
         builder.Property(e => e.Id)

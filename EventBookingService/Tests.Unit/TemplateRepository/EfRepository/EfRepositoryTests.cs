@@ -22,7 +22,7 @@ public partial class EfRepositoryTests
 
         var context = new TestDbContext(options);
         var unitOfWorkMock = new Mock<IUnitOfWork>();
-        var repository = new EfRepository<TestItem>(context, unitOfWorkMock.Object);
+        var repository = new EfRepository<TestItem>(context, unitOfWorkMock.Object, nameof(TestItem));
 
         return (context, repository);
     }
