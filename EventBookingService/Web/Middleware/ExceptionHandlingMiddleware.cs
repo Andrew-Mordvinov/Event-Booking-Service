@@ -68,9 +68,9 @@ public class ExceptionHandlingMiddleware(
     private static int GetStatusCode(Exception exception) =>
         (exception) switch
         {
-            ValidationException ex => StatusCodes.Status400BadRequest,
-            ConflictException ex => StatusCodes.Status409Conflict,
-            NotFoundException ex => StatusCodes.Status404NotFound,
+            ValidationException => StatusCodes.Status400BadRequest,
+            ConflictException => StatusCodes.Status409Conflict,
+            NotFoundException => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status500InternalServerError,
         };
 

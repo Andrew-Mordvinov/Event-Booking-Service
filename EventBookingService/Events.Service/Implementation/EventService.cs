@@ -1,8 +1,9 @@
-using DataAccess.Storage;
-using DTO.Events.Requests;
-using Events.Models;
+using DataAccess.Abstract;
+using DataAccess.Abstract.Common;
+using DataAccess.Abstract.Enums;
+using DTO.Presentation.Events.Requests;
+using Entities.Events;
 using LinqExtensions;
-using Microsoft.Extensions.DependencyInjection;
 using Shared;
 using Shared.Exceptions;
 using Shared.Paging;
@@ -14,11 +15,11 @@ namespace Events.Service.Implementation;
 /// <summary>
 /// Реализация <see cref="IEventService"/> с хранением данных в памяти приложения
 /// </summary>
-public class EventService([FromKeyedServices("Mem")]IStorage<Event> events) : IEventService
+public class EventService(
+    IEventRepository _events,
+    IUnitOfWork _unitOfWork) : IEventService
 {
     #region Private fields
-
-    private readonly IStorage<Event> _events = events;
 
     private static readonly MethodInfo _methodContains = typeof(string).GetMethod(nameof(string.Contains), [typeof(string)]) 
         ?? throw new InvalidOperationException($"Невозможно получить метод {nameof(string.Contains)}");
@@ -28,10 +29,18 @@ public class EventService([FromKeyedServices("Mem")]IStorage<Event> events) : IE
     #region Base overrides
 
     public Task<Event?> GetEventByIdAsync(Guid id, CancellationToken token = default) =>
-        _events.GetByIdAsync(id, token);
+        _events.GetByIdAsync(id, GetMode.Readonly, token);
 
-    public Task<bool> DeleteEventByIdAsync(Guid id, CancellationToken token = default) =>
-        _events.RemoveAsync(id, token);
+    public async Task<bool> DeleteEventByIdAsync(Guid id, CancellationToken token = default)
+    {
+        var deleted = await _events.RemoveAsync(id, token);
+        if (deleted)
+        {
+            await _unitOfWork.SaveChangesAsync(token);
+        }      
+
+        return deleted;
+    }
 
     public async Task<Event> CreateEventAsync(
         CreateEventRequest request,
@@ -44,6 +53,7 @@ public class EventService([FromKeyedServices("Mem")]IStorage<Event> events) : IE
         }
 
         await _events.AddAsync(entity, token);
+        await _unitOfWork.SaveChangesAsync(token);
 
         return entity;
     }
@@ -81,7 +91,7 @@ public class EventService([FromKeyedServices("Mem")]IStorage<Event> events) : IE
         ModifyEventRequest request,
         CancellationToken token = default)
     {
-        var baseEvent = await _events.GetByIdAsync(id, token);
+        var baseEvent = await _events.GetByIdAsync(id, token: token);
 
         if (baseEvent is null)
         {
@@ -103,9 +113,10 @@ public class EventService([FromKeyedServices("Mem")]IStorage<Event> events) : IE
             throw new ValidationException(errors);
         }
 
-        var result = await _events.UpdateAsync(source, token);
+        baseEvent.FillFrom(source);
+        await _unitOfWork.SaveChangesAsync(token);
 
-        return result ? source : null;
+        return source;
     }
 
     #endregion

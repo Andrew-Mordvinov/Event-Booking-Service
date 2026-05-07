@@ -1,11 +1,12 @@
 using Bookings.Service;
 
-using DTO.Bookings.Response;
-using DTO.Events.Requests;
-using DTO.Events.Response;
-using DTO.Generic;
+using DTO.Presentation.Bookings.Response;
+using DTO.Presentation.Events.Requests;
+using DTO.Presentation.Events.Response;
+using DTO.Presentation.Generic;
 
-using Events.Models;
+using Entities.Events;
+
 using Events.Service;
 
 using Microsoft.AspNetCore.Mvc;
@@ -95,11 +96,6 @@ public class EventController(
     public async Task<ActionResult<BookingAcceptedResponse>> BookEventAsync(Guid eventId, CancellationToken cancellationToken)
     {
         var result = await _bookingService.CreateBookingAsync(eventId, cancellationToken);
-
-        if (result is null)
-        {
-
-        }
 
         return AcceptedAtRoute(
             nameof(BookingController.GetBookingByIdAsync),

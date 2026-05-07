@@ -7,9 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
-    <ProjectReference Include="..\DTO\DTO.csproj" />
-    <ProjectReference Include="..\Events.Models\Events.Models.csproj" />
+    <ProjectReference Include="..\DataAccess.Abstract\DataAccess.Abstract.csproj" />
+    <ProjectReference Include="..\DTO.Presentation\DTO.Presentation.csproj" />
     <ProjectReference Include="..\LinqExtensions\LinqExtensions.csproj" />
   </ItemGroup>
 

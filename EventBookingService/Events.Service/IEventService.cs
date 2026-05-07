@@ -1,5 +1,5 @@
-using DTO.Events.Requests;
-using Events.Models;
+using DTO.Presentation.Events.Requests;
+using Entities.Events;
 using Shared.Paging;
 
 namespace Events.Service;
