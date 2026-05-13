@@ -1,10 +1,40 @@
-﻿using System.Linq.Expressions;
+﻿using DataAccess.Memory.Storage;
+using Shared.Interfaces;
+using System.Linq.Expressions;
 
-namespace Tests.TemplateRepository;
+namespace Tests.Unit.MemRepository;
 
-public class SharedTestData
+public partial class DictionaryStorageTests
 {
-    public static class TestItemIds
+    #region Common
+
+    public class TestItem : IHasId, ICopyable<TestItem>
+    {
+        public Guid Id { get; set; }
+
+        public string TextField { get; set; } = string.Empty;
+
+        public int IntField { get; set; }
+
+        public TestItem Copy()
+        {
+            return new TestItem
+            {
+                Id = Id,
+                TextField = TextField,
+                IntField = IntField
+            };
+        }
+
+        public void FillFrom(TestItem source)
+        {
+            Id = source.Id;
+            TextField = source.TextField;
+            IntField = source.IntField;
+        }
+    }
+
+    private static class TestItemIds
     {
         public static readonly Guid First = Guid.Parse("c1f7a9e2-6b4d-4c8a-9f21-3d7e5a2b8c91");
         public static readonly Guid Second = Guid.Parse("a9d3c5b7-2e6f-4b1a-8c9d-5e7f2a4b6c31");
@@ -20,7 +50,7 @@ public class SharedTestData
         public static readonly Guid Twelfth = Guid.Parse("5d1a7c9e-2b4f-4a8c-b6e3-1c2f9a7d5b68");
     }
 
-    public static class Filters
+    private static class Filters
     {
         /// <summary>
         /// x => x.IntField > 0
@@ -168,10 +198,9 @@ public class SharedTestData
         }
     ];
 
-    /// <summary>
-    /// Общий массив данных для тестирования репозитория на получение корректных данных страницы
-    /// </summary>
-    public static readonly IEnumerable<object?[]> TestGetPage_ValidParams =
+    #endregion
+
+    public static IEnumerable<object?[]> GetPageAsync_ValidFilterAndPageParams =>
     [
         // 1
         [
@@ -326,11 +355,7 @@ public class SharedTestData
         ]
     ];
 
-    /// <summary>
-    /// Общий массив для тестирования репозитория на отсутствие элементов после фильтра
-    /// (или вообще, если в нем и не было элементов)
-    /// </summary>
-    public static readonly IEnumerable<object?[]> TestGetPage_NoElementAfterFilter =
+    public static IEnumerable<object?[]> GetPageAsync_NoElementAfterFilter =>
     [
         [
             BaseListForFilter,
@@ -351,6 +376,76 @@ public class SharedTestData
             Filters.RangeAndText,
             1,
             10
+        ],
+    ];
+
+    public static IEnumerable<object?[]> GetPageAsync_BadPaging =>
+    [
+        [
+            BaseListForFilter,
+            Filters.ExactOrEmpty,
+            -2,
+            10,
+            new string[] 
+            {
+                DictionaryRepoErrors.PageMustBePositive
+            }
+        ],
+
+        [
+            BaseListForFilter,
+            null,
+            0,
+            0,
+            new string[]
+            {
+                DictionaryRepoErrors.PageMustBePositive,
+                DictionaryRepoErrors.PageSizeMustBePositive
+            }
+        ],
+
+        [
+            BaseListForFilter,
+            Filters.TextEqualsText,
+            1,
+            -1,
+            new string[]
+            {
+                DictionaryRepoErrors.PageSizeMustBePositive
+            }
+        ],
+
+        [
+            BaseListForFilter,
+            null,
+            1,
+            -1,
+            new string[]
+            {
+                DictionaryRepoErrors.PageSizeMustBePositive
+            }
+        ],
+
+        [
+            BaseListForFilter,
+            Filters.Positive,
+            3,
+            5,
+            new string[]
+            {
+                DictionaryRepoErrors.PageNotFound(3, 2)
+            }
+        ],
+
+        [
+            BaseListForFilter,
+            null,
+            2,
+            15,
+            new string[]
+            {
+                DictionaryRepoErrors.PageNotFound(2, 1)
+            }
         ],
     ];
 }

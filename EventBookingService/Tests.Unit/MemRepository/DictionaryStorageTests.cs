@@ -3,9 +3,8 @@ using DataAccess.Memory.Storage;
 using FluentAssertions;
 using Shared.Exceptions;
 using System.Linq.Expressions;
-using Tests.TemplateRepository;
 
-namespace Tests.Storage;
+namespace Tests.Unit.MemRepository;
 
 [Obsolete(obsoleteMessage)]
 public partial class DictionaryStorageTests

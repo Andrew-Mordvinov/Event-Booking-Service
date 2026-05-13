@@ -32,6 +32,7 @@
     <ProjectReference Include="..\DTO.Presentation\DTO.Presentation.csproj" />
     <ProjectReference Include="..\Events.Service\Events.Service.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
+    <InternalsVisibleTo Include="Tests.Integration" />
   </ItemGroup>
 
 </Project>
