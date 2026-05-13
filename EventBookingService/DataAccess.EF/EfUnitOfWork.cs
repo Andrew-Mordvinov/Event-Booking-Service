@@ -34,20 +34,20 @@ public class EfUnitOfWork(AppDbContext appDbContext) : IUnitOfWork
 
     public async Task SaveChangesAsync(CancellationToken token = default)
     {
-        if (appDbContext.Database.CurrentTransaction == null)
-        {
-            await appDbContext.SaveChangesAsync(token).ConfigureAwait(false);
-            return;
-        }
-
         try
         {
             await appDbContext.SaveChangesAsync(token).ConfigureAwait(false);
-            await appDbContext.Database.CurrentTransaction.CommitAsync(token).ConfigureAwait(false);
+            if (appDbContext.Database.CurrentTransaction != null)
+            {
+                await appDbContext.Database.CurrentTransaction.CommitAsync(token).ConfigureAwait(false);
+            }
         }
         catch
         {
-            await appDbContext.Database.CurrentTransaction.RollbackAsync(token).ConfigureAwait(false);
+            if (appDbContext.Database.CurrentTransaction != null)
+            {
+                await appDbContext.Database.CurrentTransaction.RollbackAsync(token).ConfigureAwait(false);
+            }
             appDbContext.ChangeTracker.Clear();
             throw;
         }

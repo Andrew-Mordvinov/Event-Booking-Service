@@ -3,6 +3,7 @@ using Bookings.Service.Implementation;
 using DataAccess.Abstract;
 using DataAccess.Abstract.Common;
 using DataAccess.EF;
+using Entities.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 
-namespace Tests.Integration.Ef;
+namespace Tests.Integration.Ef.Infrastructure;
 
 [Collection("PostgresTests")]
 public class MigrationTests(SharedFixture sharedFixture)
