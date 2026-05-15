@@ -93,6 +93,10 @@
 `Add-Migration <Name> -StartupProject Web -Project DataAccess.EF`
 `dotnet ef migrations add <Name> --project DataAccess.EF --startup-project Web`
 
+Для выполнения миграции базы данных необходимо выполнить следующую команду или просто запустить проект:
+
+`dotnet ef database update --project DataAccess.EF --startup-project Web`
+
 ## Фоновая обработка бронирований
 
 Сервис использует фоновый сервис `BookingManagerBackgroundService` для асинхронной обработки бронирований:

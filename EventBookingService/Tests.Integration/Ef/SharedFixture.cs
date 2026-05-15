@@ -62,7 +62,7 @@ public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
         // Удалили БД
         await db.Database.EnsureDeletedAsync(token);
         // Создание БД
-        await db.Database.EnsureCreatedAsync(token);
+        await db.Database.MigrateAsync(token);
     }
 
     public static DateTimeOffset TrimToMicroseconds(DateTimeOffset dto)

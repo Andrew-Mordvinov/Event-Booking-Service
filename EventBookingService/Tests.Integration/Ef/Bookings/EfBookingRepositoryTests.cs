@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Tests.Integration.Ef.Bookings;
 
 [Collection("PostgresTests")]
-public class EfBookingRepositoryTests(SharedFixture sharedFixture) : IAsyncLifetime
+public partial class EfBookingRepositoryTests(SharedFixture sharedFixture) : IAsyncLifetime
 {
     private readonly SharedFixture _sharedFixture = sharedFixture;
 
@@ -54,6 +54,26 @@ public class EfBookingRepositoryTests(SharedFixture sharedFixture) : IAsyncLifet
 
         db.Events.Add(new Event(id, "Don't Care Title", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), 10));
 
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+    }
+
+    private async Task AddBookingsAndEventsAsync(IEnumerable<Event> events, IEnumerable<Booking> bookings)
+    {
+        if (!events.Any() && !bookings.Any())
+        {
+            return;
+        }
+
+        using var scope = _sharedFixture.ServiceProvider.CreateScope();
+
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        // Последовательно применяем, а то ef сам связи может выставить и при передаче одной и той же коллекции событий
+        // она добавляется вместе с бронями
+        db.Events.AddRange(events);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.ChangeTracker.Clear();
+
+        db.Bookings.AddRange(bookings);
         await db.SaveChangesAsync(TestContext.Current.CancellationToken);
     }
 
@@ -328,6 +348,24 @@ public class EfBookingRepositoryTests(SharedFixture sharedFixture) : IAsyncLifet
 
         // Assert
         removed.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region GetPendingBookingsAsync
+
+    [Theory]
+    [MemberData(nameof(GetPendingBookingsAsync_Common))]
+    public async Task GetPendingBookingsAsync_Common_ReturnValidGuids(List<Event> events, List<Booking> bookings, List<Guid> expectedBookings)
+    {
+        await AddBookingsAndEventsAsync(events, bookings);
+
+        using var scope = _sharedFixture.ServiceProvider.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+
+        var result = await repository.GetPendingBookingsAsync(TestContext.Current.CancellationToken);
+
+        result.Should().BeEquivalentTo(expectedBookings);
     }
 
     #endregion
