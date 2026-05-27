@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace DataAccess.EF;
 
 public class EfBookingRepository(AppDbContext dbContext, IUnitOfWork efUnitOfWork) 
-    : EfRepository<Booking>(dbContext, efUnitOfWork), IBookingRepository
+    : EfRepository<Booking>(dbContext, efUnitOfWork, TableNames.Bookings), IBookingRepository
 {
     public Task<List<Guid>> GetPendingBookingsAsync(CancellationToken token = default)
     {

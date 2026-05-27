@@ -16,15 +16,20 @@ public class EfRepository<T> : IRepository<T> where T : class, IHasId
     private readonly AppDbContext _appDbContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly DbSet<T> _items;
+    private readonly string _table;
 
     protected AppDbContext AppDbContext => _appDbContext;
     protected DbSet<T> Items => _items;
 
-    public EfRepository(AppDbContext dbContext, IUnitOfWork unitOfWork)
+    public EfRepository(
+        AppDbContext dbContext,
+        IUnitOfWork unitOfWork,
+        string tableName)
     {
         _appDbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         _items = dbContext.Set<T>();
         _unitOfWork = unitOfWork;
+        _table = tableName;
     }
 
     public Task AddAsync(T item, CancellationToken token = default)
@@ -49,7 +54,7 @@ public class EfRepository<T> : IRepository<T> where T : class, IHasId
         await _unitOfWork.EnsureTransactionAsync(token).ConfigureAwait(false);
 
         return await Items
-            .FromSqlRaw($"SELECT * FROM \"{typeof(T).Name}\" WHERE \"Id\" = {{0}} FOR UPDATE", id)
+            .FromSqlRaw($"SELECT * FROM \"{_table}\" WHERE \"Id\" = {{0}} FOR UPDATE", id)
             .FirstOrDefaultAsync(token)
             .ConfigureAwait(false);
     }

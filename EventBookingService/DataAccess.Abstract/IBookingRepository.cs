@@ -6,7 +6,7 @@ namespace DataAccess.Abstract;
 /// <summary>
 /// Репозиторий бронирований
 /// </summary>
-public interface IBookingRepository : IRepository<Booking>
+public interface IBookingRepository : IBaseStorage<Booking>
 {
     /// <summary>
     /// Возвращает идентификаторы ожидающих обработки бронирования

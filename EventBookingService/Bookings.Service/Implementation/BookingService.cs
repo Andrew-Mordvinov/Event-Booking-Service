@@ -13,7 +13,7 @@ public class BookingService(
     IUnitOfWork _unitOfWork,
     ILogger<BookingService> _logger) : IBookingService
 {
-    private static readonly int _imitationDelay = 2000;
+    private const int _imitationDelay = 2000;
 
     public Task<Booking?> GetBookingByIdAsync(
         Guid bookingId,
