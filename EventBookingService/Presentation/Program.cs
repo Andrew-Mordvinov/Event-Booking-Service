@@ -1,13 +1,14 @@
-using DataAccess.EF;
+
+using Infrastructure.Ef;
 
 using Microsoft.EntityFrameworkCore;
 
-using Serilog;
+using Presentation.Application;
+using Presentation.Infrastructure;
+using Presentation.Middleware;
+using Presentation.Presentation;
 
-using Web.Application;
-using Web.Infrastructure;
-using Web.Middleware;
-using Web.Presentation;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 

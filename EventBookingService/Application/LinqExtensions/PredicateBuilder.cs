@@ -2,7 +2,7 @@ using System.Linq.Expressions;
 
 // https://petemontgomery.wordpress.com/2011/02/10/a-universal-predicatebuilder/
 
-namespace LinqExtensions;
+namespace Application.LinqExtensions;
 
 /// <summary>
 /// Enables the efficient, dynamic composition of query predicates.

@@ -1,8 +1,8 @@
-﻿using Entities.Bookings;
-using Entities.Events;
+﻿using Domain.Bookings;
+using Domain.Events;
 using Microsoft.EntityFrameworkCore;
 
-namespace DataAccess.EF;
+namespace Infrastructure.Ef;
 
 /// <summary>
 /// Контекст для работы с БД

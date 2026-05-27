@@ -1,14 +1,14 @@
-﻿using DataAccess.Abstract;
-using DataAccess.Abstract.Common;
-using DataAccess.Abstract.Enums;
-using DTO.Presentation.Events.Requests;
-using Entities.Events;
-using Events.Service.Implementation;
+﻿using Application.DTO.Events.Requests;
+using Application.Implementation;
+using Application.Infrastructure;
+using Application.Infrastructure.Common;
+using Application.Infrastructure.Enums;
+using Domain.Events;
+using Domain.Exceptions;
 using FluentAssertions;
 using Moq;
-using Shared.Exceptions;
 
-namespace Tests.Events.Crud;
+namespace Tests.Unit.Events.Crud;
 
 public partial class EventServiceCrudTests
 {

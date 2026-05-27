@@ -1,4 +1,4 @@
-namespace Entities.Events;
+namespace Domain.Events;
 
 public class EventFilters
 {

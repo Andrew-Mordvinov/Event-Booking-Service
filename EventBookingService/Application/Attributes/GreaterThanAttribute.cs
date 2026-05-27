@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 
-namespace Shared.Attributes;
+namespace Application.Attributes;
 
 /// <summary>
 /// Атрибут валидации для сравнения (больше) значения свойства с другим свойством в данном объекте

@@ -1,11 +1,11 @@
-using DataAccess.Abstract.Common;
-using DataAccess.Abstract.Enums;
-using Shared.Exceptions;
-using Shared.Interfaces;
-using Shared.Paging;
+using Application.Infrastructure.Common;
+using Application.Infrastructure.Enums;
+using Application.Paging;
+using Domain.Exceptions;
+using Domain.Interfaces;
 using System.Linq.Expressions;
 
-namespace DataAccess.Memory.Storage;
+namespace Infrastructure.MemStorage;
 
 /// <summary>
 /// Хранилище Dictionary
@@ -17,7 +17,7 @@ public class DictionaryRepository<T> : IRepository<T> where T : IHasId, ICopyabl
 
     public DictionaryRepository()
     {
-        
+
     }
 
     public DictionaryRepository(IEnumerable<T> items)

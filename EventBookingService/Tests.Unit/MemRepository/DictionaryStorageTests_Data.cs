@@ -1,5 +1,5 @@
-﻿using DataAccess.Memory.Storage;
-using Shared.Interfaces;
+﻿using Domain.Interfaces;
+using Infrastructure.MemStorage;
 using System.Linq.Expressions;
 
 namespace Tests.Unit.MemRepository;
@@ -386,7 +386,7 @@ public partial class DictionaryStorageTests
             Filters.ExactOrEmpty,
             -2,
             10,
-            new string[] 
+            new string[]
             {
                 DictionaryRepoErrors.PageMustBePositive
             }

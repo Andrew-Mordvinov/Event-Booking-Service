@@ -1,11 +1,12 @@
-using DataAccess.Abstract;
-using DataAccess.Abstract.Common;
-using DataAccess.Abstract.Enums;
-using Entities.Bookings;
+using Application.Infrastructure;
+using Application.Infrastructure.Common;
+using Application.Infrastructure.Enums;
+using Application.Interfaces;
+using Domain.Bookings;
+using Domain.Exceptions;
 using Microsoft.Extensions.Logging;
-using Shared.Exceptions;
 
-namespace Bookings.Service.Implementation;
+namespace Application.Implementation;
 
 public class BookingService(
     IBookingRepository _storageBooking,

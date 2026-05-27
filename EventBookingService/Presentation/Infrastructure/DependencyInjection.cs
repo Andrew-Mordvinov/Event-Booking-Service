@@ -1,10 +1,11 @@
-using DataAccess.EF;
+
+using Infrastructure.Ef;
 
 using Microsoft.EntityFrameworkCore;
 
-using Web.Infrastructure.Bookings;
+using Presentation.Infrastructure.Bookings;
 
-namespace Web.Infrastructure;
+namespace Presentation.Infrastructure;
 
 public static class DependencyInjection
 {
@@ -17,9 +18,8 @@ public static class DependencyInjection
 
         services.AddDbContextPool<AppDbContext>(options => options
             .UseNpgsql(connectionString)
-            .LogTo(message => Serilog.Log.Information(message), LogLevel.Debug)
-            .EnableDetailedErrors()
-            .EnableSensitiveDataLogging(), 100);
+            .LogTo(message => Serilog.Log.Information(message), LogLevel.Error)
+            .EnableDetailedErrors(), 100);
 
         services.AddHostedService<BookingManagerBackgroundService>();
 

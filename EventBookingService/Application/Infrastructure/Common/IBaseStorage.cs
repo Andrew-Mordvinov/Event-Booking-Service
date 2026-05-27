@@ -1,7 +1,7 @@
-﻿using DataAccess.Abstract.Enums;
-using Shared.Interfaces;
+﻿using Application.Infrastructure.Enums;
+using Domain.Interfaces;
 
-namespace DataAccess.Abstract.Common;
+namespace Application.Infrastructure.Common;
 
 /// <summary>
 /// Базовое хранилище

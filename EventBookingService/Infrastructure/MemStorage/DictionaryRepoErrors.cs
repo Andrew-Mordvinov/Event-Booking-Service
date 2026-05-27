@@ -1,4 +1,4 @@
-namespace DataAccess.Memory.Storage;
+namespace Infrastructure.MemStorage;
 
 public static class DictionaryRepoErrors
 {
@@ -8,6 +8,6 @@ public static class DictionaryRepoErrors
     public static readonly string PageMustBePositive = "Страница не может быть меньше 1";
     public static readonly string PageSizeMustBePositive = "Размер страницы не может быть меньше 1";
 
-    public static string ItemWithIdAlreadyExist(Guid id) => 
+    public static string ItemWithIdAlreadyExist(Guid id) =>
         $"Элемент с идентификатором {id} уже присутствует в хранилище";
 }

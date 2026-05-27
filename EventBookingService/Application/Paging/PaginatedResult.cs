@@ -1,4 +1,4 @@
-namespace Shared.Paging;
+namespace Application.Paging;
 
 public class PaginatedResult<T>
 {

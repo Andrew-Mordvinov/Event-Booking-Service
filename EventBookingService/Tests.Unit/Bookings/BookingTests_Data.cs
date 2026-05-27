@@ -1,4 +1,4 @@
-﻿namespace Tests.Bookings;
+﻿namespace Tests.Unit.Bookings;
 
 public partial class BookingTests
 {

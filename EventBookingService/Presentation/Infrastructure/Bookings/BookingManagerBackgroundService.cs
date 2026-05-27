@@ -1,8 +1,9 @@
-using Bookings.Service;
 
-using DataAccess.Abstract;
+using Application.Infrastructure;
 
-namespace Web.Infrastructure.Bookings;
+using Application.Interfaces;
+
+namespace Presentation.Infrastructure.Bookings;
 
 public class BookingManagerBackgroundService(
     IServiceScopeFactory _scopeFactory,
@@ -53,7 +54,7 @@ public class BookingManagerBackgroundService(
         var tasks = pendingBookings.Select(async (booking) =>
         {
             await using var taskScope = _scopeFactory.CreateAsyncScope();
-            
+
             var service = taskScope.ServiceProvider.GetRequiredService<IBookingService>();
 
             await service.ProcessBookingAsync(booking, stoppingToken);

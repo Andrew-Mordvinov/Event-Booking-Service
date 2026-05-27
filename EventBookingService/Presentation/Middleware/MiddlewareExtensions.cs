@@ -1,4 +1,4 @@
-namespace Web.Middleware;
+namespace Presentation.Middleware;
 
 public static class MiddlewareExtensions
 {

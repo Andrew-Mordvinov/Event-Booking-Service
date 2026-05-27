@@ -1,7 +1,7 @@
-using Entities.Bookings;
-using Shared.Interfaces;
+using Domain.Bookings;
+using Domain.Interfaces;
 
-namespace Entities.Events;
+namespace Domain.Events;
 
 /// <summary>
 /// Модель мероприятия, реализующая непосредственно бизнес-логику
@@ -106,8 +106,8 @@ public class Event : IHasId, ICopyable<Event>
         }
 
         if (availableSeats is not null
-            && availableSeats > 0 
-            && totalSeats > 0 
+            && availableSeats > 0
+            && totalSeats > 0
             && totalSeats < availableSeats)
         {
             errors.Add(EventErrors.TotalSeatsCantBeLessAvailableSeats);
@@ -180,10 +180,10 @@ public class Event : IHasId, ICopyable<Event>
 
     public Event Copy() => new(Id, Title, StartAt, EndAt, TotalSeats, AvailableSeats, Description);
 
-    public bool Equivalent(Event other) => 
-        Title == other.Title 
-        && Description == other.Description 
-        && StartAt == other.StartAt 
+    public bool Equivalent(Event other) =>
+        Title == other.Title
+        && Description == other.Description
+        && StartAt == other.StartAt
         && EndAt == other.EndAt
         && TotalSeats == other.TotalSeats
         && AvailableSeats == other.AvailableSeats;

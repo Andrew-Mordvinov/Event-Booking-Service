@@ -1,4 +1,4 @@
-﻿namespace DataAccess.EF;
+﻿namespace Infrastructure.Ef;
 
 public static class TableNames
 {

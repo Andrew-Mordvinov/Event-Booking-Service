@@ -1,12 +1,12 @@
-﻿using Bookings.Service;
-using DataAccess.Abstract;
-using DataAccess.Abstract.Enums;
-using DataAccess.EF;
-using Entities.Bookings;
-using Entities.Events;
+﻿using Application.Infrastructure;
+using Application.Infrastructure.Enums;
+using Application.Interfaces;
+using Domain.Bookings;
+using Domain.Events;
+using Domain.Exceptions;
 using FluentAssertions;
+using Infrastructure.Ef;
 using Microsoft.Extensions.DependencyInjection;
-using Shared.Exceptions;
 
 namespace Tests.Integration.Ef.Bookings;
 

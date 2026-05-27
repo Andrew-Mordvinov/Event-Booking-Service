@@ -1,9 +1,9 @@
-﻿using DataAccess.Memory.Storage;
-using Entities.Events;
-using Events.Service.Implementation;
-using Shared;
+﻿using Application.Implementation;
+using Domain;
+using Domain.Events;
+using Infrastructure.MemStorage;
 
-namespace Tests.Events.Filtering;
+namespace Tests.Unit.Events.Filtering;
 
 public partial class MemoryEventFilterTests
 {

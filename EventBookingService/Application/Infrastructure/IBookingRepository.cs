@@ -1,7 +1,7 @@
-﻿using DataAccess.Abstract.Common;
-using Entities.Bookings;
+﻿using Application.Infrastructure.Common;
+using Domain.Bookings;
 
-namespace DataAccess.Abstract;
+namespace Application.Infrastructure;
 
 /// <summary>
 /// Репозиторий бронирований

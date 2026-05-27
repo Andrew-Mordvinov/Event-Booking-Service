@@ -1,4 +1,4 @@
-﻿namespace Shared.Exceptions;
+﻿namespace Domain.Exceptions;
 
 /// <summary>
 /// Исключение, возникающее при ошибках валидации моделей

@@ -1,12 +1,12 @@
-﻿using DataAccess.Abstract.Common;
-using DataAccess.Abstract.Enums;
+﻿using Application.Infrastructure.Common;
+using Application.Infrastructure.Enums;
+using Application.Paging;
+using Domain.Exceptions;
+using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Shared.Exceptions;
-using Shared.Interfaces;
-using Shared.Paging;
 using System.Linq.Expressions;
 
-namespace DataAccess.EF.EfRepository;
+namespace Infrastructure.Ef.EfRepository;
 
 /// <summary>
 /// Обобщенный простой репозиторий EF Core

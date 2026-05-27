@@ -1,4 +1,4 @@
-namespace Shared;
+namespace Domain;
 
 public static class GlobalConst
 {

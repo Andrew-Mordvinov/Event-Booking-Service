@@ -1,4 +1,4 @@
-﻿namespace Shared.Exceptions;
+﻿namespace Domain.Exceptions;
 
 /// <summary>
 /// Исключение, возникающее при ошибке получения модели (в случае отсутствия)

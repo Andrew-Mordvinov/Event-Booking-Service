@@ -1,12 +1,12 @@
-﻿using DataAccess.Abstract;
-using DataAccess.Abstract.Common;
-using DataAccess.EF.EfRepository;
-using Entities.Bookings;
+﻿using Application.Infrastructure;
+using Application.Infrastructure.Common;
+using Domain.Bookings;
+using Infrastructure.Ef.EfRepository;
 using Microsoft.EntityFrameworkCore;
 
-namespace DataAccess.EF;
+namespace Infrastructure.Ef;
 
-public class EfBookingRepository(AppDbContext dbContext, IUnitOfWork efUnitOfWork) 
+public class EfBookingRepository(AppDbContext dbContext, IUnitOfWork efUnitOfWork)
     : EfRepository<Booking>(dbContext, efUnitOfWork, TableNames.Bookings), IBookingRepository
 {
     public Task<List<Guid>> GetPendingBookingsAsync(CancellationToken token = default)

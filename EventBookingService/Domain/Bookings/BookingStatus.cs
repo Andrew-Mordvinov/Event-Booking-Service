@@ -1,4 +1,4 @@
-namespace Entities.Bookings;
+namespace Domain.Bookings;
 
 /// <summary>
 /// Статусы бронирования события

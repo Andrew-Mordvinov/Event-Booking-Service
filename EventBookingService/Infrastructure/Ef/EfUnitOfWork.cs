@@ -1,6 +1,6 @@
-﻿using DataAccess.Abstract.Common;
+﻿using Application.Infrastructure.Common;
 
-namespace DataAccess.EF;
+namespace Infrastructure.Ef;
 
 /// <summary>
 /// Работает с транзакциями и ChangeTracker. Транзакции могут создаваться явно

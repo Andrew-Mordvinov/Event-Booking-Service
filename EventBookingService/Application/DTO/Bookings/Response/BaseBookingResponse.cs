@@ -1,6 +1,6 @@
-using Entities.Bookings;
+using Domain.Bookings;
 
-namespace DTO.Presentation.Bookings.Response;
+namespace Application.DTO.Bookings.Response;
 
 /// <summary>
 /// Ответ на запрос о бронировании события. Представляет собой

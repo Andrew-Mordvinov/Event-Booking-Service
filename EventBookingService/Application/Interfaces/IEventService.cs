@@ -1,8 +1,8 @@
-using DTO.Presentation.Events.Requests;
-using Entities.Events;
-using Shared.Paging;
+using Application.DTO.Events.Requests;
+using Application.Paging;
+using Domain.Events;
 
-namespace Events.Service;
+namespace Application.Interfaces;
 
 /// <summary>
 /// Сервис для работы с событиями

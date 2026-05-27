@@ -1,9 +1,8 @@
-﻿using Bookings.Service;
-using Bookings.Service.Implementation;
-using DataAccess.Abstract;
-using DataAccess.Abstract.Common;
-using DataAccess.EF;
-using Entities.Events;
+﻿using Application.Implementation;
+using Application.Infrastructure;
+using Application.Infrastructure.Common;
+using Application.Interfaces;
+using Infrastructure.Ef;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

@@ -1,6 +1,5 @@
-﻿using Entities.Bookings;
-using Entities.Events;
-using Microsoft.Extensions.Logging;
+﻿using Domain.Bookings;
+using Domain.Events;
 
 namespace Tests.Integration.Ef.Bookings;
 

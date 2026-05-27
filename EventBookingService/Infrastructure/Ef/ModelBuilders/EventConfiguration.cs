@@ -1,8 +1,8 @@
-﻿using Entities.Events;
+﻿using Domain.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace DataAccess.EF.ModelBuilders;
+namespace Infrastructure.Ef.ModelBuilders;
 
 public class EventConfiguration : IEntityTypeConfiguration<Event>
 {

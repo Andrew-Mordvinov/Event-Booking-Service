@@ -1,4 +1,4 @@
-namespace Shared.Interfaces;
+namespace Domain.Interfaces;
 
 /// <summary>
 /// Интерфейс создания копии текущего объекта

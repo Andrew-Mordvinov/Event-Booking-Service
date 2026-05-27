@@ -1,11 +1,11 @@
-﻿using DataAccess.EF;
-using Entities.Bookings;
-using Entities.Events;
+﻿using Domain.Bookings;
+using Domain.Events;
 using FluentAssertions;
+using Infrastructure.Ef;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Web.Infrastructure.Bookings;
+using Presentation.Infrastructure.Bookings;
 
 namespace Tests.Integration.Ef.Bookings;
 

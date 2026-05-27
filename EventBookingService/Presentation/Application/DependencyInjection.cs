@@ -1,14 +1,11 @@
-using Bookings.Service;
-using Bookings.Service.Implementation;
+using Application.Implementation;
+using Application.Infrastructure;
+using Application.Infrastructure.Common;
+using Application.Interfaces;
 
-using DataAccess.Abstract;
-using DataAccess.Abstract.Common;
-using DataAccess.EF;
+using Infrastructure.Ef;
 
-using Events.Service;
-using Events.Service.Implementation;
-
-namespace Web.Application;
+namespace Presentation.Application;
 
 public static class DependencyInjection
 {

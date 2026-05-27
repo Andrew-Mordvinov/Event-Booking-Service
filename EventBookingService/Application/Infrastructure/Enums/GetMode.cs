@@ -1,4 +1,4 @@
-﻿namespace DataAccess.Abstract.Enums;
+﻿namespace Application.Infrastructure.Enums;
 
 /// <summary>
 /// Режим выборки из хранилища

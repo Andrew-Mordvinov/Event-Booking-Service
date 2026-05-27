@@ -1,9 +1,8 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace DataAccess.EF.Migrations
+namespace Infrastructure.Ef.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

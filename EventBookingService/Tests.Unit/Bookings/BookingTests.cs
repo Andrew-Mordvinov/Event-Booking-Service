@@ -1,15 +1,15 @@
-﻿using Bookings.Service.Implementation;
-using DataAccess.Abstract;
-using DataAccess.Abstract.Common;
-using DataAccess.Abstract.Enums;
-using Entities.Bookings;
-using Entities.Events;
+﻿using Application.Implementation;
+using Application.Infrastructure;
+using Application.Infrastructure.Common;
+using Application.Infrastructure.Enums;
+using Domain.Bookings;
+using Domain.Events;
+using Domain.Exceptions;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Shared.Exceptions;
 
-namespace Tests.Bookings;
+namespace Tests.Unit.Bookings;
 
 public partial class BookingTests
 {

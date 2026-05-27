@@ -1,11 +1,11 @@
-﻿using DataAccess.Abstract;
-using DataAccess.Abstract.Enums;
-using DataAccess.EF;
-using Entities.Events;
+﻿using Application.Infrastructure;
+using Application.Infrastructure.Enums;
+using Domain.Events;
+using Domain.Exceptions;
 using FluentAssertions;
+using Infrastructure.Ef;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Shared.Exceptions;
 using System.Linq.Expressions;
 
 namespace Tests.Integration.Ef.Events;

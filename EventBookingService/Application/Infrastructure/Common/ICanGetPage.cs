@@ -1,7 +1,7 @@
-﻿using Shared.Paging;
+﻿using Application.Paging;
 using System.Linq.Expressions;
 
-namespace DataAccess.Abstract.Common;
+namespace Application.Infrastructure.Common;
 
 /// <summary>
 /// Интерфейс, позволяющий получить страницу из хранилища по заданному деревом фильтру

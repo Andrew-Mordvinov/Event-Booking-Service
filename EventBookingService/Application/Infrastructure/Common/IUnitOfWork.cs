@@ -1,4 +1,4 @@
-﻿namespace DataAccess.Abstract.Common;
+﻿namespace Application.Infrastructure.Common;
 
 /// <summary>
 /// Обеспечивает сохранение изменений из разных репозиториев в одной транзакции

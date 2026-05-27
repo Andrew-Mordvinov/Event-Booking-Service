@@ -1,6 +1,6 @@
-using Entities.Bookings;
+using Domain.Bookings;
 
-namespace Bookings.Service;
+namespace Application.Interfaces;
 
 /// <summary>
 /// Сервис бронирования событий

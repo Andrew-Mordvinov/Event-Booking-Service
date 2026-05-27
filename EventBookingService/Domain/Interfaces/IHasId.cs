@@ -1,4 +1,4 @@
-namespace Shared.Interfaces;
+namespace Domain.Interfaces;
 
 /// <summary>
 /// Простой интерфейс для объектов, которые можно идентифицировать по публичному Id

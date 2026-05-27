@@ -1,4 +1,4 @@
-namespace Bookings.Service.Implementation;
+namespace Application.Implementation;
 
 public static class BookingServiceErrors
 {

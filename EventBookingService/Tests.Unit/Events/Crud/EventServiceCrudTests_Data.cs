@@ -1,7 +1,7 @@
-﻿using DTO.Presentation.Events.Requests;
-using Entities.Events;
+﻿using Application.DTO.Events.Requests;
+using Domain.Events;
 
-namespace Tests.Events.Crud;
+namespace Tests.Unit.Events.Crud;
 
 public partial class EventServiceCrudTests
 {
@@ -146,13 +146,13 @@ public partial class EventServiceCrudTests
     [
         [
             BasicEventList,
-            new CreateEventRequest 
+            new CreateEventRequest
             {
                 Title = "Живая музыка в баре 'Ноты и Кофе'",
                 StartAt = new DateTime(2026, 3, 24, 20, 0, 0),
                 EndAt = new DateTime(2026, 3, 25, 03, 0, 0),
                 TotalSeats = 50,
-                Description = "Акустический вечер с местными группами. Вход свободный"       
+                Description = "Акустический вечер с местными группами. Вход свободный"
             },
             new Event
             (
@@ -239,7 +239,7 @@ public partial class EventServiceCrudTests
                 TotalSeats = 10,
                 Description = "Акустический вечер с местными группами. Вход свободный"
             },
-            new List<string> 
+            new List<string>
             {
                 EventErrors.TitleNeed
             }

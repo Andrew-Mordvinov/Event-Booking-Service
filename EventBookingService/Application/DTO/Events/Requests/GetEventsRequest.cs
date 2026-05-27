@@ -1,11 +1,9 @@
-using System.ComponentModel.DataAnnotations;
+using Domain;
 using Microsoft.AspNetCore.Mvc;
-
-using Shared;
-
 using Swashbuckle.AspNetCore.Annotations;
+using System.ComponentModel.DataAnnotations;
 
-namespace DTO.Presentation.Events.Requests;
+namespace Application.DTO.Events.Requests;
 
 public class GetEventsRequest
 {

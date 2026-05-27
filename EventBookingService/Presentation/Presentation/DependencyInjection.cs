@@ -1,4 +1,4 @@
-namespace Web.Presentation;
+namespace Presentation.Presentation;
 
 public static class DependencyInjection
 {

@@ -1,8 +1,8 @@
-﻿using Entities.Bookings;
+﻿using Domain.Bookings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace DataAccess.EF.ModelBuilders;
+namespace Infrastructure.Ef.ModelBuilders;
 
 public class BookingConfiguration : IEntityTypeConfiguration<Booking>
 {

@@ -1,7 +1,7 @@
-﻿using Entities.Events;
+﻿using Domain.Events;
 using FluentAssertions;
 
-namespace Tests.Events.Model;
+namespace Tests.Unit.Events.Model;
 
 public partial class EventTests
 {

@@ -1,11 +1,11 @@
-﻿using DataAccess.Abstract.Common;
-using Entities.Events;
+﻿using Application.Infrastructure.Common;
+using Domain.Events;
 
-namespace DataAccess.Abstract;
+namespace Application.Infrastructure;
 
 /// <summary>
 /// Репозиторий событий
 /// </summary>
-public interface IEventRepository : IRepository<Event> 
+public interface IEventRepository : IRepository<Event>
 {
 }

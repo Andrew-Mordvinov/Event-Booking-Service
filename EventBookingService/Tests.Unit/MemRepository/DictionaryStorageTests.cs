@@ -1,7 +1,7 @@
-﻿using DataAccess.Abstract.Enums;
-using DataAccess.Memory.Storage;
+﻿using Application.Infrastructure.Enums;
+using Domain.Exceptions;
 using FluentAssertions;
-using Shared.Exceptions;
+using Infrastructure.MemStorage;
 using System.Linq.Expressions;
 
 namespace Tests.Unit.MemRepository;

@@ -1,16 +1,18 @@
-using DataAccess.Abstract;
-using DataAccess.Abstract.Common;
-using DataAccess.Abstract.Enums;
-using DTO.Presentation.Events.Requests;
-using Entities.Events;
-using LinqExtensions;
-using Shared;
-using Shared.Exceptions;
-using Shared.Paging;
+using Application.DTO.Events.Requests;
+using Application.Infrastructure;
+using Application.Infrastructure.Common;
+using Application.Infrastructure.Enums;
+using Application.Interfaces;
+using Application.LinqExtensions;
+using Application.Paging;
+using Domain;
+using Domain.Events;
+using Domain.Exceptions;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Events.Service.Implementation;
+
+namespace Application.Implementation;
 
 /// <summary>
 /// Реализация <see cref="IEventService"/> с хранением данных в памяти приложения
@@ -21,7 +23,7 @@ public class EventService(
 {
     #region Private fields
 
-    private static readonly MethodInfo _methodContains = typeof(string).GetMethod(nameof(string.Contains), [typeof(string)]) 
+    private static readonly MethodInfo _methodContains = typeof(string).GetMethod(nameof(string.Contains), [typeof(string)])
         ?? throw new InvalidOperationException($"Невозможно получить метод {nameof(string.Contains)}");
 
     #endregion
@@ -37,7 +39,7 @@ public class EventService(
         if (deleted)
         {
             await _unitOfWork.SaveChangesAsync(token);
-        }      
+        }
 
         return deleted;
     }
@@ -100,7 +102,7 @@ public class EventService(
 
         // Создаем объект, чтобы прогнать все валидации, т.к. поля в ModifyEventRequest nullable
         var (source, errors) = Event.TryCreate(
-            id, 
+            id,
             request.Title,
             request.StartAt,
             request.EndAt,

@@ -1,7 +1,7 @@
-using Entities.Events;
-using Shared.Interfaces;
+using Domain.Events;
+using Domain.Interfaces;
 
-namespace Entities.Bookings;
+namespace Domain.Bookings;
 
 /// <summary>
 /// Модель бронирования события
@@ -22,7 +22,7 @@ public class Booking : IHasId, ICopyable<Booking>
 
     protected Booking()
     {
-        
+
     }
 
     public Booking(Guid id, Guid eventId, BookingStatus status, DateTimeOffset created, DateTimeOffset? processed = null)

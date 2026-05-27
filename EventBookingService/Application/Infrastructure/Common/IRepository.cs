@@ -1,6 +1,6 @@
-using Shared.Interfaces;
+using Domain.Interfaces;
 
-namespace DataAccess.Abstract.Common;
+namespace Application.Infrastructure.Common;
 
 /// <summary>
 /// Интерфейс базового хранилища данных с возможностью получения отфильтрованной коллекции

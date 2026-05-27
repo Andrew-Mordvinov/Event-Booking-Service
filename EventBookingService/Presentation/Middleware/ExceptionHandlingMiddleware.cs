@@ -1,10 +1,8 @@
-using System.Net.NetworkInformation;
+using Domain.Exceptions;
 
 using Microsoft.AspNetCore.Mvc;
 
-using Shared.Exceptions;
-
-namespace Web.Middleware;
+namespace Presentation.Middleware;
 
 /// <summary>
 /// Глобальный перехватчик исключений с логгированием и формированием
@@ -81,7 +79,7 @@ public class ExceptionHandlingMiddleware(
             ConflictException ex => GetConflictProblemDetails(context, ex),
             NotFoundException ex => GetNotFoundProblemDetails(context, ex),
             _ => GetBaseProblemDetails(context, exception),
-        };   
+        };
 
     private static IEnumerable<ProblemDetails> GetValidationProblemDetails(HttpContext context, ValidationException exception) =>
         exception.Errors.Select(e => new ProblemDetails

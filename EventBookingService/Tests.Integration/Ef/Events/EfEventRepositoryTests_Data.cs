@@ -1,5 +1,5 @@
-﻿using DataAccess.EF.EfRepository;
-using Entities.Events;
+﻿using Domain.Events;
+using Infrastructure.Ef.EfRepository;
 using System.Linq.Expressions;
 
 namespace Tests.Integration.Ef.Events;
@@ -186,7 +186,7 @@ public partial class EfEventRepositoryTests
         [
             BasicEventList,
             (Expression<Func<Event, bool>>)(e =>
-                e.Title.ToLower().Contains("фестиваль") 
+                e.Title.ToLower().Contains("фестиваль")
                 && e.EndAt <= new DateTimeOffset(2026, 3, 31, 0, 0, 0, TimeSpan.Zero)),
             1, 10,
             2,
@@ -207,7 +207,7 @@ public partial class EfEventRepositoryTests
         // 6. Поиск по начальной + конечной дате (события 21-22 марта)
         [
             BasicEventList,
-            (Expression<Func<Event, bool>>)(e => 
+            (Expression<Func<Event, bool>>)(e =>
                 e.StartAt >= new DateTimeOffset(2026, 3, 21, 0, 0, 0, TimeSpan.Zero)
                 && e.EndAt <= new DateTimeOffset(2026, 3, 22, 0, 0, 0, TimeSpan.Zero)),
             1, 10,
@@ -222,9 +222,9 @@ public partial class EfEventRepositoryTests
         // 7. Поиск по всем трём фильтрам (фестивали 19-21 марта)
         [
             BasicEventList,
-            (Expression<Func<Event, bool>>)(e => 
+            (Expression<Func<Event, bool>>)(e =>
                 e.Title.ToLower().Contains("фестиваль")
-                && e.StartAt >= new DateTimeOffset(2026, 3, 21, 0, 0, 0, TimeSpan.Zero) 
+                && e.StartAt >= new DateTimeOffset(2026, 3, 21, 0, 0, 0, TimeSpan.Zero)
                 && e.EndAt <= new DateTimeOffset(2026, 3, 22, 0, 0, 0, TimeSpan.Zero)),
             1, 10,
             1,

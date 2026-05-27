@@ -1,10 +1,10 @@
-using Bookings.Service;
 
-using DTO.Presentation.Bookings.Response;
+using Application.DTO.Bookings.Response;
+using Application.Interfaces;
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace Web.Application.Controllers;
+namespace Presentation.Application.Controllers;
 
 [Route("bookings")]
 [ApiController]

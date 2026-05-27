@@ -1,17 +1,15 @@
-using Bookings.Service;
 
-using DTO.Presentation.Bookings.Response;
-using DTO.Presentation.Events.Requests;
-using DTO.Presentation.Events.Response;
-using DTO.Presentation.Generic;
+using Application.DTO.Bookings.Response;
+using Application.DTO.Events.Requests;
+using Application.DTO.Events.Response;
+using Application.DTO.Generic;
+using Application.Interfaces;
 
-using Entities.Events;
-
-using Events.Service;
+using Domain.Events;
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace Web.Application.Controllers;
+namespace Presentation.Application.Controllers;
 
 [ApiController]
 [Route("events")]
