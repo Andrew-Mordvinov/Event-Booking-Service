@@ -17,13 +17,13 @@ public class GetEventsRequest
     public string? Title { get; set; }
 
     /// <summary>
-    /// Фильтр по полю StartAt (>= from)
+    /// Фильтр по полю StartAt (Дата начала). Больше или равна from
     /// </summary>
     [FromQuery(Name = "from")]
     public DateTimeOffset? From { get; set; }
 
     /// <summary>
-    /// Фильтр по полю EndAt (<= to)
+    /// Фильтр по полю EndAt (Дата окончания). Меньше или равна to
     /// </summary>
     [FromQuery(Name = "to")]
     public DateTimeOffset? To { get; set; }

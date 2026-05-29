@@ -11,12 +11,23 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Application.Controllers;
 
+/// <summary>
+/// Управление событиями
+/// </summary>
 [ApiController]
 [Route("events")]
 public class EventController(
     IEventService _eventService,
     IBookingService _bookingService) : ControllerBase
 {
+    /// <summary>
+    /// Получение события по его идентификатору
+    /// </summary>
+    /// <param name="id">Идентификатор события</param>
+    /// <param name="cancellationToken">Токен отмены асинхронной операции</param>
+    /// <response code="200">Событие успешно получено</response>
+    /// <response code="404">Событие не найдено</response>
+    [Produces("application/json")]
     [HttpGet("{id}")]
     public async Task<ActionResult<BaseEventResponse>> GetEventByIdAsync(Guid id, CancellationToken cancellationToken)
     {
@@ -30,6 +41,13 @@ public class EventController(
         return Ok(BaseEventResponse.FromEvent(result));
     }
 
+    /// <summary>
+    /// Получение страницы со списком событий по заданным фильтрам
+    /// </summary>
+    /// <param name="request">Параметры для фильтрации и пагинации запроса событий</param>
+    /// <param name="cancellationToken">Токен отмены асинхронной операции</param>
+    /// <response code="200">Список событий получен успешно (может быть пустым)</response>
+    [Produces("application/json")]
     [HttpGet]
     public async Task<ActionResult<PaginatedResponse<BaseEventResponse>>> GetEventsAsync([FromQuery] GetEventsRequest request, CancellationToken cancellationToken)
     {
@@ -54,6 +72,15 @@ public class EventController(
             });
     }
 
+    /// <summary>
+    /// Создание события с заданными параметрами
+    /// </summary>
+    /// <param name="request">Атрибуты события</param>
+    /// <param name="cancellationToken">Токен отмены асинхронной операции</param>
+    /// <response code="201">Событие успешно создано</response>
+    [Consumes("application/json")]
+    [Produces("application/json")]
+    [ProducesResponseType(typeof(BaseEventResponse), 201)]
     [HttpPost]
     public async Task<ActionResult<BaseEventResponse>> CreateEventAsync([FromBody] CreateEventRequest request, CancellationToken cancellationToken)
     {
@@ -67,6 +94,16 @@ public class EventController(
         );
     }
 
+    /// <summary>
+    /// Полное обновление существующего события в системе
+    /// </summary>
+    /// <param name="id">Идентификатор обновляемого события</param>
+    /// <param name="request">Запрос с атрибутами для обновления события</param>
+    /// <param name="cancellationToken">Токен отмены асинхронной операции</param>
+    /// <response code="200">Событие успешно модифицировано</response>
+    /// <response code="404">Событие не найдено</response>
+    [Consumes("application/json")]
+    [Produces("application/json")]
     [HttpPut("{id}")]
     public async Task<ActionResult<BaseEventResponse>> ModifyEventAsync(Guid id, [FromBody] ModifyEventRequest request, CancellationToken cancellationToken)
     {
@@ -80,6 +117,13 @@ public class EventController(
         return Ok(BaseEventResponse.FromEvent(result));
     }
 
+    /// <summary>
+    /// Удаление события
+    /// </summary>
+    /// <param name="id">Идентификатор удаляемого события</param>
+    /// <param name="cancellationToken">Токен отмены асинхронной операции</param>
+    /// <response code="200">Событие успешно удалено</response>
+    /// <response code="404">Событие не найдено</response>
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteEventAsync(Guid id, CancellationToken cancellationToken)
     {
@@ -90,6 +134,14 @@ public class EventController(
             : NotFound();
     }
 
+    /// <summary>
+    /// Бронирование места на событие. Создает ожидающее обработки бронирование и возвращает ссылку на него для отслеживания статуса
+    /// </summary>
+    /// <param name="eventId">Идентификатор события, на которое бронируется место</param>
+    /// <param name="cancellationToken">Токен отмены асинхронной операции</param>
+    /// <response code="202">Бронирование создано и ожидает обработки</response>
+    [Produces("application/json")]
+    [ProducesResponseType(typeof(BookingAcceptedResponse), 202)]
     [HttpPost("{eventId}/book")]
     public async Task<ActionResult<BookingAcceptedResponse>> BookEventAsync(Guid eventId, CancellationToken cancellationToken)
     {

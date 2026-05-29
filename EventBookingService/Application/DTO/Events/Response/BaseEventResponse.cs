@@ -3,18 +3,43 @@ using Domain.Events;
 namespace Application.DTO.Events.Response;
 
 /// <summary>
-/// Базовый ответ на запрос с полями как в <see cref="Event"/>. Представляет собой
-/// проекцию <see cref="Event"/> с теми свойствами, которые должны быть переданы в
-/// качестве ответа на запрос
+/// Ответ на запрос о событии
 /// </summary>
 public class BaseEventResponse
 {
+    /// <summary>
+    /// Идентификатор события
+    /// </summary>
     public Guid Id { get; set; }
+
+    /// <summary>
+    /// Наименование события
+    /// </summary>
     public string Title { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Описание события
+    /// </summary>
     public string Description { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Дата и время начала события
+    /// </summary>
     public DateTimeOffset StartAt { get; set; }
+
+    /// <summary>
+    /// Дата и время окончания события
+    /// </summary>
     public DateTimeOffset EndAt { get; set; }
+
+    /// <summary>
+    /// Общее число мест у события. Отражает максимальное количество участников
+    /// </summary>
     public int TotalSeats { get; set; }
+
+    /// <summary>
+    /// Число доступных для бронирования мест
+    /// </summary>
     public int AvailableSeats { get; set; }
 
     public static BaseEventResponse FromEvent(Event entity) => new()
