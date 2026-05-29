@@ -90,12 +90,12 @@
 
 Миграции находятся в проекте `DataAccess.EF` в папке Migrations. Управление миграциями осуществляется через EF Core фреймворк, для создания новых миграций можно выполнить из консоли диспетчера пакетов или обычной консоли соответственно команды:
 
-`Add-Migration <Name> -StartupProject Web -Project DataAccess.EF`
-`dotnet ef migrations add <Name> --project DataAccess.EF --startup-project Web`
+`Add-Migration <Name> -StartupProject Presentation -Project Infrastructure`
+`dotnet ef migrations add <Name> --project Infrastructure --startup-project Presentation`
 
 Для выполнения миграции базы данных необходимо выполнить следующую команду или просто запустить проект:
 
-`dotnet ef database update --project DataAccess.EF --startup-project Web`
+`dotnet ef database update --project Infrastructure --startup-project Presentation`
 
 ## Фоновая обработка бронирований
 
