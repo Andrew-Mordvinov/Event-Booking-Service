@@ -24,8 +24,8 @@ public interface IEventService
     /// </summary>
     /// <param name="id">Id события, которое нужно получить</param>
     /// <param name="token">Токен отмены асинхронной операции</param>
-    /// <returns>Событие или null, если не существует</returns>
-    Task<Event?> GetEventByIdAsync(Guid id, CancellationToken token = default);
+    /// <returns>Событие</returns>
+    Task<Event> GetEventByIdAsync(Guid id, CancellationToken token = default);
 
     /// <summary>
     /// Создать новое событие
@@ -41,14 +41,13 @@ public interface IEventService
     /// <param name="id">Id события, которое будет изменено</param>
     /// <param name="request">Запрос с данными для модификации</param>
     /// <param name="token">Токен отмены асинхронной операции</param>
-    /// <returns>Измененное событие или null, если не найдено</returns>
-    Task<Event?> ModifyEventAsync(Guid id, ModifyEventRequest request, CancellationToken token = default);
+    /// <returns>Измененное событие</returns>
+    Task<Event> ModifyEventAsync(Guid id, ModifyEventRequest request, CancellationToken token = default);
 
     /// <summary>
     /// Удалить событие
     /// </summary>
     /// <param name="id">Id события, которое нужно удалить</param>
     /// <param name="token">Токен отмены асинхронной операции</param>
-    /// <returns>true если событие успешно удалено</returns>
-    Task<bool> DeleteEventByIdAsync(Guid id, CancellationToken token = default);
+    Task DeleteEventByIdAsync(Guid id, CancellationToken token = default);
 }

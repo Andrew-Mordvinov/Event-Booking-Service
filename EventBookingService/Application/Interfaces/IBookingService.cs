@@ -20,8 +20,8 @@ public interface IBookingService
     /// </summary>
     /// <param name="bookingId">Идентификатор брони</param>
     /// <param name="token">Токен отмены операции</param>
-    /// <returns>Объект брони или null если не найдено</returns>
-    Task<Booking?> GetBookingByIdAsync(Guid bookingId, CancellationToken token = default);
+    /// <returns>Объект брони</returns>
+    Task<Booking> GetBookingByIdAsync(Guid bookingId, CancellationToken token = default);
 
     /// <summary>
     /// Обработка конкретной брони

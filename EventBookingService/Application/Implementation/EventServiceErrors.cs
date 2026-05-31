@@ -8,4 +8,6 @@ public static class EventServiceErrors
 
     public static string PageSizeOutOfRange(int pageMin, int pageMax) =>
         $"Некорректное значение размера страницы: размер должен быть в диапазоне {pageMin}-{pageMax}";
+
+    public static string EventNotFound(Guid id) => $"Событие с идентификатором {id} не найдено";
 }

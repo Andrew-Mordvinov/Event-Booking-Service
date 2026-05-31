@@ -30,18 +30,23 @@ public class EventService(
 
     #region Base overrides
 
-    public Task<Event?> GetEventByIdAsync(Guid id, CancellationToken token = default) =>
-        _events.GetByIdAsync(id, GetMode.Readonly, token);
+    public async Task<Event> GetEventByIdAsync(Guid id, CancellationToken token = default)
+    {
+        var @event = await _events.GetByIdAsync(id, GetMode.Readonly, token);
 
-    public async Task<bool> DeleteEventByIdAsync(Guid id, CancellationToken token = default)
+        return @event is null ? throw new NotFoundException(EventServiceErrors.EventNotFound(id)) : @event;
+    }
+
+    public async Task DeleteEventByIdAsync(Guid id, CancellationToken token = default)
     {
         var deleted = await _events.RemoveAsync(id, token);
         if (deleted)
         {
             await _unitOfWork.SaveChangesAsync(token);
+            return;
         }
 
-        return deleted;
+        throw new NotFoundException(EventServiceErrors.EventNotFound(id));
     }
 
     public async Task<Event> CreateEventAsync(
@@ -88,17 +93,12 @@ public class EventService(
         return _events.GetPageAsync(expression, page, pageSize, token);
     }
 
-    public async Task<Event?> ModifyEventAsync(
+    public async Task<Event> ModifyEventAsync(
         Guid id,
         ModifyEventRequest request,
         CancellationToken token = default)
     {
-        var baseEvent = await _events.GetByIdAsync(id, token: token);
-
-        if (baseEvent is null)
-        {
-            return null;
-        }
+        var baseEvent = await _events.GetByIdAsync(id, token: token) ?? throw new NotFoundException(EventServiceErrors.EventNotFound(id));
 
         // Создаем объект, чтобы прогнать все валидации, т.к. поля в ModifyEventRequest nullable
         var (source, errors) = Event.TryCreate(

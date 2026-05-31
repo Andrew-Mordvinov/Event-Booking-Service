@@ -16,10 +16,14 @@ public class BookingService(
 {
     private const int _imitationDelay = 2000;
 
-    public Task<Booking?> GetBookingByIdAsync(
+    public async Task<Booking> GetBookingByIdAsync(
         Guid bookingId,
-        CancellationToken token = default) =>
-        _storageBooking.GetByIdAsync(bookingId, GetMode.Readonly, token);
+        CancellationToken token = default)
+    {
+        var booking = await _storageBooking.GetByIdAsync(bookingId, GetMode.Readonly, token);
+
+        return booking is null ? throw new NotFoundException(BookingServiceErrors.BookingNotFound(bookingId)) : booking;
+    }
 
     public async Task<Booking> CreateBookingAsync(
         Guid eventId,

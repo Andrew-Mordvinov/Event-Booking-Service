@@ -56,7 +56,7 @@ public partial class BookingTests
     }
 
     [Fact]
-    public async Task GetBookingByIdAsync_InvalidId_SuccessWithoutValue()
+    public async Task GetBookingByIdAsync_InvalidId_ThrowNotFound()
     {
         var service = CreateService(out var bookingStorageMock, out var _, out var _, out var _);
         var bookId = Guid.NewGuid();
@@ -64,10 +64,10 @@ public partial class BookingTests
             .ReturnsAsync((Booking?)null)
             .Verifiable(Times.Once);
 
-        var result = await service.GetBookingByIdAsync(bookId, TestContext.Current.CancellationToken);
+        var act = async () => await service.GetBookingByIdAsync(bookId, TestContext.Current.CancellationToken);
 
+        await act.Should().ThrowExactlyAsync<NotFoundException>();
         bookingStorageMock.Verify();
-        result.Should().BeNull();
     }
 
     #endregion
