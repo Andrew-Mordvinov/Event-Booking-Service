@@ -1,14 +1,14 @@
-﻿using DataAccess.Abstract;
-using DataAccess.Abstract.Common;
-using Entities.Events;
-using Events.Service.Implementation;
+﻿using Application.Implementation;
+using Application.Infrastructure;
+using Application.Infrastructure.Common;
+using Application.Paging;
+using Domain.Events;
+using Domain.Exceptions;
 using FluentAssertions;
 using Moq;
-using Shared.Exceptions;
-using Shared.Paging;
 using System.Linq.Expressions;
 
-namespace Tests.Events.Filtering;
+namespace Tests.Unit.Events.Filtering;
 
 public partial class MemoryEventFilterTests
 {

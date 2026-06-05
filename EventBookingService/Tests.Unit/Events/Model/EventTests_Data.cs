@@ -1,6 +1,6 @@
-﻿using Entities.Events;
+﻿using Domain.Events;
 
-namespace Tests.Events.Model;
+namespace Tests.Unit.Events.Model;
 
 public partial class EventTests
 {
@@ -61,7 +61,7 @@ public partial class EventTests
             10,
             null,
             null,
-            new string[] 
+            new string[]
             {
                 EventErrors.TitleNeed,
                 EventErrors.StartAfterEndForbidden

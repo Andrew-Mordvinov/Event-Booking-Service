@@ -1,10 +1,9 @@
-﻿using DataAccess.Abstract.Common;
-using DataAccess.EF;
-using Entities.Bookings;
-using Entities.Events;
+﻿using Application.Infrastructure.Common;
+using Domain.Bookings;
+using Domain.Events;
 using FluentAssertions;
+using Infrastructure.Ef;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Tests.Integration.Ef.Infrastructure;

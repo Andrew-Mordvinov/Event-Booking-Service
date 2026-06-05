@@ -1,14 +1,14 @@
-﻿using DataAccess.Abstract;
-using DataAccess.Abstract.Common;
-using DataAccess.Abstract.Enums;
-using DTO.Presentation.Events.Requests;
-using Entities.Events;
-using Events.Service.Implementation;
+﻿using Application.DTO.Events.Requests;
+using Application.Implementation;
+using Application.Infrastructure;
+using Application.Infrastructure.Common;
+using Application.Infrastructure.Enums;
+using Domain.Events;
+using Domain.Exceptions;
 using FluentAssertions;
 using Moq;
-using Shared.Exceptions;
 
-namespace Tests.Events.Crud;
+namespace Tests.Unit.Events.Crud;
 
 public partial class EventServiceCrudTests
 {
@@ -45,7 +45,7 @@ public partial class EventServiceCrudTests
 
     [Theory]
     [MemberData(nameof(GetEvent_BadId))]
-    public async Task GetEvent_BadId_ReturnNull(IEnumerable<Event> baseCollection, Guid id)
+    public async Task GetEvent_BadId_ThrowNotFound(IEnumerable<Event> baseCollection, Guid id)
     {
         var service = GetMemoryEventService(baseCollection, out var repoMock, out var _, out var scopedCollection);
 
@@ -53,10 +53,10 @@ public partial class EventServiceCrudTests
             .ReturnsAsync((Event?)null)
             .Verifiable(Times.Once);
 
-        var result = await service.GetEventByIdAsync(id, TestContext.Current.CancellationToken);
+        var act = async () => await service.GetEventByIdAsync(id, TestContext.Current.CancellationToken);
 
+        await act.Should().ThrowExactlyAsync<NotFoundException>();
         repoMock.Verify();
-        result.Should().BeNull();
     }
 
     #endregion
@@ -124,16 +124,15 @@ public partial class EventServiceCrudTests
         unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
-        var result = await service.DeleteEventByIdAsync(id, TestContext.Current.CancellationToken);
+        await service.DeleteEventByIdAsync(id, TestContext.Current.CancellationToken);
 
         repoMock.Verify();
         unitOfWorkMock.Verify();
-        result.Should().BeTrue();
     }
 
     [Theory]
     [MemberData(nameof(DeleteEvent_BadId))]
-    public async Task DeleteEvent_BadId_ReturnFalse(IEnumerable<Event> baseCollection, Guid id)
+    public async Task DeleteEvent_BadId_ThrowNotFound(IEnumerable<Event> baseCollection, Guid id)
     {
         var service = GetMemoryEventService(baseCollection, out var repoMock, out var unitOfWorkMock, out var _);
 
@@ -144,11 +143,11 @@ public partial class EventServiceCrudTests
         unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
-        var result = await service.DeleteEventByIdAsync(id, TestContext.Current.CancellationToken);
+        var act = async () => await service.DeleteEventByIdAsync(id, TestContext.Current.CancellationToken);
 
+        await act.Should().ThrowExactlyAsync<NotFoundException>();
         repoMock.Verify();
         unitOfWorkMock.Verify();
-        result.Should().BeFalse();
     }
 
     #endregion
@@ -177,7 +176,7 @@ public partial class EventServiceCrudTests
 
     [Theory]
     [MemberData(nameof(ModifyEvent_ValidDataAndBadId))]
-    public async Task ModifyEvent_ValidDataAndBadId_ReturnNull(IEnumerable<Event> baseCollection, Guid id, ModifyEventRequest request)
+    public async Task ModifyEvent_ValidDataAndBadId_ThrowNotFound(IEnumerable<Event> baseCollection, Guid id, ModifyEventRequest request)
     {
         var service = GetMemoryEventService(baseCollection, out var repoMock, out var unitOfWorkMock, out var _);
 
@@ -188,11 +187,11 @@ public partial class EventServiceCrudTests
         unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
-        var result = await service.ModifyEventAsync(id, request, TestContext.Current.CancellationToken);
+        var act = async () => await service.ModifyEventAsync(id, request, TestContext.Current.CancellationToken);
 
+        await act.Should().ThrowExactlyAsync<NotFoundException>();
         repoMock.Verify();
         unitOfWorkMock.Verify();
-        result.Should().BeNull();
     }
 
     [Theory]

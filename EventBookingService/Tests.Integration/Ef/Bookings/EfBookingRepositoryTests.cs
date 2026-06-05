@@ -1,9 +1,9 @@
-﻿using DataAccess.Abstract;
-using DataAccess.Abstract.Enums;
-using DataAccess.EF;
-using Entities.Bookings;
-using Entities.Events;
+﻿using Application.Infrastructure;
+using Application.Infrastructure.Enums;
+using Domain.Bookings;
+using Domain.Events;
 using FluentAssertions;
+using Infrastructure.Ef;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -36,7 +36,7 @@ public partial class EfBookingRepositoryTests(SharedFixture sharedFixture) : IAs
         db.Events.Add(new Event
         (
             eventId,
-            "Don't Care Title", 
+            "Don't Care Title",
             SharedFixture.TrimToMicroseconds(DateTimeOffset.UtcNow),
             SharedFixture.TrimToMicroseconds(DateTimeOffset.UtcNow.AddDays(1)),
             10

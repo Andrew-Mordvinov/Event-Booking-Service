@@ -10,7 +10,7 @@
 
 `git clone https://github.com/Andrew-Mordvinov/Event-Booking-Service.git`
 
-2. Перейдите в каталог с Web `/EventBookingService/Web` и настройте строку подключения в файле appsettings.json (ConnectionStrings):
+2. Перейдите в каталог с Presentation `/EventBookingService/Presentation` и настройте строку подключения в файле appsettings.json (ConnectionStrings):
 
 3. Перейдите в каталог с проектом (из корня репозитория в `/EventBookingService`) и запустите команду:
 
@@ -86,16 +86,20 @@
 | Confirmed| 1    | Подтверждено. Бронирование успешно обработано      |
 | Rejected | 2    | Отклонено. Бронирование не может быть выполнено    |
 
+## Структура проекта
+
+Проект разделен на 4 части (слоя) - `Domain`, `Application`, `Infrastructure`, `Presentation`. `Domain` содержит ключевые сущности без внешних зависимостей, `Application` определяет use-cases для сущностей и интерфейсы портов, `Infrastructure` реализует интерфейсы портов (в данном случае приложение использует Ef Core и базу данных Postgresql), а `Presentation` является точкой входа для web-приложения, реализует эндпоинты контроллеров и фоновые сервисы.
+
 ## Миграции
 
-Миграции находятся в проекте `DataAccess.EF` в папке Migrations. Управление миграциями осуществляется через EF Core фреймворк, для создания новых миграций можно выполнить из консоли диспетчера пакетов или обычной консоли соответственно команды:
+Миграции находятся в проекте `Infrastructure` в папке Migrations. Управление миграциями осуществляется через EF Core фреймворк, для создания новых миграций можно выполнить из консоли диспетчера пакетов или обычной консоли соответственно команды:
 
-`Add-Migration <Name> -StartupProject Web -Project DataAccess.EF`
-`dotnet ef migrations add <Name> --project DataAccess.EF --startup-project Web`
+`Add-Migration <Name> -StartupProject Presentation -Project Infrastructure`
+`dotnet ef migrations add <Name> --project Infrastructure --startup-project Presentation`
 
 Для выполнения миграции базы данных необходимо выполнить следующую команду или просто запустить проект:
 
-`dotnet ef database update --project DataAccess.EF --startup-project Web`
+`dotnet ef database update --project Infrastructure --startup-project Presentation`
 
 ## Фоновая обработка бронирований
 
