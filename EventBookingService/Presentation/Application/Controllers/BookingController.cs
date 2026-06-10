@@ -1,8 +1,8 @@
-
-using Application.DTO.Bookings.Response;
 using Application.Interfaces;
 
 using Microsoft.AspNetCore.Mvc;
+
+using Presentation.DTO.Bookings.Response;
 
 namespace Presentation.Application.Controllers;
 

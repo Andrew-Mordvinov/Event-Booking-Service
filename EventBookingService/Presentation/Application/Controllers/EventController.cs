@@ -1,13 +1,13 @@
-
-using Application.DTO.Bookings.Response;
-using Application.DTO.Events.Requests;
-using Application.DTO.Events.Response;
-using Application.DTO.Generic;
 using Application.Interfaces;
 
 using Domain.Events;
 
 using Microsoft.AspNetCore.Mvc;
+
+using Presentation.DTO.Bookings.Response;
+using Presentation.DTO.Events.Requests;
+using Presentation.DTO.Events.Response;
+using Presentation.DTO.Generic;
 
 namespace Presentation.Application.Controllers;
 
@@ -49,7 +49,7 @@ public class EventController(
     [ProducesResponseType(typeof(PaginatedResponse<BaseEventResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [HttpGet]
-    public async Task<ActionResult<PaginatedResponse<BaseEventResponse>>> GetEventsAsync([FromQuery] GetEventsRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<PaginatedResponse<BaseEventResponse>>> GetEventsAsync([FromQuery] AspGetEventsRequest request, CancellationToken cancellationToken)
     {
         var eventFilers = new EventFilters
         {
@@ -84,9 +84,9 @@ public class EventController(
     [ProducesResponseType(typeof(BaseEventResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [HttpPost]
-    public async Task<ActionResult<BaseEventResponse>> CreateEventAsync([FromBody] CreateEventRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<BaseEventResponse>> CreateEventAsync([FromBody] AspCreateEventRequest request, CancellationToken cancellationToken)
     {
-        var result = await _eventService.CreateEventAsync(request, cancellationToken);
+        var result = await _eventService.CreateEventAsync(request.ToCreateEventRequest(), cancellationToken);
 
         return CreatedAtAction
         (
@@ -111,9 +111,9 @@ public class EventController(
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [HttpPut("{id}")]
-    public async Task<ActionResult<BaseEventResponse>> ModifyEventAsync(Guid id, [FromBody] ModifyEventRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<BaseEventResponse>> ModifyEventAsync(Guid id, [FromBody] AspModifyEventRequest request, CancellationToken cancellationToken)
     {
-        var result = await _eventService.ModifyEventAsync(id, request, cancellationToken);
+        var result = await _eventService.ModifyEventAsync(id, request.ToModifyEventRequest(), cancellationToken);
 
         return Ok(BaseEventResponse.FromEvent(result));
     }

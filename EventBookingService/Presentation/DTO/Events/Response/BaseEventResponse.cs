@@ -1,6 +1,6 @@
 using Domain.Events;
 
-namespace Application.DTO.Events.Response;
+namespace Presentation.DTO.Events.Response;
 
 /// <summary>
 /// Ответ на запрос о событии

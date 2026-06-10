@@ -1,10 +1,10 @@
 using Application.DTO.Events.Requests;
+using Application.DTO.Generic;
 using Application.Infrastructure;
 using Application.Infrastructure.Common;
 using Application.Infrastructure.Enums;
 using Application.Interfaces;
 using Application.LinqExtensions;
-using Application.Paging;
 using Domain;
 using Domain.Events;
 using Domain.Exceptions;

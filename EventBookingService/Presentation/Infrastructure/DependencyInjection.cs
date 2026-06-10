@@ -1,4 +1,7 @@
 
+using Application.Infrastructure;
+using Application.Infrastructure.Common;
+
 using Infrastructure.Ef;
 
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +23,10 @@ public static class DependencyInjection
             .UseNpgsql(connectionString)
             .LogTo(message => Serilog.Log.Information(message), LogLevel.Error)
             .EnableDetailedErrors(), 100);
+
+        services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+        services.AddScoped<IEventRepository, EfEventRepository>();
+        services.AddScoped<IBookingRepository, EfBookingRepository>();
 
         services.AddHostedService<BookingManagerBackgroundService>();
 

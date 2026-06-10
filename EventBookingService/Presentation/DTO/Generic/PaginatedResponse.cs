@@ -1,6 +1,6 @@
-using Application.Paging;
+using Application.DTO.Generic;
 
-namespace Application.DTO.Generic;
+namespace Presentation.DTO.Generic;
 
 /// <summary>
 /// Ответ на запрос страницы с элементами

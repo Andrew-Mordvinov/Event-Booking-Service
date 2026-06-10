@@ -97,8 +97,8 @@ public class BookingManagerBackgroundServiceTests(SharedFixture sharedFixture) :
 
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        var unprocessed = await db.Bookings.Where(t => !t.ProcessedAt.HasValue).CountAsync();
-        var pending = await db.Bookings.Where(t => t.Status == BookingStatus.Pending).CountAsync();
+        var unprocessed = await db.Bookings.Where(t => !t.ProcessedAt.HasValue).CountAsync(TestContext.Current.CancellationToken);
+        var pending = await db.Bookings.Where(t => t.Status == BookingStatus.Pending).CountAsync(TestContext.Current.CancellationToken);
 
         unprocessed.Should().Be(0, "Обнаружены бронирования, у которых не установлено время обработки");
         pending.Should().Be(0, "Обнаружены бронирования в статусе Pending");

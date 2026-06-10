@@ -1,11 +1,14 @@
-using Domain;
-using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
 
-namespace Application.DTO.Events.Requests;
+using Domain;
 
-public class GetEventsRequest
+using Microsoft.AspNetCore.Mvc;
+
+using Swashbuckle.AspNetCore.Annotations;
+
+namespace Presentation.DTO.Events.Requests;
+
+public class AspGetEventsRequest
 {
     private const int _pageDefault = 1;
     private const int _pageDefaultSize = 10;

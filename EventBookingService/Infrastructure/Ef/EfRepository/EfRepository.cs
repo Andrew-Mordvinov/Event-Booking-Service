@@ -1,6 +1,6 @@
-﻿using Application.Infrastructure.Common;
+﻿using Application.DTO.Generic;
+using Application.Infrastructure.Common;
 using Application.Infrastructure.Enums;
-using Application.Paging;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;

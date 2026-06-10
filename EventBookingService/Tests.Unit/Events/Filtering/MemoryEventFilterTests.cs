@@ -1,7 +1,7 @@
-﻿using Application.Implementation;
+﻿using Application.DTO.Generic;
+using Application.Implementation;
 using Application.Infrastructure;
 using Application.Infrastructure.Common;
-using Application.Paging;
 using Domain.Events;
 using Domain.Exceptions;
 using FluentAssertions;
