@@ -1,5 +1,6 @@
 using Domain.Events;
 using Domain.Interfaces;
+using Domain.Users;
 
 namespace Domain.Bookings;
 
@@ -13,6 +14,10 @@ public class Booking : IHasId, ICopyable<Booking>
     public Guid EventId { get; protected set; }
 
     public Event? Event { get; protected set; }
+
+    public Guid UserId { get; protected set; }
+
+    public User? User { get; protected set; }
 
     public BookingStatus Status { get; set; }
 
