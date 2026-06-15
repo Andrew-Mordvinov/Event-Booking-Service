@@ -1,6 +1,4 @@
-using Domain.Exceptions;
-
-using Microsoft.AspNetCore.Mvc;
+using Presentation.Exceptions;
 
 namespace Presentation.Middleware;
 
@@ -10,12 +8,14 @@ namespace Presentation.Middleware;
 /// </summary>
 public class ExceptionHandlingMiddleware(
     RequestDelegate next,
-    ILogger<ExceptionHandlingMiddleware> logger)
+    ILogger<ExceptionHandlingMiddleware> logger,
+    ExceptionHandlerRegistry handlerRegistry)
 {
     #region Private fields
 
     private readonly RequestDelegate _next = next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger = logger;
+    private readonly ExceptionHandlerRegistry _handlerRegistry = handlerRegistry;
 
     #endregion
 
@@ -51,75 +51,13 @@ public class ExceptionHandlingMiddleware(
             return;
         }
 
-        var code = GetStatusCode(exception);
+        var code = _handlerRegistry.GetStatusCode(exception);
 
         context.Response.StatusCode = code;
         context.Response.ContentType = "application/json";
 
-        await context.Response.WriteAsJsonAsync(GetProblemDetails(context, exception));
+        await context.Response.WriteAsJsonAsync(_handlerRegistry.GetProblemDetails(context, exception));
     }
-
-    #endregion
-
-    #region Private static methods
-
-    private static int GetStatusCode(Exception exception) =>
-        (exception) switch
-        {
-            ValidationException => StatusCodes.Status400BadRequest,
-            ConflictException => StatusCodes.Status409Conflict,
-            NotFoundException => StatusCodes.Status404NotFound,
-            _ => StatusCodes.Status500InternalServerError,
-        };
-
-    private static ProblemDetails GetProblemDetails(HttpContext context, Exception exception) =>
-        (exception) switch
-        {
-            ValidationException ex => GetValidationProblemDetails(context, ex),
-            ConflictException ex => GetConflictProblemDetails(context, ex),
-            NotFoundException ex => GetNotFoundProblemDetails(context, ex),
-            _ => GetBaseProblemDetails(context, exception),
-        };
-
-    private static ValidationProblemDetails GetValidationProblemDetails(HttpContext context, ValidationException exception) =>
-        new ValidationProblemDetails
-        {
-            Title = "Validation error",
-            Instance = context.Request.Path,
-            Errors = new Dictionary<string, string[]>() { ["general"] = [.. exception.Errors] },
-            Status = StatusCodes.Status400BadRequest,
-            Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
-        };
-
-    private static ProblemDetails GetNotFoundProblemDetails(HttpContext context, NotFoundException exception) =>
-        new ProblemDetails
-        {
-            Title = "Not found",
-            Instance = context.Request.Path,
-            Detail = exception.Message,
-            Status = StatusCodes.Status404NotFound,
-            Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
-        };
-
-    private static ProblemDetails GetConflictProblemDetails(HttpContext context, ConflictException exception) =>
-        new ProblemDetails
-        {
-            Title = "Conflict found",
-            Instance = context.Request.Path,
-            Detail = exception.Message,
-            Status = StatusCodes.Status409Conflict,
-            Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
-        };
-
-    private static ProblemDetails GetBaseProblemDetails(HttpContext context, Exception exception) =>
-        new ProblemDetails
-        {
-            Title = "Unexpected error",
-            Instance = context.Request.Path,
-            Detail = exception.Message,
-            Status = StatusCodes.Status500InternalServerError,
-            Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
-        };
 
     #endregion
 }
