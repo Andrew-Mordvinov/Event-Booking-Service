@@ -31,7 +31,11 @@ namespace Presentation.Exceptions
 
                 .Register<EventWasStartedException>(
                     StatusCodes.Status409Conflict,
-                    GetEventWasStartedProblemDetails));
+                    GetEventWasStartedProblemDetails)
+
+                .Register<BookingCancelledException>(
+                    StatusCodes.Status409Conflict,
+                    GetBookingCancelledProblemDetails));
 
             return services;
         }
@@ -92,6 +96,16 @@ namespace Presentation.Exceptions
             new ProblemDetails
             {
                 Title = "Booking limit exceed",
+                Instance = context.Request.Path,
+                Detail = exception.Message,
+                Status = StatusCodes.Status409Conflict,
+                Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
+            };
+
+        private static ProblemDetails GetBookingCancelledProblemDetails(HttpContext context, BookingCancelledException exception) =>
+            new ProblemDetails
+            {
+                Title = "Booking already cancelled",
                 Instance = context.Request.Path,
                 Detail = exception.Message,
                 Status = StatusCodes.Status409Conflict,

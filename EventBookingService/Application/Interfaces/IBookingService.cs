@@ -11,17 +11,28 @@ public interface IBookingService
     /// Создать заявку на бронирование события
     /// </summary>
     /// <param name="eventId">Идентификатор события, на которое подается бронь</param>
+    /// <param name="userId">Идентификатор пользователя, который бронирует событие</param>
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Объект брони</returns>
-    Task<Booking> CreateBookingAsync(Guid eventId, CancellationToken token = default);
+    Task<Booking> CreateBookingAsync(Guid eventId, Guid userId, CancellationToken token = default);
 
     /// <summary>
     /// Возвращает заявку на бронирование с заданным идентификатором
     /// </summary>
     /// <param name="bookingId">Идентификатор брони</param>
+    /// <param name="userId">Идентификатор пользователя, который запрашивает объект брони</param>
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Объект брони</returns>
-    Task<Booking> GetBookingByIdAsync(Guid bookingId, CancellationToken token = default);
+    Task<Booking> GetBookingByIdAsync(Guid bookingId, Guid userId, CancellationToken token = default);
+
+    /// <summary>
+    /// Отменяет бронирование с заданным идентификатором
+    /// </summary>
+    /// <param name="bookingId">Идентификатор брони</param>
+    /// <param name="userId">Идентификатор пользователя, который отменяет бронирование события</param>
+    /// <param name="token">Токен отмены операции</param>
+    /// <returns>Асинхронная задача</returns>
+    Task CancelBookingAsync(Guid bookingId, Guid userId, CancellationToken token = default);
 
     /// <summary>
     /// Обработка конкретной брони

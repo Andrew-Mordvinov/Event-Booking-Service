@@ -30,4 +30,6 @@ public class User : IHasId
         PasswordHash = passwordHash;
         Role = role;
     }
+
+    public bool IsAdmin() => Role == Roles.Admin;
 }

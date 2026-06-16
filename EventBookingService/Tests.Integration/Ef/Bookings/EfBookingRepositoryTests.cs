@@ -2,6 +2,7 @@
 using Application.Infrastructure.Enums;
 using Domain.Bookings;
 using Domain.Events;
+using Domain.Users;
 using FluentAssertions;
 using Infrastructure.Ef;
 using Microsoft.EntityFrameworkCore;
@@ -41,25 +42,44 @@ public partial class EfBookingRepositoryTests(SharedFixture sharedFixture) : IAs
             SharedFixture.TrimToMicroseconds(DateTimeOffset.UtcNow.AddDays(1)),
             10
         ));
-        db.Bookings.Add(new Booking(id, eventId, BookingStatus.Pending, DateTimeOffset.UtcNow));
+        var userId = Guid.NewGuid();
+        db.Users.Add(new User
+        (
+            userId,
+            "user",
+            "somehash",
+            Roles.User
+        ));
+        db.Bookings.Add(new Booking(id, eventId, userId, BookingStatus.Pending, DateTimeOffset.UtcNow));
 
         await db.SaveChangesAsync(TestContext.Current.CancellationToken);
     }
 
-    private async Task AddEventAsync(Guid id)
+    private async Task AddEventAsync(Guid eventId)
     {
         using var scope = _sharedFixture.ServiceProvider.CreateScope();
 
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        db.Events.Add(new Event(id, "Don't Care Title", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), 10));
+        db.Events.Add(new Event(eventId, "Don't Care Title", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), 10));
 
         await db.SaveChangesAsync(TestContext.Current.CancellationToken);
     }
 
-    private async Task AddBookingsAndEventsAsync(IEnumerable<Event> events, IEnumerable<Booking> bookings)
+    private async Task AddUserAsync(Guid userId)
     {
-        if (!events.Any() && !bookings.Any())
+        using var scope = _sharedFixture.ServiceProvider.CreateScope();
+
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        db.Users.Add(new User(userId, "user", "somehash", Roles.User));
+
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+    }
+
+    private async Task AddBookingsUsersAndEventsAsync(IEnumerable<Event> events, IEnumerable<User> users, IEnumerable<Booking> bookings)
+    {
+        if (!events.Any() && !bookings.Any() && !users.Any())
         {
             return;
         }
@@ -70,6 +90,10 @@ public partial class EfBookingRepositoryTests(SharedFixture sharedFixture) : IAs
         // Последовательно применяем, а то ef сам связи может выставить и при передаче одной и той же коллекции событий
         // она добавляется вместе с бронями
         db.Events.AddRange(events);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.ChangeTracker.Clear();
+
+        db.Users.AddRange(users);
         await db.SaveChangesAsync(TestContext.Current.CancellationToken);
         db.ChangeTracker.Clear();
 
@@ -247,10 +271,12 @@ public partial class EfBookingRepositoryTests(SharedFixture sharedFixture) : IAs
     {
         // Arrange
         var eventId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var bookingId = Guid.NewGuid();
         await AddEventAsync(eventId);
+        await AddUserAsync(userId);
 
-        var booking = new Booking(bookingId, eventId, BookingStatus.Pending, SharedFixture.TrimToMicroseconds(DateTimeOffset.UtcNow));
+        var booking = new Booking(bookingId, eventId, userId, BookingStatus.Pending, SharedFixture.TrimToMicroseconds(DateTimeOffset.UtcNow));
 
         // Act
         using (var scope = _sharedFixture.ServiceProvider.CreateScope())
@@ -277,9 +303,11 @@ public partial class EfBookingRepositoryTests(SharedFixture sharedFixture) : IAs
     public async Task AddAsync_BookingWithNoEventInDb_ExceptionThrown()
     {
         // Arrange
+        var userId = Guid.NewGuid();
         var bookingId = Guid.NewGuid();
+        await AddUserAsync(userId);
 
-        var booking = new Booking(bookingId, Guid.NewGuid(), BookingStatus.Pending, SharedFixture.TrimToMicroseconds(DateTimeOffset.UtcNow));
+        var booking = new Booking(bookingId, Guid.NewGuid(), userId, BookingStatus.Pending, SharedFixture.TrimToMicroseconds(DateTimeOffset.UtcNow));
 
         // Act
         var act = async () =>
@@ -297,6 +325,8 @@ public partial class EfBookingRepositoryTests(SharedFixture sharedFixture) : IAs
         await act.Should()
             .ThrowExactlyAsync<DbUpdateException>();
     }
+
+    // TODO добавить тесты на добавление бука без пользователя
 
     #endregion
 
@@ -356,9 +386,9 @@ public partial class EfBookingRepositoryTests(SharedFixture sharedFixture) : IAs
 
     [Theory]
     [MemberData(nameof(GetPendingBookingsAsync_Common))]
-    public async Task GetPendingBookingsAsync_Common_ReturnValidGuids(List<Event> events, List<Booking> bookings, List<Guid> expectedBookings)
+    public async Task GetPendingBookingsAsync_Common_ReturnValidGuids(List<Event> events, List<User> users, List<Booking> bookings, List<Guid> expectedBookings)
     {
-        await AddBookingsAndEventsAsync(events, bookings);
+        await AddBookingsUsersAndEventsAsync(events, users, bookings);
 
         using var scope = _sharedFixture.ServiceProvider.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();

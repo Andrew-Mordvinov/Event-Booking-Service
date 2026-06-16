@@ -4,6 +4,7 @@ using Application.Interfaces;
 using Domain.Bookings;
 using Domain.Events;
 using Domain.Exceptions;
+using Domain.Users;
 using FluentAssertions;
 using Infrastructure.Ef;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,6 +42,7 @@ public class BookingServiceTests(SharedFixture sharedFixture) : IAsyncLifetime
     {
         // Arrange
         var (@event, errors) = Event.TryCreate(Guid.NewGuid(), "Test title", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), 5);
+        var user = new User(Guid.NewGuid(), "user", "somehash", Roles.User);
 
         if (@event is null)
         {
@@ -50,8 +52,9 @@ public class BookingServiceTests(SharedFixture sharedFixture) : IAsyncLifetime
         using (var scope = _sharedFixture.ServiceProvider.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            // Добавление тестового события
+            // Добавление тестового события и пользователя
             db.Events.Add(@event);
+            db.Users.Add(user);
             await db.SaveChangesAsync(TestContext.Current.CancellationToken);
         }
 
@@ -66,7 +69,7 @@ public class BookingServiceTests(SharedFixture sharedFixture) : IAsyncLifetime
 
                 var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
 
-                return await service.CreateBookingAsync(@event.Id, TestContext.Current.CancellationToken);
+                return await service.CreateBookingAsync(@event.Id, user.Id, TestContext.Current.CancellationToken);
             });
         }
 

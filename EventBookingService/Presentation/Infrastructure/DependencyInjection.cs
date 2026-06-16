@@ -1,6 +1,7 @@
 
 using Application.Infrastructure;
 using Application.Infrastructure.Common;
+using Application.Settings;
 
 using Infrastructure.Ef;
 
@@ -23,6 +24,11 @@ public static class DependencyInjection
             .UseNpgsql(connectionString)
             .LogTo(message => Serilog.Log.Information(message), LogLevel.Error)
             .EnableDetailedErrors(), 100);
+
+        services.AddOptions<BookingSettings>()
+            .Bind(configuration.GetSection("BookingSettings"))
+            .ValidateDataAnnotations()
+            .ValidateOnStart(); 
 
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<IEventRepository, EfEventRepository>();

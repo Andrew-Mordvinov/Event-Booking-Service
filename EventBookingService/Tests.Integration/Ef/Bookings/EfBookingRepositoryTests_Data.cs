@@ -1,5 +1,6 @@
 ﻿using Domain.Bookings;
 using Domain.Events;
+using Domain.Users;
 
 namespace Tests.Integration.Ef.Bookings;
 
@@ -19,6 +20,12 @@ public partial class EfBookingRepositoryTests
         public static readonly Guid First = Guid.Parse("e9b2a1d7-5c3f-4a8e-b6d4-2f1c7a9b5d83");
         public static readonly Guid Second = Guid.Parse("c2a7e1d9-4b5f-4a8c-9d3e-7f1a2c6b4d58");
         public static readonly Guid Third = Guid.Parse("b1d9a7c3-5e2f-4a8b-9c6d-3f7a2e1b4c85");
+    }
+
+    private static class UserIds
+    {
+        public static readonly Guid User = Guid.Parse("258aa9c7-80f6-4dea-9ccb-5976bd2839c2");
+        public static readonly Guid Admin = Guid.Parse("1de8303c-7478-4e82-8f5d-40afade82499");
     }
 
     private static List<Event> BaseEventCollection =
@@ -49,17 +56,36 @@ public partial class EfBookingRepositoryTests
         )
     ];
 
+    private static List<User> BaseUserList =
+    [
+        new User
+        (
+            UserIds.User,
+            "user",
+            "somehash",
+            Roles.User
+        ),
+        new User
+        (
+            UserIds.Admin,
+            "admin1",
+            "somehash",
+            Roles.Admin
+        ),
+    ];
+
     public static IEnumerable<object?[]> GetPendingBookingsAsync_Common =>
     [
         [
             BaseEventCollection,
+            BaseUserList,
             new List<Booking>
             {
-                new(BookingIds.First, EventIds.First, BookingStatus.Pending, DateTimeOffset.UtcNow.AddHours(-10)),
-                new(BookingIds.Second, EventIds.First, BookingStatus.Pending, DateTimeOffset.UtcNow.AddHours(-11)),
-                new(BookingIds.Third, EventIds.Second, BookingStatus.Confirmed, DateTimeOffset.UtcNow.AddHours(-3)),
-                new(BookingIds.Fourth, EventIds.Second, BookingStatus.Pending, DateTimeOffset.UtcNow.AddHours(-20)),
-                new(BookingIds.Fifth, EventIds.Third, BookingStatus.Rejected, DateTimeOffset.UtcNow.AddHours(-1)),
+                new(BookingIds.First, EventIds.First, UserIds.User, BookingStatus.Pending, DateTimeOffset.UtcNow.AddHours(-10)),
+                new(BookingIds.Second, EventIds.First, UserIds.Admin, BookingStatus.Pending, DateTimeOffset.UtcNow.AddHours(-11)),
+                new(BookingIds.Third, EventIds.Second, UserIds.Admin, BookingStatus.Confirmed, DateTimeOffset.UtcNow.AddHours(-3)),
+                new(BookingIds.Fourth, EventIds.Second, UserIds.User, BookingStatus.Pending, DateTimeOffset.UtcNow.AddHours(-20)),
+                new(BookingIds.Fifth, EventIds.Third, UserIds.User, BookingStatus.Rejected, DateTimeOffset.UtcNow.AddHours(-1)),
             },
             new List<Guid>
             {
@@ -70,18 +96,20 @@ public partial class EfBookingRepositoryTests
         ],
         [
             BaseEventCollection,
+            BaseUserList,
             new List<Booking>(),
             new List<Guid>()
         ],
         [
             BaseEventCollection,
+            BaseUserList,
             new List<Booking>
             {
-                new(BookingIds.First, EventIds.First, BookingStatus.Confirmed, DateTimeOffset.UtcNow.AddHours(-10)),
-                new(BookingIds.Second, EventIds.First, BookingStatus.Confirmed, DateTimeOffset.UtcNow.AddHours(-11)),
-                new(BookingIds.Third, EventIds.Second, BookingStatus.Confirmed, DateTimeOffset.UtcNow.AddHours(-3)),
-                new(BookingIds.Fourth, EventIds.Second, BookingStatus.Rejected, DateTimeOffset.UtcNow.AddHours(-20)),
-                new(BookingIds.Fifth, EventIds.Third, BookingStatus.Rejected, DateTimeOffset.UtcNow.AddHours(-1)),
+                new(BookingIds.First, EventIds.First, UserIds.User, BookingStatus.Confirmed, DateTimeOffset.UtcNow.AddHours(-10)),
+                new(BookingIds.Second, EventIds.First,UserIds.Admin, BookingStatus.Confirmed, DateTimeOffset.UtcNow.AddHours(-11)),
+                new(BookingIds.Third, EventIds.Second, UserIds.Admin, BookingStatus.Confirmed, DateTimeOffset.UtcNow.AddHours(-3)),
+                new(BookingIds.Fourth, EventIds.Second, UserIds.User, BookingStatus.Rejected, DateTimeOffset.UtcNow.AddHours(-20)),
+                new(BookingIds.Fifth, EventIds.Third, UserIds.User, BookingStatus.Rejected, DateTimeOffset.UtcNow.AddHours(-1)),
             },
             new List<Guid>()
         ],

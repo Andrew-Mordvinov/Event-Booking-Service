@@ -1,8 +1,8 @@
 ﻿namespace Domain.Exceptions;
 
 /// <summary>
-/// Исключение при попытке пользователя взаимодействовать с чужим бронированием
+/// Исключение при попытке отменить уже отмененную бронь
 /// </summary>
-public class BookingOwnershipException(string message) : Exception(message)
+public class BookingCancelledException(string message) : Exception(message)
 {
 }

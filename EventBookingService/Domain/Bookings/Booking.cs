@@ -30,16 +30,27 @@ public class Booking : IHasId, ICopyable<Booking>
 
     }
 
-    public Booking(Guid id, Guid eventId, BookingStatus status, DateTimeOffset created, DateTimeOffset? processed = null)
+    public Booking(
+        Guid id,
+        Guid eventId,
+        Guid userId,
+        BookingStatus status,
+        DateTimeOffset created,
+        DateTimeOffset? processed = null,
+        User? user = null,
+        Event? @event = null)
     {
         Id = id;
         EventId = eventId;
+        UserId = userId;
         Status = status;
         CreatedAt = created;
         ProcessedAt = processed;
+        User = user;
+        Event = @event;
     }
 
-    public Booking Copy() => new(Id, EventId, Status, CreatedAt, ProcessedAt);
+    public Booking Copy() => new(Id, EventId, UserId, Status, CreatedAt, ProcessedAt);
 
     public void Confirm()
     {
@@ -51,5 +62,10 @@ public class Booking : IHasId, ICopyable<Booking>
     {
         Status = BookingStatus.Rejected;
         ProcessedAt = DateTime.UtcNow;
+    }
+
+    public void Cancel()
+    {
+        Status = BookingStatus.Cancelled;
     }
 }

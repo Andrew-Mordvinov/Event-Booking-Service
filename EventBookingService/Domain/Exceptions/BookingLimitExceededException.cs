@@ -5,4 +5,5 @@
 /// </summary>
 public class BookingLimitExceededException(string message) : Exception(message)
 {
+
 }

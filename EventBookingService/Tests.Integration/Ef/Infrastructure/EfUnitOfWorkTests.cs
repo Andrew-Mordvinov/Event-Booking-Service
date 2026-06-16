@@ -255,9 +255,10 @@ public class EfUnitOfWorkTests(SharedFixture sharedFixture) : IAsyncLifetime
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
             await db.Database.BeginTransactionAsync(TestContext.Current.CancellationToken);
-            // Добавление брони для несуществующего события через трекер
+            // Добавление брони для несуществующего события и пользователя через трекер
             db.Bookings.Add(new Booking
             (
+                Guid.NewGuid(),
                 Guid.NewGuid(),
                 Guid.NewGuid(),
                 BookingStatus.Pending,
@@ -299,9 +300,10 @@ public class EfUnitOfWorkTests(SharedFixture sharedFixture) : IAsyncLifetime
             var unit = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            // Добавление брони для несуществующего события через трекер
+            // Добавление брони для несуществующего события и пользователя через трекер
             db.Bookings.Add(new Booking
             (
+                Guid.NewGuid(),
                 Guid.NewGuid(),
                 Guid.NewGuid(),
                 BookingStatus.Pending,
