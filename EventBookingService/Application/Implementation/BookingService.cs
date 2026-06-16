@@ -5,6 +5,7 @@ using Application.Interfaces;
 using Application.Settings;
 using Domain.Bookings;
 using Domain.Exceptions;
+using Domain.Users;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -14,6 +15,7 @@ public class BookingService(
     IBookingRepository _storageBooking,
     IEventRepository _storageEvent,
     IUnitOfWork _unitOfWork,
+    IRoleAccessChecker roleAccessChecker,
     IOptions<BookingSettings> options,
     ILogger<BookingService> _logger) : IBookingService
 {
@@ -25,17 +27,11 @@ public class BookingService(
         Guid bookingId,
         Guid userId,
         CancellationToken token = default)
-    {    
-        var booking = await _storageBooking.GetByIdAsync(bookingId, GetMode.Readonly, token);
-
-        if (booking is null)
-        {
-            throw new NotFoundException(BookingServiceErrors.BookingNotFound(bookingId));
-        }
-
+    {
+        var booking = await _storageBooking.GetByIdAsync(bookingId, GetMode.Readonly, token) ?? throw new NotFoundException(BookingServiceErrors.BookingNotFound(bookingId));
+        
         if (booking.UserId != userId
-            // Проверить, работает ли
-            && booking.User?.IsAdmin() != true)
+            && !await roleAccessChecker.CheckUserHasRoleAsync(userId, Roles.Admin, token))
         {
             throw new BookingOwnershipException(BookingServiceErrors.BookingAccessDenied(bookingId));
         }
@@ -55,9 +51,10 @@ public class BookingService(
             throw new BookingLimitExceededException(BookingServiceErrors.ExceedBookingLimit(_maxBookingPerUser));
         }
         
-        var entity = await _storageEvent.GetByIdAsync(eventId, token: token) ?? throw new NotFoundException(BookingServiceErrors.EventNotFound(eventId));
+        var entity = await _storageEvent.GetByIdAsync(eventId, GetMode.Edit, token: token) ?? throw new NotFoundException(BookingServiceErrors.EventNotFound(eventId));
         if (!entity.TryReserveSeats())
         {
+            await _unitOfWork.RollbackChangesAsync(token);
             throw new ConflictException(BookingServiceErrors.NoAvailableSeats);
         }
 
@@ -75,20 +72,16 @@ public class BookingService(
         Guid userId,
         CancellationToken token = default)
     {
-        var booking = await _storageBooking.GetByIdAsync(bookingId, GetMode.Edit, token);
-
-        if (booking is null)
-        {
-            throw new NotFoundException(BookingServiceErrors.BookingNotFound(bookingId));
-        }
+        var booking = await _storageBooking.GetByIdAsync(bookingId, GetMode.Edit, token) ?? throw new NotFoundException(BookingServiceErrors.BookingNotFound(bookingId));
 
         if (booking.Status is BookingStatus.Cancelled)
         {
+            await _unitOfWork.RollbackChangesAsync(token);
             throw new BookingCancelledException(BookingServiceErrors.BookingAlreadyCancelled(bookingId));
         }
 
         if (booking.UserId != userId
-            && booking.User?.IsAdmin() != true)
+            && !await roleAccessChecker.CheckUserHasRoleAsync(userId, Roles.Admin, token))
         {
             await _unitOfWork.RollbackChangesAsync(token);
             throw new BookingOwnershipException(BookingServiceErrors.BookingAccessDenied(bookingId));
@@ -99,6 +92,7 @@ public class BookingService(
         // В теории невозможно, так как связь по внешнему ключу сейчас каскадно удаляет
         if (@event is null)
         {
+            await _unitOfWork.RollbackChangesAsync(token);
             throw new NotFoundException(BookingServiceErrors.EventNotFound(booking.EventId));
         }
         @event.TryReleaseSeats();
