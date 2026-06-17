@@ -37,8 +37,9 @@ public static class DependencyInjection
             .Bind(configuration.GetSection("BookingSettings"))
             .ValidateDataAnnotations();
 
-        services.AddOptions<JwtSettings>()
-            .Bind(configuration.GetSection("JwtSettings"));
+        services.AddOptionsWithValidateOnStart<JwtSettings>()
+            .Bind(configuration.GetSection("JwtSettings"))
+            .ValidateDataAnnotations();
 
         services.AddAuthentication(options =>
         {

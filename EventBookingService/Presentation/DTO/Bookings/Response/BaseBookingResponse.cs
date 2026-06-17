@@ -3,12 +3,12 @@ using Domain.Bookings;
 namespace Presentation.DTO.Bookings.Response;
 
 /// <summary>
-/// Ответ на запрос о бронировании события
+/// Ответ на запрос получения брони
 /// </summary>
-public class BookingAcceptedResponse
+public class BaseBookingResponse
 {
     /// <summary>
-    /// Идентификатор созданного бронирования
+    /// Идентификатор брони
     /// </summary>
     public Guid Id { get; set; }
 
@@ -22,10 +22,22 @@ public class BookingAcceptedResponse
     /// </summary>
     public BookingStatus Status { get; set; }
 
-    public static BookingAcceptedResponse FromBooking(Booking entity) => new()
+    /// <summary>
+    /// Дата и время создания бронирования
+    /// </summary>
+    public DateTimeOffset CreatedAt { get; set; }
+
+    /// <summary>
+    /// Дата и время обработки бронирования с установлением решения (подтвердить/отклонить)
+    /// </summary>
+    public DateTimeOffset? ProcessedAt { get; set; }
+
+    public static BaseBookingResponse FromBooking(Booking entity) => new()
     {
         Id = entity.Id,
         EventId = entity.EventId,
         Status = entity.Status,
+        CreatedAt = entity.CreatedAt,
+        ProcessedAt = entity.ProcessedAt
     };
 }

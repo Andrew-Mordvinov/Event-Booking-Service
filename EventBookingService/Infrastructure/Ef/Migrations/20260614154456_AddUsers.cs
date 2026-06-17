@@ -34,13 +34,22 @@ namespace Infrastructure.Ef.Migrations
                 table: "users",
                 columns: ["Id", "Login", "PasswordHash", "Role"],
                 values: [adminId, "admin", manager.HashPassword("admin"), (int)Roles.Admin]);
-
+            
+            // Сначала nullable
             migrationBuilder.AddColumn<Guid>(
                 name: "UserId",
                 table: "bookings",
                 type: "uuid",
-                nullable: false,
-                defaultValue: adminId);
+                nullable: true);
+
+            // Вставка всем бронированиям дефолтного юзера, если есть
+            migrationBuilder.Sql($"UPDATE bookings SET \"UserId\" = '{adminId}'");
+
+            // Теперь not null
+            migrationBuilder.AlterColumn<Guid>(
+                name: "UserId",
+                table: "bookings",
+                nullable: false);
 
             migrationBuilder.CreateIndex(
                 name: "IX_bookings_UserId",
