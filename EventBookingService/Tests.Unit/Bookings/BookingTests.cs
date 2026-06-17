@@ -23,12 +23,12 @@ public partial class BookingTests
         out Mock<IBookingRepository> bookingStorageMock,
         out Mock<IEventRepository> eventStorageMock,
         out Mock<IUnitOfWork> unitOfWorkMock,
-        out Mock<IRoleAccessChecker> accessCheckerMock)
+        out Mock<IUserContext> userContextMock)
     {
         bookingStorageMock = new Mock<IBookingRepository>();
         eventStorageMock = new Mock<IEventRepository>();
         unitOfWorkMock = new Mock<IUnitOfWork>();
-        accessCheckerMock = new Mock<IRoleAccessChecker>();     
+        userContextMock = new Mock<IUserContext>();     
         
         var loggerMock = new Mock<ILogger<BookingService>>();
         var optionsMock = new Mock<IOptions<BookingSettings>>();
@@ -41,7 +41,7 @@ public partial class BookingTests
             bookingStorageMock.Object,
             eventStorageMock.Object,
             unitOfWorkMock.Object,
-            accessCheckerMock.Object,
+            userContextMock.Object,
             optionsMock.Object,
             loggerMock.Object);
     }
@@ -52,7 +52,7 @@ public partial class BookingTests
     public async Task GetBookingByIdAsync_ValidId_ReturnSuccessfully()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var _, out var _, out var accessCheckerMock);
+        var service = CreateService(out var bookingStorageMock, out var _, out var _, out var userContextMock);
         var userId = Guid.NewGuid();
         var bookingToReturn = new Booking
         (
@@ -67,16 +67,20 @@ public partial class BookingTests
             .ReturnsAsync(bookingToReturn)
             .Verifiable(Times.Once);
 
+        userContextMock.Setup(s => s.UserId)
+            .Returns(userId)
+            .Verifiable(Times.Once);
+
         // Не вызывали, т.к. тот же пользователь
-        accessCheckerMock.Setup(s => s.CheckUserHasRoleAsync(It.IsAny<Guid>(), It.IsAny<Roles>(), It.IsAny<CancellationToken>()))
+        userContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
             .Verifiable(Times.Never);
 
         // Act
-        var result = await service.GetBookingByIdAsync(bookingToReturn.Id, userId, TestContext.Current.CancellationToken);
+        var result = await service.GetBookingByIdAsync(bookingToReturn.Id, TestContext.Current.CancellationToken);
 
         // Assert
         bookingStorageMock.Verify();
-        accessCheckerMock.Verify();
+        userContextMock.Verify();
         result.Should().BeEquivalentTo(bookingToReturn);
     }
 
@@ -84,7 +88,7 @@ public partial class BookingTests
     public async Task GetBookingByIdAsync_InvalidId_ThrowNotFound()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var _, out var _, out var accessCheckerMock);
+        var service = CreateService(out var bookingStorageMock, out var _, out var _, out var userContextMock);
         var userId = Guid.NewGuid();
 
         var bookId = Guid.NewGuid();
@@ -93,23 +97,27 @@ public partial class BookingTests
             .Verifiable(Times.Once);
 
         // Не вызывали, т.к. выбросили исключение раньше
-        accessCheckerMock.Setup(s => s.CheckUserHasRoleAsync(It.IsAny<Guid>(), It.IsAny<Roles>(), It.IsAny<CancellationToken>()))
+        userContextMock.Setup(s => s.UserId)
+            .Verifiable(Times.Never);
+
+        // Не вызывали, т.к. выбросили исключение раньше
+        userContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
             .Verifiable(Times.Never);
 
         // Act
-        var act = async () => await service.GetBookingByIdAsync(bookId, userId, TestContext.Current.CancellationToken);
+        var act = async () => await service.GetBookingByIdAsync(bookId, TestContext.Current.CancellationToken);
 
         // Assert
         await act.Should().ThrowExactlyAsync<NotFoundException>();
         bookingStorageMock.Verify();
-        accessCheckerMock.Verify();
+        userContextMock.Verify();
     }
 
     [Fact]
     public async Task GetBookingByIdAsync_BookingForAnotherUser_ThrowBookingOwnership()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var _, out var _, out var accessCheckerMock);
+        var service = CreateService(out var bookingStorageMock, out var _, out var _, out var userContextMock);
         var userId = Guid.NewGuid();
         var booking = new Booking
         (
@@ -125,24 +133,30 @@ public partial class BookingTests
             .ReturnsAsync(booking)
             .Verifiable(Times.Once);
 
-        accessCheckerMock.Setup(s => s.CheckUserHasRoleAsync(userId, Roles.Admin, TestContext.Current.CancellationToken))
+        // Другой пользователь
+        userContextMock.Setup(s => s.UserId)
+            .Returns(userId)
+            .Verifiable(Times.Once);
+
+        // Не админ
+        userContextMock.Setup(s => s.IsAdmin(TestContext.Current.CancellationToken))
             .ReturnsAsync(false)
             .Verifiable(Times.Once);
 
         // Act
-        var act = async () => await service.GetBookingByIdAsync(booking.Id, userId, TestContext.Current.CancellationToken);
+        var act = async () => await service.GetBookingByIdAsync(booking.Id, TestContext.Current.CancellationToken);
 
         // Assert
         await act.Should().ThrowExactlyAsync<BookingOwnershipException>();
         bookingStorageMock.Verify();
-        accessCheckerMock.Verify();
+        userContextMock.Verify();
     }
 
     [Fact]
     public async Task GetBookingByIdAsync_AdminGetBookingForAnotherUser_ReturnSuccessfully()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var _, out var _, out var accessCheckerMock);
+        var service = CreateService(out var bookingStorageMock, out var _, out var _, out var userContextMock);
         var userId = Guid.NewGuid();
         var adminId = Guid.NewGuid();
         var bookingToReturn = new Booking
@@ -159,16 +173,22 @@ public partial class BookingTests
             .ReturnsAsync(bookingToReturn)
             .Verifiable(Times.Once);
 
-        accessCheckerMock.Setup(s => s.CheckUserHasRoleAsync(adminId, Roles.Admin, TestContext.Current.CancellationToken))
+        // Другой пользователь
+        userContextMock.Setup(s => s.UserId)
+            .Returns(adminId)
+            .Verifiable(Times.Once);
+
+        // Действительно админ
+        userContextMock.Setup(s => s.IsAdmin(TestContext.Current.CancellationToken))
             .ReturnsAsync(true)
             .Verifiable(Times.Once);
 
         // Act
-        var result = await service.GetBookingByIdAsync(bookingToReturn.Id, adminId, TestContext.Current.CancellationToken);
+        var result = await service.GetBookingByIdAsync(bookingToReturn.Id, TestContext.Current.CancellationToken);
 
         // Assert
         bookingStorageMock.Verify();
-        accessCheckerMock.Verify();
+        userContextMock.Verify();
         result.Should().BeEquivalentTo(bookingToReturn);
     }
 
@@ -353,7 +373,7 @@ public partial class BookingTests
     public async Task CancelBookingAsync_BookingAndEventExists_CancelSuccessfully()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var accessCheckerMock);
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var userContextMock);
         var userId = Guid.NewGuid();
         var bookEvent = new Event(Guid.NewGuid(), "SomeTitle", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), CorrectSeatsCount, CorrectSeatsCount - 1);
         var bookingToReturn = new Booking
@@ -382,18 +402,23 @@ public partial class BookingTests
         unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
+        // Событие на того же пользователя
+        userContextMock.Setup(s => s.UserId)
+            .Returns(userId)
+            .Verifiable(Times.Once);
+
         // Не вызывали, т.к. событие на того же пользователя
-        accessCheckerMock.Setup(s => s.CheckUserHasRoleAsync(It.IsAny<Guid>(), It.IsAny<Roles>(), It.IsAny<CancellationToken>()))
+        userContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
             .Verifiable(Times.Never);
 
         // Act
-        await service.CancelBookingAsync(bookingToReturn.Id, userId, TestContext.Current.CancellationToken);
+        await service.CancelBookingAsync(bookingToReturn.Id, TestContext.Current.CancellationToken);
 
         // Assert
         bookingStorageMock.Verify();
         eventStorageMock.Verify();
         unitOfWorkMock.Verify();
-        accessCheckerMock.Verify();
+        userContextMock.Verify();
         bookingToReturn.Status.Should().Be(BookingStatus.Cancelled);
         bookEvent.AvailableSeats.Should().Be(CorrectSeatsCount);
     }
@@ -405,7 +430,7 @@ public partial class BookingTests
     public async Task CancelBookingAsync_AdminCancelOtherPersonBooking_CancelSuccessfully(BookingStatus status)
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var accessCheckerMock);
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var userContextMock);
         var userId = Guid.NewGuid();
         var adminId = Guid.NewGuid();
         var bookEvent = new Event(Guid.NewGuid(), "SomeTitle", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), CorrectSeatsCount, CorrectSeatsCount - 1);
@@ -435,19 +460,24 @@ public partial class BookingTests
         unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
+        // Событие на другого пользователя
+        userContextMock.Setup(s => s.UserId)
+            .Returns(adminId)
+            .Verifiable(Times.Once);
+
         // Проверили, что запросил админ
-        accessCheckerMock.Setup(s => s.CheckUserHasRoleAsync(adminId, Roles.Admin, TestContext.Current.CancellationToken))
+        userContextMock.Setup(s => s.IsAdmin(TestContext.Current.CancellationToken))
             .ReturnsAsync(true)
             .Verifiable(Times.Once);
 
         // Act
-        await service.CancelBookingAsync(bookingToReturn.Id, adminId, TestContext.Current.CancellationToken);
+        await service.CancelBookingAsync(bookingToReturn.Id, TestContext.Current.CancellationToken);
 
         // Assert
         bookingStorageMock.Verify();
         eventStorageMock.Verify();
         unitOfWorkMock.Verify();
-        accessCheckerMock.Verify();
+        userContextMock.Verify();
         bookingToReturn.Status.Should().Be(BookingStatus.Cancelled);
         bookEvent.AvailableSeats.Should().Be(CorrectSeatsCount);
     }
@@ -456,7 +486,7 @@ public partial class BookingTests
     public async Task CancelBookingAsync_BookingNotFound_ThrowNotFound()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var accessCheckerMock);
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var userContextMock);
         var userId = Guid.NewGuid();
         var bookingId = Guid.NewGuid();
 
@@ -477,11 +507,15 @@ public partial class BookingTests
             .Verifiable(Times.Never);
 
         // Не вызывали, т.к. событие не найдено
-        accessCheckerMock.Setup(s => s.CheckUserHasRoleAsync(It.IsAny<Guid>(), It.IsAny<Roles>(), It.IsAny<CancellationToken>()))
+        userContextMock.Setup(s => s.UserId)
+            .Verifiable(Times.Never);
+
+        // Не вызывали, т.к. событие не найдено
+        userContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
             .Verifiable(Times.Never);
 
         // Act
-        var act = async () => await service.CancelBookingAsync(bookingId, userId, TestContext.Current.CancellationToken);
+        var act = async () => await service.CancelBookingAsync(bookingId, TestContext.Current.CancellationToken);
 
         // Assert
         await act.Should()
@@ -491,14 +525,14 @@ public partial class BookingTests
         bookingStorageMock.Verify();
         eventStorageMock.Verify();
         unitOfWorkMock.Verify();
-        accessCheckerMock.Verify();
+        userContextMock.Verify();
     }
 
     [Fact]
     public async Task CancelBookingAsync_BookingAlreadyCancel_ThrowBookingCancelled()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var accessCheckerMock);
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var userContextMock);
         var userId = Guid.NewGuid();
         var bookingToReturn = new Booking
         (
@@ -530,11 +564,15 @@ public partial class BookingTests
             .Verifiable(Times.Once);
 
         // Не вызывали, т.к. событие уже отменено
-        accessCheckerMock.Setup(s => s.CheckUserHasRoleAsync(It.IsAny<Guid>(), It.IsAny<Roles>(), It.IsAny<CancellationToken>()))
+        userContextMock.Setup(s => s.UserId)
+            .Verifiable(Times.Never);
+
+        // Не вызывали, т.к. событие уже отменено
+        userContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
             .Verifiable(Times.Never);
 
         // Act
-        var act = async () => await service.CancelBookingAsync(bookingToReturn.Id, userId, TestContext.Current.CancellationToken);
+        var act = async () => await service.CancelBookingAsync(bookingToReturn.Id, TestContext.Current.CancellationToken);
 
         // Assert
         await act.Should()
@@ -543,7 +581,7 @@ public partial class BookingTests
         bookingStorageMock.Verify();
         eventStorageMock.Verify();
         unitOfWorkMock.Verify();
-        accessCheckerMock.Verify();
+        userContextMock.Verify();
     }
 
     [Theory]
@@ -553,7 +591,7 @@ public partial class BookingTests
     public async Task CancelBookingAsync_UserCancelOtherPersonBooking_ThrowBookingOwnership(BookingStatus status)
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var accessCheckerMock);
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var userContextMock);
         var userThatTryingToCancel = Guid.NewGuid();
         var bookingToReturn = new Booking
         (
@@ -584,13 +622,18 @@ public partial class BookingTests
         unitOfWorkMock.Setup(s => s.RollbackChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
+        // Событие на другого пользователя
+        userContextMock.Setup(s => s.UserId)
+            .Returns(userThatTryingToCancel)
+            .Verifiable(Times.Once);
+
         // Простой пользователь без админки
-        accessCheckerMock.Setup(s => s.CheckUserHasRoleAsync(userThatTryingToCancel, Roles.Admin, TestContext.Current.CancellationToken))
+        userContextMock.Setup(s => s.IsAdmin(TestContext.Current.CancellationToken))
             .ReturnsAsync(false)
             .Verifiable(Times.Once);
 
         // Act
-        var act = async () => await service.CancelBookingAsync(bookingToReturn.Id, userThatTryingToCancel, TestContext.Current.CancellationToken);
+        var act = async () => await service.CancelBookingAsync(bookingToReturn.Id, TestContext.Current.CancellationToken);
 
         // Assert 
         await act.Should()
@@ -599,7 +642,7 @@ public partial class BookingTests
         bookingStorageMock.Verify();
         eventStorageMock.Verify();
         unitOfWorkMock.Verify();
-        accessCheckerMock.Verify();
+        userContextMock.Verify();
     }
 
     [Theory]
@@ -609,7 +652,7 @@ public partial class BookingTests
     public async Task CancelBookingAsync_EventNotFound_ThrowNotFound(BookingStatus status)
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var accessCheckerMock);
+        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var userContextMock);
         var bookingToReturn = new Booking
         (
             Guid.NewGuid(),
@@ -640,12 +683,17 @@ public partial class BookingTests
         unitOfWorkMock.Setup(s => s.RollbackChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
+        // Событие на того же пользователя
+        userContextMock.Setup(s => s.UserId)
+            .Returns(bookingToReturn.UserId)
+            .Verifiable(Times.Once);
+
         // Не вызывали, т.к. событие на того же пользователя
-        accessCheckerMock.Setup(s => s.CheckUserHasRoleAsync(It.IsAny<Guid>(), It.IsAny<Roles>(), It.IsAny<CancellationToken>()))
+        userContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
             .Verifiable(Times.Never);
 
         // Act
-        var act = async () => await service.CancelBookingAsync(bookingToReturn.Id, bookingToReturn.UserId, TestContext.Current.CancellationToken);
+        var act = async () => await service.CancelBookingAsync(bookingToReturn.Id, TestContext.Current.CancellationToken);
 
         // Assert 
         await act.Should()
@@ -655,7 +703,7 @@ public partial class BookingTests
         bookingStorageMock.Verify();
         eventStorageMock.Verify();
         unitOfWorkMock.Verify();
-        accessCheckerMock.Verify();
+        userContextMock.Verify();
     }
 
     #endregion

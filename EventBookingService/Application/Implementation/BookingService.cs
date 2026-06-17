@@ -16,7 +16,7 @@ public class BookingService(
     IBookingRepository _storageBooking,
     IEventRepository _storageEvent,
     IUnitOfWork _unitOfWork,
-    IRoleAccessChecker roleAccessChecker,
+    IUserContext _userContext,
     IOptions<BookingSettings> options,
     ILogger<BookingService> _logger) : IBookingService
 {
@@ -26,13 +26,12 @@ public class BookingService(
 
     public async Task<Booking> GetBookingByIdAsync(
         Guid bookingId,
-        Guid userId,
         CancellationToken token = default)
     {
         var booking = await _storageBooking.GetByIdAsync(bookingId, GetMode.Readonly, token) ?? throw new NotFoundException(BookingServiceErrors.BookingNotFound(bookingId));
         
-        if (booking.UserId != userId
-            && !await roleAccessChecker.CheckUserHasRoleAsync(userId, Roles.Admin, token))
+        if (booking.UserId != _userContext.UserId
+            && !await _userContext.IsAdmin(token))
         {
             throw new BookingOwnershipException(BookingServiceErrors.BookingAccessDenied(bookingId));
         }
@@ -70,7 +69,6 @@ public class BookingService(
 
     public async Task CancelBookingAsync(
         Guid bookingId,
-        Guid userId,
         CancellationToken token = default)
     {
         var booking = await _storageBooking.GetByIdAsync(bookingId, GetMode.Edit, token) ?? throw new NotFoundException(BookingServiceErrors.BookingNotFound(bookingId));
@@ -81,8 +79,8 @@ public class BookingService(
             throw new BookingCancelledException(BookingServiceErrors.BookingAlreadyCancelled(bookingId));
         }
 
-        if (booking.UserId != userId
-            && !await roleAccessChecker.CheckUserHasRoleAsync(userId, Roles.Admin, token))
+        if (booking.UserId != _userContext.UserId
+            && !await _userContext.IsAdmin(token))
         {
             await _unitOfWork.RollbackChangesAsync(token);
             throw new BookingOwnershipException(BookingServiceErrors.BookingAccessDenied(bookingId));
