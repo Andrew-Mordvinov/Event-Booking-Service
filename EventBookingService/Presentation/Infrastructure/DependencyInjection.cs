@@ -1,11 +1,20 @@
 
+using System.Text;
+
+using Application.DTO.Users;
 using Application.Infrastructure;
 using Application.Infrastructure.Common;
 using Application.Settings;
+using Application.Validations;
 
 using Infrastructure.Ef;
+using Infrastructure.Http;
+using Infrastructure.Security;
+using Infrastructure.Settings;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 using Presentation.Infrastructure.Bookings;
 
@@ -25,14 +34,47 @@ public static class DependencyInjection
             .LogTo(message => Serilog.Log.Information(message), LogLevel.Error)
             .EnableDetailedErrors(), 100);
 
-        services.AddOptions<BookingSettings>()
+        services.AddOptionsWithValidateOnStart<BookingSettings>()
             .Bind(configuration.GetSection("BookingSettings"))
-            .ValidateDataAnnotations()
-            .ValidateOnStart(); 
+            .ValidateDataAnnotations();
+
+        services.AddOptions<JwtSettings>()
+            .Bind(configuration.GetSection("JwtSettings"));
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+        {
+            var settings = configuration.GetSection("JwtSettings").Get<JwtSettings>() ?? throw new Exception("Couldn't load settings for jwt token");
+            
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = settings.Issuer,
+
+                ValidateAudience = true,
+                ValidAudience = settings.Audience,
+
+                ValidateLifetime = true,
+
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SecretKey))
+            };
+        });
 
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<IEventRepository, EfEventRepository>();
         services.AddScoped<IBookingRepository, EfBookingRepository>();
+        services.AddScoped<IUserRepository, EfUserRepository>();
+        services.AddScoped<ITokenGenerator, JwtTokenGenerator>();
+        services.AddScoped<IPasswordManager, DefautPasswordManager>();
+        services.AddScoped<IUserContext, HttpUserContext>();
+        services.AddScoped<IValidator<RegisterUserRequest>, RegistrationRequestValidator>();
+
+        services.AddHttpContextAccessor();
 
         services.AddHostedService<BookingManagerBackgroundService>();
 

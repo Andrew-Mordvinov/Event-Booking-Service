@@ -1,5 +1,6 @@
 using Domain.Exceptions;
 using Domain.Exceptions.Bookings;
+using Domain.Exceptions.Users;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -36,7 +37,15 @@ namespace Presentation.Exceptions
 
                 .Register<BookingCancelledException>(
                     StatusCodes.Status409Conflict,
-                    GetBookingCancelledProblemDetails));
+                    GetBookingCancelledProblemDetails)
+
+                .Register<LoginNotUniqueException>(
+                    StatusCodes.Status409Conflict,
+                    GetLoginNotUniqueProblemDetails)
+
+                .Register<AuthFailedException>(
+                    StatusCodes.Status400BadRequest,
+                    GetAuthFailedProblemDetails));
 
             return services;
         }
@@ -49,7 +58,6 @@ namespace Presentation.Exceptions
                 Title = "Validation error",
                 Instance = context.Request.Path,
                 Errors = new Dictionary<string, string[]>() { ["general"] = [.. exception.Errors] },
-                Status = StatusCodes.Status400BadRequest,
                 Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
             };
 
@@ -59,7 +67,6 @@ namespace Presentation.Exceptions
                 Title = "Not found",
                 Instance = context.Request.Path,
                 Detail = exception.Message,
-                Status = StatusCodes.Status404NotFound,
                 Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
             };
 
@@ -69,7 +76,6 @@ namespace Presentation.Exceptions
                 Title = "Conflict found",
                 Instance = context.Request.Path,
                 Detail = exception.Message,
-                Status = StatusCodes.Status409Conflict,
                 Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
             };
 
@@ -79,7 +85,6 @@ namespace Presentation.Exceptions
                 Title = "Booking ownership conflict, operation forbidden",
                 Instance = context.Request.Path,
                 Detail = exception.Message,
-                Status = StatusCodes.Status403Forbidden,
                 Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
             };
 
@@ -89,7 +94,6 @@ namespace Presentation.Exceptions
                 Title = "Event was started",
                 Instance = context.Request.Path,
                 Detail = exception.Message,
-                Status = StatusCodes.Status400BadRequest,
                 Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
             };
 
@@ -99,7 +103,6 @@ namespace Presentation.Exceptions
                 Title = "Booking limit exceed",
                 Instance = context.Request.Path,
                 Detail = exception.Message,
-                Status = StatusCodes.Status409Conflict,
                 Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
             };
 
@@ -109,7 +112,24 @@ namespace Presentation.Exceptions
                 Title = "Booking already cancelled",
                 Instance = context.Request.Path,
                 Detail = exception.Message,
-                Status = StatusCodes.Status409Conflict,
+                Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
+            };
+
+        private static ProblemDetails GetLoginNotUniqueProblemDetails(HttpContext context, LoginNotUniqueException exception) =>
+            new ProblemDetails
+            {
+                Title = "Login not unique",
+                Instance = context.Request.Path,
+                Detail = exception.Message,
+                Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
+            };
+
+        private static ProblemDetails GetAuthFailedProblemDetails(HttpContext context, AuthFailedException exception) =>
+            new ProblemDetails
+            {
+                Title = "Auth failed",
+                Instance = context.Request.Path,
+                Detail = exception.Message,
                 Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
             };
 

@@ -110,7 +110,8 @@ namespace Infrastructure.Ef.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Login")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_users_Login");
 
                     b.ToTable("users", (string)null);
                 });

@@ -24,7 +24,7 @@ internal class LoginNotUniquePattern : ExceptionPattern
 
         if (pgEx.SqlState == "23505"
             && pgEx.TableName == TableNames.Users
-            && pgEx.ColumnName == nameof(User.Login))
+            && pgEx.ConstraintName == ConstraintNames.LoginUnique)
         {
             throw new LoginNotUniqueException();
         }

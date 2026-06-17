@@ -19,6 +19,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired();
 
         builder.HasIndex(b => b.Login)
+            .HasDatabaseName(ConstraintNames.LoginUnique)
             .IsUnique();
     }
 }

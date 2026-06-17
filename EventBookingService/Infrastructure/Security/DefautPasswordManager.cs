@@ -42,8 +42,8 @@ public class DefautPasswordManager : IPasswordManager
             throw new FormatException("Неверный формат хэша");
         }
 
-        string saltBase64 = parts[0];
-        string hashBase64 = parts[1];
+        string saltBase64 = parts[1];
+        string hashBase64 = parts[0];
 
         byte[] salt = Convert.FromBase64String(saltBase64);
         byte[] storedHashBytes = Convert.FromBase64String(hashBase64);

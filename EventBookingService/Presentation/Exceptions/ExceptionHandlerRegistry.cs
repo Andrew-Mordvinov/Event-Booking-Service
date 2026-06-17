@@ -22,7 +22,13 @@ public class ExceptionHandlerRegistry
         _handlers[typeof(TException)] = new ExceptionHandler
         {
             StatusCode = statusCode,
-            ProblemDetailsFactory = (context, ex) => problemDetailsFactory(context, (TException) ex)
+            ProblemDetailsFactory = (context, ex) =>
+            {
+                var problemDetails = problemDetailsFactory(context, (TException) ex);
+                problemDetails.Status = statusCode;
+
+                return problemDetails;
+            }
         };
 
         return this;
