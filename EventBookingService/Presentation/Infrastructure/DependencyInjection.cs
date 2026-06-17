@@ -1,5 +1,3 @@
-
-using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
 using Application.DTO.Users;
@@ -15,7 +13,6 @@ using Infrastructure.Settings;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 using Presentation.Infrastructure.Bookings;
