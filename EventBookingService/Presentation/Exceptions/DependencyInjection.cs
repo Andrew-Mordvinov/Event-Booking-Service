@@ -1,4 +1,5 @@
 using Domain.Exceptions;
+using Domain.Exceptions.Bookings;
 
 using Microsoft.AspNetCore.Mvc;
 

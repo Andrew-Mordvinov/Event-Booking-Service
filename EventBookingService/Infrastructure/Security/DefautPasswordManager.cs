@@ -1,4 +1,5 @@
-﻿using Konscious.Security.Cryptography;
+﻿using Application.Infrastructure;
+using Konscious.Security.Cryptography;
 using System.Security.Cryptography;
 using System.Text;
 

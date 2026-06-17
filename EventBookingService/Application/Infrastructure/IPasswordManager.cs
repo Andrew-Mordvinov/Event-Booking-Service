@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Security;
+﻿namespace Application.Infrastructure;
 
 /// <summary>
 /// Менеджер хэширования и проверки паролей

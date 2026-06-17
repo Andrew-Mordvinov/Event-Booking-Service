@@ -1,4 +1,4 @@
-﻿namespace Domain.Exceptions;
+﻿namespace Domain.Exceptions.Bookings;
 
 /// <summary>
 /// Исключение, возникающее при превышении лимита активных бронирований у одного пользователя

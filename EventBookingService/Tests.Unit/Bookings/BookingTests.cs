@@ -6,6 +6,7 @@ using Application.Settings;
 using Domain.Bookings;
 using Domain.Events;
 using Domain.Exceptions;
+using Domain.Exceptions.Bookings;
 using Domain.Users;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;

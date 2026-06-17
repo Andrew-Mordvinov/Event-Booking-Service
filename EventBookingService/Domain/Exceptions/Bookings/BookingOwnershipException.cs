@@ -1,4 +1,4 @@
-﻿namespace Domain.Exceptions;
+﻿namespace Domain.Exceptions.Bookings;
 
 /// <summary>
 /// Исключение при попытке отменить уже отмененную бронь
