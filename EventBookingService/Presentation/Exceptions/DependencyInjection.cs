@@ -32,7 +32,7 @@ namespace Presentation.Exceptions
                     GetBookingOwnershipProblemDetails)
 
                 .Register<EventWasStartedException>(
-                    StatusCodes.Status409Conflict,
+                    StatusCodes.Status400BadRequest,
                     GetEventWasStartedProblemDetails)
 
                 .Register<BookingCancelledException>(

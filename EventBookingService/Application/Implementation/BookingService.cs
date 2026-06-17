@@ -6,7 +6,6 @@ using Application.Settings;
 using Domain.Bookings;
 using Domain.Exceptions;
 using Domain.Exceptions.Bookings;
-using Domain.Users;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

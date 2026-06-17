@@ -1,5 +1,8 @@
 using System.Reflection;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.OpenApi;
+
 namespace Presentation.Presentation;
 
 public static class DependencyInjection
@@ -28,6 +31,19 @@ public static class DependencyInjection
                     // Игнорируем файлы, которые не являются валидной документацией
                 }
             }
+
+            options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = JwtBearerDefaults.AuthenticationScheme,
+                BearerFormat = "JWT"
+            });
+
+            options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+            {
+                [new OpenApiSecuritySchemeReference(JwtBearerDefaults.AuthenticationScheme, document)] = []
+            });
         });
 
         return services;

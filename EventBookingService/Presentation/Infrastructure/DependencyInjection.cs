@@ -1,4 +1,5 @@
 
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
 using Application.DTO.Users;
@@ -14,6 +15,7 @@ using Infrastructure.Settings;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 using Presentation.Infrastructure.Bookings;
@@ -49,7 +51,7 @@ public static class DependencyInjection
         .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
         {
             var settings = configuration.GetSection("JwtSettings").Get<JwtSettings>() ?? throw new Exception("Couldn't load settings for jwt token");
-            
+
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -61,9 +63,14 @@ public static class DependencyInjection
                 ValidateLifetime = true,
 
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SecretKey))
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SecretKey)),
             };
+
+            // Опция, для того чтобы система сама не делала маппинг sub на какое-то длинное поле http-бла-бла-бла
+            options.MapInboundClaims = false;
         });
+
+        services.AddAuthorization();
 
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<IEventRepository, EfEventRepository>();
