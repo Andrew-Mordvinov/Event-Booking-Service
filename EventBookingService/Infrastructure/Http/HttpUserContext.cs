@@ -1,5 +1,6 @@
 ﻿using Application.Infrastructure;
 using Domain.Users;
+using Infrastructure.Http.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.JsonWebTokens;
 
@@ -22,7 +23,7 @@ public class HttpUserContext(IHttpContextAccessor _httpContextAccessor) : IUserC
             }
 
             var sub = _httpContextAccessor.HttpContext.User.FindFirst(JwtRegisteredClaimNames.Sub) 
-                ?? throw new Exception("Неверный формат токена, отсутствует " + JwtRegisteredClaimNames.Sub);
+                ?? throw new WrongUserFormatException("Неверный формат токена, отсутствует " + JwtRegisteredClaimNames.Sub);
 
             if (Guid.TryParse(sub.Value, out var userId))
             {
@@ -31,7 +32,7 @@ public class HttpUserContext(IHttpContextAccessor _httpContextAccessor) : IUserC
                 return userId;
             }
 
-            throw new Exception("Не удалось распарсить id пользователя из токена");
+            throw new WrongUserFormatException("Не удалось распарсить id пользователя из токена");
         }
     }
 

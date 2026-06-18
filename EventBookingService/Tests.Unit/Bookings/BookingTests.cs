@@ -7,7 +7,6 @@ using Domain.Bookings;
 using Domain.Events;
 using Domain.Exceptions;
 using Domain.Exceptions.Bookings;
-using Domain.Users;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -19,16 +18,24 @@ public partial class BookingTests
 {
     private const int MaxBookingCount = 5;
 
-    private static BookingService CreateService(
-        out Mock<IBookingRepository> bookingStorageMock,
-        out Mock<IEventRepository> eventStorageMock,
-        out Mock<IUnitOfWork> unitOfWorkMock,
-        out Mock<IUserContext> userContextMock)
+    private class MockHolder
     {
-        bookingStorageMock = new Mock<IBookingRepository>();
-        eventStorageMock = new Mock<IEventRepository>();
-        unitOfWorkMock = new Mock<IUnitOfWork>();
-        userContextMock = new Mock<IUserContext>();     
+        public required Mock<IBookingRepository> BookingStorageMock { get; init; }
+        public required Mock<IEventRepository> EventStorageMock { get; init; }
+        public required Mock<IUnitOfWork> UnitOfWorkMock { get; init; }
+        public required Mock<IUserContext> UserContextMock { get; init; }
+    }
+
+    private static BookingService CreateService(
+        out MockHolder holder)
+    {
+        holder = new MockHolder
+        {
+            BookingStorageMock = new Mock<IBookingRepository>(),
+            EventStorageMock = new Mock<IEventRepository>(),
+            UnitOfWorkMock = new Mock<IUnitOfWork>(),
+            UserContextMock = new Mock<IUserContext>()
+        };
         
         var loggerMock = new Mock<ILogger<BookingService>>();
         var optionsMock = new Mock<IOptions<BookingSettings>>();
@@ -38,10 +45,10 @@ public partial class BookingTests
         optionsMock.Setup(t => t.Value).Returns(settings);
 
         return new BookingService(
-            bookingStorageMock.Object,
-            eventStorageMock.Object,
-            unitOfWorkMock.Object,
-            userContextMock.Object,
+            holder.BookingStorageMock.Object,
+            holder.EventStorageMock.Object,
+            holder.UnitOfWorkMock.Object,
+            holder.UserContextMock.Object,
             optionsMock.Object,
             loggerMock.Object);
     }
@@ -52,7 +59,7 @@ public partial class BookingTests
     public async Task GetBookingByIdAsync_ValidId_ReturnSuccessfully()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var _, out var _, out var userContextMock);
+        var service = CreateService(out var holder);
         var userId = Guid.NewGuid();
         var bookingToReturn = new Booking
         (
@@ -63,24 +70,24 @@ public partial class BookingTests
             DateTime.UtcNow
         );
 
-        bookingStorageMock.Setup(s => s.GetByIdAsync(bookingToReturn.Id, GetMode.Readonly, TestContext.Current.CancellationToken))
+        holder.BookingStorageMock.Setup(s => s.GetByIdAsync(bookingToReturn.Id, GetMode.Readonly, TestContext.Current.CancellationToken))
             .ReturnsAsync(bookingToReturn)
             .Verifiable(Times.Once);
 
-        userContextMock.Setup(s => s.UserId)
+        holder.UserContextMock.Setup(s => s.UserId)
             .Returns(userId)
             .Verifiable(Times.Once);
 
         // Не вызывали, т.к. тот же пользователь
-        userContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
+        holder.UserContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
             .Verifiable(Times.Never);
 
         // Act
         var result = await service.GetBookingByIdAsync(bookingToReturn.Id, TestContext.Current.CancellationToken);
 
         // Assert
-        bookingStorageMock.Verify();
-        userContextMock.Verify();
+        holder.BookingStorageMock.Verify();
+        holder.UserContextMock.Verify();
         result.Should().BeEquivalentTo(bookingToReturn);
     }
 
@@ -88,20 +95,20 @@ public partial class BookingTests
     public async Task GetBookingByIdAsync_InvalidId_ThrowNotFound()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var _, out var _, out var userContextMock);
+        var service = CreateService(out var holder);
         var userId = Guid.NewGuid();
 
         var bookId = Guid.NewGuid();
-        bookingStorageMock.Setup(s => s.GetByIdAsync(bookId, GetMode.Readonly, TestContext.Current.CancellationToken))
+        holder.BookingStorageMock.Setup(s => s.GetByIdAsync(bookId, GetMode.Readonly, TestContext.Current.CancellationToken))
             .ReturnsAsync((Booking?)null)
             .Verifiable(Times.Once);
 
         // Не вызывали, т.к. выбросили исключение раньше
-        userContextMock.Setup(s => s.UserId)
+        holder.UserContextMock.Setup(s => s.UserId)
             .Verifiable(Times.Never);
 
         // Не вызывали, т.к. выбросили исключение раньше
-        userContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
+        holder.UserContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
             .Verifiable(Times.Never);
 
         // Act
@@ -109,15 +116,15 @@ public partial class BookingTests
 
         // Assert
         await act.Should().ThrowExactlyAsync<NotFoundException>();
-        bookingStorageMock.Verify();
-        userContextMock.Verify();
+        holder.BookingStorageMock.Verify();
+        holder.UserContextMock.Verify();
     }
 
     [Fact]
     public async Task GetBookingByIdAsync_BookingForAnotherUser_ThrowBookingOwnership()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var _, out var _, out var userContextMock);
+        var service = CreateService(out var holder);
         var userId = Guid.NewGuid();
         var booking = new Booking
         (
@@ -129,17 +136,17 @@ public partial class BookingTests
             DateTime.UtcNow
         );
 
-        bookingStorageMock.Setup(s => s.GetByIdAsync(booking.Id, GetMode.Readonly, TestContext.Current.CancellationToken))
+        holder.BookingStorageMock.Setup(s => s.GetByIdAsync(booking.Id, GetMode.Readonly, TestContext.Current.CancellationToken))
             .ReturnsAsync(booking)
             .Verifiable(Times.Once);
 
         // Другой пользователь
-        userContextMock.Setup(s => s.UserId)
+        holder.UserContextMock.Setup(s => s.UserId)
             .Returns(userId)
             .Verifiable(Times.Once);
 
         // Не админ
-        userContextMock.Setup(s => s.IsAdmin(TestContext.Current.CancellationToken))
+        holder.UserContextMock.Setup(s => s.IsAdmin(TestContext.Current.CancellationToken))
             .ReturnsAsync(false)
             .Verifiable(Times.Once);
 
@@ -148,15 +155,15 @@ public partial class BookingTests
 
         // Assert
         await act.Should().ThrowExactlyAsync<BookingOwnershipException>();
-        bookingStorageMock.Verify();
-        userContextMock.Verify();
+        holder.BookingStorageMock.Verify();
+        holder.UserContextMock.Verify();
     }
 
     [Fact]
     public async Task GetBookingByIdAsync_AdminGetBookingForAnotherUser_ReturnSuccessfully()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var _, out var _, out var userContextMock);
+        var service = CreateService(out var holder);
         var userId = Guid.NewGuid();
         var adminId = Guid.NewGuid();
         var bookingToReturn = new Booking
@@ -169,17 +176,17 @@ public partial class BookingTests
             DateTime.UtcNow
         );
 
-        bookingStorageMock.Setup(s => s.GetByIdAsync(bookingToReturn.Id, GetMode.Readonly, TestContext.Current.CancellationToken))
+        holder.BookingStorageMock.Setup(s => s.GetByIdAsync(bookingToReturn.Id, GetMode.Readonly, TestContext.Current.CancellationToken))
             .ReturnsAsync(bookingToReturn)
             .Verifiable(Times.Once);
 
         // Другой пользователь
-        userContextMock.Setup(s => s.UserId)
+        holder.UserContextMock.Setup(s => s.UserId)
             .Returns(adminId)
             .Verifiable(Times.Once);
 
         // Действительно админ
-        userContextMock.Setup(s => s.IsAdmin(TestContext.Current.CancellationToken))
+        holder.UserContextMock.Setup(s => s.IsAdmin(TestContext.Current.CancellationToken))
             .ReturnsAsync(true)
             .Verifiable(Times.Once);
 
@@ -187,8 +194,8 @@ public partial class BookingTests
         var result = await service.GetBookingByIdAsync(bookingToReturn.Id, TestContext.Current.CancellationToken);
 
         // Assert
-        bookingStorageMock.Verify();
-        userContextMock.Verify();
+        holder.BookingStorageMock.Verify();
+        holder.UserContextMock.Verify();
         result.Should().BeEquivalentTo(bookingToReturn);
     }
 
@@ -200,7 +207,7 @@ public partial class BookingTests
     public async Task CreateBookingAsync_EventExistsAndHasSeats_ReturnSuccess()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _);
+        var service = CreateService(out var holder);
         var eventId = Guid.NewGuid();
         var bookingList = new List<Booking>();
         var userId = Guid.NewGuid();
@@ -208,34 +215,34 @@ public partial class BookingTests
         var beforeCount = bookEvent.AvailableSeats;
 
         // Проверили количество броней пользователя
-        bookingStorageMock.Setup(s => s.GetCountActiveBookingForPersonAsync(
+        holder.BookingStorageMock.Setup(s => s.GetCountActiveBookingForPersonAsync(
                 userId,
                 TestContext.Current.CancellationToken))
             .ReturnsAsync(MaxBookingCount - 1)
             .Verifiable(Times.Once);
 
         // Успешно получили событие
-        eventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
+        holder.EventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
             .ReturnsAsync(bookEvent)
             .Verifiable(Times.Once);
 
         // Успешно добавили бронь в хранилище
-        bookingStorageMock.Setup(s => s.AddAsync(
+        holder.BookingStorageMock.Setup(s => s.AddAsync(
                 Capture.In(bookingList),
                 TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
         // Успешно сохранили изменения
-        unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
+        holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
         // Act
         var result = await service.CreateBookingAsync(eventId, userId, TestContext.Current.CancellationToken);
 
         // Assert
-        bookingStorageMock.Verify();
-        eventStorageMock.Verify();
-        unitOfWorkMock.Verify();
+        holder.BookingStorageMock.Verify();
+        holder.EventStorageMock.Verify();
+        holder.UnitOfWorkMock.Verify();
         result.Should().BeEquivalentTo(bookingList.First());
         bookingList.First().ProcessedAt.Should().BeNull();
         bookingList.First().CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
@@ -247,28 +254,28 @@ public partial class BookingTests
     public async Task CreateBookingAsync_EventDoesNotExists_ThrowNotFound()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _);
+        var service = CreateService(out var holder);
         var userId = Guid.NewGuid();
         var eventId = Guid.NewGuid();
 
         // Проверили количество броней пользователя
-        bookingStorageMock.Setup(s => s.GetCountActiveBookingForPersonAsync(
+        holder.BookingStorageMock.Setup(s => s.GetCountActiveBookingForPersonAsync(
                 userId,
                 TestContext.Current.CancellationToken))
             .ReturnsAsync(MaxBookingCount - 1)
             .Verifiable(Times.Once);
 
         // Попытались получить событие, но его не оказалось
-        eventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
+        holder.EventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
             .ReturnsAsync((Event?)null)
             .Verifiable(Times.Once);
 
         // Не создали бронь и не пытались добавить ничего в хранилище
-        bookingStorageMock.Setup(s => s.AddAsync(It.IsAny<Booking>(), TestContext.Current.CancellationToken))
+        holder.BookingStorageMock.Setup(s => s.AddAsync(It.IsAny<Booking>(), TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Сохранение не вызывалось
-        unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
+        holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Act
@@ -279,37 +286,37 @@ public partial class BookingTests
             .ThrowExactlyAsync<NotFoundException>()
             .WithMessage(BookingServiceErrors.EventNotFound(eventId));
 
-        bookingStorageMock.Verify();
-        eventStorageMock.Verify();
-        unitOfWorkMock.Verify();
+        holder.BookingStorageMock.Verify();
+        holder.EventStorageMock.Verify();
+        holder.UnitOfWorkMock.Verify();
     }
 
     [Fact]
     public async Task CreateBookingAsync_NoSeatsAvailable_ThrowConflict()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _);
+        var service = CreateService(out var holder);
         var userId = Guid.NewGuid();
         var eventId = Guid.NewGuid();
 
         // Проверили количество броней пользователя
-        bookingStorageMock.Setup(s => s.GetCountActiveBookingForPersonAsync(
+        holder.BookingStorageMock.Setup(s => s.GetCountActiveBookingForPersonAsync(
                 userId,
                 TestContext.Current.CancellationToken))
             .ReturnsAsync(MaxBookingCount - 1)
             .Verifiable(Times.Once);
 
         // Успешно получили событие без свободных мест
-        eventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
+        holder.EventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
             .ReturnsAsync(new Event(eventId, "SomeTitle", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), CorrectSeatsCount, 0))
             .Verifiable(Times.Once);
 
         // Не попытались сохранить бронь, потому что свободных мест нет
-        bookingStorageMock.Setup(s => s.AddAsync(It.IsAny<Booking>(), TestContext.Current.CancellationToken))
+        holder.BookingStorageMock.Setup(s => s.AddAsync(It.IsAny<Booking>(), TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Сохранение не вызывалось
-        unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
+        holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Act
@@ -320,36 +327,36 @@ public partial class BookingTests
             .ThrowExactlyAsync<ConflictException>()
             .WithMessage(BookingServiceErrors.NoAvailableSeats);
 
-        bookingStorageMock.Verify();
-        eventStorageMock.Verify();
-        unitOfWorkMock.Verify();
+        holder.BookingStorageMock.Verify();
+        holder.EventStorageMock.Verify();
+        holder.UnitOfWorkMock.Verify();
     }
 
     [Fact]
     public async Task CreateBookingAsync_MaxLimitExceed_ThrowBookingLimitExceeded()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _);
+        var service = CreateService(out var holder);
         var userId = Guid.NewGuid();
         var eventId = Guid.NewGuid();
 
         // Проверили количество броней пользователя - максимум
-        bookingStorageMock.Setup(s => s.GetCountActiveBookingForPersonAsync(
+        holder.BookingStorageMock.Setup(s => s.GetCountActiveBookingForPersonAsync(
                 userId,
                 TestContext.Current.CancellationToken))
             .ReturnsAsync(MaxBookingCount)
             .Verifiable(Times.Once);
 
         // Не запрашивали событие
-        eventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
+        holder.EventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Не попытались сохранить бронь, потому что свободных мест нет
-        bookingStorageMock.Setup(s => s.AddAsync(It.IsAny<Booking>(), TestContext.Current.CancellationToken))
+        holder.BookingStorageMock.Setup(s => s.AddAsync(It.IsAny<Booking>(), TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Сохранение не вызывалось
-        unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
+        holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Act
@@ -360,9 +367,9 @@ public partial class BookingTests
             .ThrowExactlyAsync<BookingLimitExceededException>()
             .WithMessage(BookingServiceErrors.ExceedBookingLimit(MaxBookingCount));
 
-        bookingStorageMock.Verify();
-        eventStorageMock.Verify();
-        unitOfWorkMock.Verify();
+        holder.BookingStorageMock.Verify();
+        holder.EventStorageMock.Verify();
+        holder.UnitOfWorkMock.Verify();
     }
 
     #endregion
@@ -373,7 +380,7 @@ public partial class BookingTests
     public async Task CancelBookingAsync_BookingAndEventExists_CancelSuccessfully()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var userContextMock);
+        var service = CreateService(out var holder);
         var userId = Guid.NewGuid();
         var bookEvent = new Event(Guid.NewGuid(), "SomeTitle", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), CorrectSeatsCount, CorrectSeatsCount - 1);
         var bookingToReturn = new Booking
@@ -386,7 +393,7 @@ public partial class BookingTests
         );
 
         // Запросили бронь для редактирования
-        bookingStorageMock.Setup(s => s.GetByIdAsync(
+        holder.BookingStorageMock.Setup(s => s.GetByIdAsync(
                 bookingToReturn.Id,
                 GetMode.Edit,
                 TestContext.Current.CancellationToken))
@@ -394,31 +401,31 @@ public partial class BookingTests
             .Verifiable(Times.Once);
 
         // Запросили событие
-        eventStorageMock.Setup(s => s.GetByIdAsync(bookEvent.Id, GetMode.Edit, TestContext.Current.CancellationToken))
+        holder.EventStorageMock.Setup(s => s.GetByIdAsync(bookEvent.Id, GetMode.Edit, TestContext.Current.CancellationToken))
             .ReturnsAsync(bookEvent)
             .Verifiable(Times.Once);
 
         // Сохранили изменения
-        unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
+        holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
         // Событие на того же пользователя
-        userContextMock.Setup(s => s.UserId)
+        holder.UserContextMock.Setup(s => s.UserId)
             .Returns(userId)
             .Verifiable(Times.Once);
 
         // Не вызывали, т.к. событие на того же пользователя
-        userContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
+        holder.UserContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
             .Verifiable(Times.Never);
 
         // Act
         await service.CancelBookingAsync(bookingToReturn.Id, TestContext.Current.CancellationToken);
 
         // Assert
-        bookingStorageMock.Verify();
-        eventStorageMock.Verify();
-        unitOfWorkMock.Verify();
-        userContextMock.Verify();
+        holder.BookingStorageMock.Verify();
+        holder.EventStorageMock.Verify();
+        holder.UnitOfWorkMock.Verify();
+        holder.UserContextMock.Verify();
         bookingToReturn.Status.Should().Be(BookingStatus.Cancelled);
         bookEvent.AvailableSeats.Should().Be(CorrectSeatsCount);
     }
@@ -430,7 +437,7 @@ public partial class BookingTests
     public async Task CancelBookingAsync_AdminCancelOtherPersonBooking_CancelSuccessfully(BookingStatus status)
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var userContextMock);
+        var service = CreateService(out var holder);
         var userId = Guid.NewGuid();
         var adminId = Guid.NewGuid();
         var bookEvent = new Event(Guid.NewGuid(), "SomeTitle", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), CorrectSeatsCount, CorrectSeatsCount - 1);
@@ -444,7 +451,7 @@ public partial class BookingTests
         );
 
         // Запросили бронь для редактирования
-        bookingStorageMock.Setup(s => s.GetByIdAsync(
+        holder.BookingStorageMock.Setup(s => s.GetByIdAsync(
                 bookingToReturn.Id,
                 GetMode.Edit,
                 TestContext.Current.CancellationToken))
@@ -452,21 +459,21 @@ public partial class BookingTests
             .Verifiable(Times.Once);
 
         // Запросили событие
-        eventStorageMock.Setup(s => s.GetByIdAsync(bookEvent.Id, GetMode.Edit, TestContext.Current.CancellationToken))
+        holder.EventStorageMock.Setup(s => s.GetByIdAsync(bookEvent.Id, GetMode.Edit, TestContext.Current.CancellationToken))
             .ReturnsAsync(bookEvent)
             .Verifiable(Times.Once);
 
         // Сохранили изменения
-        unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
+        holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
         // Событие на другого пользователя
-        userContextMock.Setup(s => s.UserId)
+        holder.UserContextMock.Setup(s => s.UserId)
             .Returns(adminId)
             .Verifiable(Times.Once);
 
         // Проверили, что запросил админ
-        userContextMock.Setup(s => s.IsAdmin(TestContext.Current.CancellationToken))
+        holder.UserContextMock.Setup(s => s.IsAdmin(TestContext.Current.CancellationToken))
             .ReturnsAsync(true)
             .Verifiable(Times.Once);
 
@@ -474,10 +481,10 @@ public partial class BookingTests
         await service.CancelBookingAsync(bookingToReturn.Id, TestContext.Current.CancellationToken);
 
         // Assert
-        bookingStorageMock.Verify();
-        eventStorageMock.Verify();
-        unitOfWorkMock.Verify();
-        userContextMock.Verify();
+        holder.BookingStorageMock.Verify();
+        holder.EventStorageMock.Verify();
+        holder.UnitOfWorkMock.Verify();
+        holder.UserContextMock.Verify();
         bookingToReturn.Status.Should().Be(BookingStatus.Cancelled);
         bookEvent.AvailableSeats.Should().Be(CorrectSeatsCount);
     }
@@ -486,12 +493,12 @@ public partial class BookingTests
     public async Task CancelBookingAsync_BookingNotFound_ThrowNotFound()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var userContextMock);
+        var service = CreateService(out var holder);
         var userId = Guid.NewGuid();
         var bookingId = Guid.NewGuid();
 
         // Запросили бронь для редактирования, но ее нет
-        bookingStorageMock.Setup(s => s.GetByIdAsync(
+        holder.BookingStorageMock.Setup(s => s.GetByIdAsync(
                 bookingId,
                 GetMode.Edit,
                 TestContext.Current.CancellationToken))
@@ -499,19 +506,19 @@ public partial class BookingTests
             .Verifiable(Times.Once);
 
         // Не запросили событие
-        eventStorageMock.Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), GetMode.Edit, TestContext.Current.CancellationToken))
+        holder.EventStorageMock.Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), GetMode.Edit, TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Не сохраняли изменения
-        unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
+        holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Не вызывали, т.к. событие не найдено
-        userContextMock.Setup(s => s.UserId)
+        holder.UserContextMock.Setup(s => s.UserId)
             .Verifiable(Times.Never);
 
         // Не вызывали, т.к. событие не найдено
-        userContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
+        holder.UserContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
             .Verifiable(Times.Never);
 
         // Act
@@ -522,17 +529,17 @@ public partial class BookingTests
             .ThrowExactlyAsync<NotFoundException>()
             .WithMessage(BookingServiceErrors.BookingNotFound(bookingId));
 
-        bookingStorageMock.Verify();
-        eventStorageMock.Verify();
-        unitOfWorkMock.Verify();
-        userContextMock.Verify();
+        holder.BookingStorageMock.Verify();
+        holder.EventStorageMock.Verify();
+        holder.UnitOfWorkMock.Verify();
+        holder.UserContextMock.Verify();
     }
 
     [Fact]
     public async Task CancelBookingAsync_BookingAlreadyCancel_ThrowBookingCancelled()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var userContextMock);
+        var service = CreateService(out var holder);
         var userId = Guid.NewGuid();
         var bookingToReturn = new Booking
         (
@@ -544,7 +551,7 @@ public partial class BookingTests
         );
 
         // Запросили бронь для редактирования, но она уже отменена
-        bookingStorageMock.Setup(s => s.GetByIdAsync(
+        holder.BookingStorageMock.Setup(s => s.GetByIdAsync(
                 bookingToReturn.Id,
                 GetMode.Edit,
                 TestContext.Current.CancellationToken))
@@ -552,23 +559,23 @@ public partial class BookingTests
             .Verifiable(Times.Once);
 
         // Не запросили событие
-        eventStorageMock.Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), GetMode.Edit, TestContext.Current.CancellationToken))
+        holder.EventStorageMock.Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), GetMode.Edit, TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Не сохраняли изменения
-        unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
+        holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // На всякий случай все изменения откачены и транзакция закрыта
-        unitOfWorkMock.Setup(s => s.RollbackChangesAsync(TestContext.Current.CancellationToken))
+        holder.UnitOfWorkMock.Setup(s => s.RollbackChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
         // Не вызывали, т.к. событие уже отменено
-        userContextMock.Setup(s => s.UserId)
+        holder.UserContextMock.Setup(s => s.UserId)
             .Verifiable(Times.Never);
 
         // Не вызывали, т.к. событие уже отменено
-        userContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
+        holder.UserContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
             .Verifiable(Times.Never);
 
         // Act
@@ -578,10 +585,10 @@ public partial class BookingTests
         await act.Should()
             .ThrowExactlyAsync<BookingCancelledException>();
 
-        bookingStorageMock.Verify();
-        eventStorageMock.Verify();
-        unitOfWorkMock.Verify();
-        userContextMock.Verify();
+        holder.BookingStorageMock.Verify();
+        holder.EventStorageMock.Verify();
+        holder.UnitOfWorkMock.Verify();
+        holder.UserContextMock.Verify();
     }
 
     [Theory]
@@ -591,7 +598,7 @@ public partial class BookingTests
     public async Task CancelBookingAsync_UserCancelOtherPersonBooking_ThrowBookingOwnership(BookingStatus status)
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var userContextMock);
+        var service = CreateService(out var holder);
         var userThatTryingToCancel = Guid.NewGuid();
         var bookingToReturn = new Booking
         (
@@ -603,7 +610,7 @@ public partial class BookingTests
         );
 
         // Запросили бронь для редактирования
-        bookingStorageMock.Setup(s => s.GetByIdAsync(
+        holder.BookingStorageMock.Setup(s => s.GetByIdAsync(
                 bookingToReturn.Id,
                 GetMode.Edit,
                 TestContext.Current.CancellationToken))
@@ -611,24 +618,24 @@ public partial class BookingTests
             .Verifiable(Times.Once);
 
         // Не запросили событие
-        eventStorageMock.Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), GetMode.Edit, TestContext.Current.CancellationToken))
+        holder.EventStorageMock.Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), GetMode.Edit, TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Не сохраняли изменения
-        unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
+        holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // На всякий случай все изменения откачены и транзакция закрыта
-        unitOfWorkMock.Setup(s => s.RollbackChangesAsync(TestContext.Current.CancellationToken))
+        holder.UnitOfWorkMock.Setup(s => s.RollbackChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
         // Событие на другого пользователя
-        userContextMock.Setup(s => s.UserId)
+        holder.UserContextMock.Setup(s => s.UserId)
             .Returns(userThatTryingToCancel)
             .Verifiable(Times.Once);
 
         // Простой пользователь без админки
-        userContextMock.Setup(s => s.IsAdmin(TestContext.Current.CancellationToken))
+        holder.UserContextMock.Setup(s => s.IsAdmin(TestContext.Current.CancellationToken))
             .ReturnsAsync(false)
             .Verifiable(Times.Once);
 
@@ -639,10 +646,10 @@ public partial class BookingTests
         await act.Should()
             .ThrowExactlyAsync<BookingOwnershipException>();
 
-        bookingStorageMock.Verify();
-        eventStorageMock.Verify();
-        unitOfWorkMock.Verify();
-        userContextMock.Verify();
+        holder.BookingStorageMock.Verify();
+        holder.EventStorageMock.Verify();
+        holder.UnitOfWorkMock.Verify();
+        holder.UserContextMock.Verify();
     }
 
     [Theory]
@@ -652,7 +659,7 @@ public partial class BookingTests
     public async Task CancelBookingAsync_EventNotFound_ThrowNotFound(BookingStatus status)
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var userContextMock);
+        var service = CreateService(out var holder);
         var bookingToReturn = new Booking
         (
             Guid.NewGuid(),
@@ -663,7 +670,7 @@ public partial class BookingTests
         );
 
         // Запросили бронь для редактирования, но она уже отменена
-        bookingStorageMock.Setup(s => s.GetByIdAsync(
+        holder.BookingStorageMock.Setup(s => s.GetByIdAsync(
                 bookingToReturn.Id,
                 GetMode.Edit,
                 TestContext.Current.CancellationToken))
@@ -671,25 +678,25 @@ public partial class BookingTests
             .Verifiable(Times.Once);
 
         // Запросили событие, но его нет
-        eventStorageMock.Setup(s => s.GetByIdAsync(bookingToReturn.EventId, GetMode.Edit, TestContext.Current.CancellationToken))
+        holder.EventStorageMock.Setup(s => s.GetByIdAsync(bookingToReturn.EventId, GetMode.Edit, TestContext.Current.CancellationToken))
             .ReturnsAsync((Event?)null)
             .Verifiable(Times.Once);
 
         // Не сохраняли изменения
-        unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
+        holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // На всякий случай все изменения откачены и транзакция закрыта
-        unitOfWorkMock.Setup(s => s.RollbackChangesAsync(TestContext.Current.CancellationToken))
+        holder.UnitOfWorkMock.Setup(s => s.RollbackChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
         // Событие на того же пользователя
-        userContextMock.Setup(s => s.UserId)
+        holder.UserContextMock.Setup(s => s.UserId)
             .Returns(bookingToReturn.UserId)
             .Verifiable(Times.Once);
 
         // Не вызывали, т.к. событие на того же пользователя
-        userContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
+        holder.UserContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
             .Verifiable(Times.Never);
 
         // Act
@@ -700,10 +707,10 @@ public partial class BookingTests
             .ThrowExactlyAsync<NotFoundException>()
             .WithMessage(BookingServiceErrors.EventNotFound(bookingToReturn.EventId));
 
-        bookingStorageMock.Verify();
-        eventStorageMock.Verify();
-        unitOfWorkMock.Verify();
-        userContextMock.Verify();
+        holder.BookingStorageMock.Verify();
+        holder.EventStorageMock.Verify();
+        holder.UnitOfWorkMock.Verify();
+        holder.UserContextMock.Verify();
     }
 
     #endregion
@@ -714,31 +721,31 @@ public partial class BookingTests
     public async Task ProcessBookingAsync_EventExits_ConfirmBook()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _);
+        var service = CreateService(out var holder);
         var eventId = Guid.NewGuid();
         var book = new Booking(Guid.NewGuid(), eventId, Guid.NewGuid(), BookingStatus.Pending, DateTime.UtcNow);
 
         // Получили бронь
-        bookingStorageMock.Setup(s => s.GetByIdAsync(book.Id, GetMode.Edit, TestContext.Current.CancellationToken))
+        holder.BookingStorageMock.Setup(s => s.GetByIdAsync(book.Id, GetMode.Edit, TestContext.Current.CancellationToken))
             .ReturnsAsync(book)
             .Verifiable(Times.Once);
 
         // Получили событие
-        eventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
+        holder.EventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
             .ReturnsAsync(new Event(eventId, "Some text", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 1))
             .Verifiable(Times.Once);
 
         // Сохранили изменения
-        unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
+        holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
         // Act
         await service.ProcessBookingAsync(book.Id, TestContext.Current.CancellationToken);
 
         // Assert
-        bookingStorageMock.Verify();
-        eventStorageMock.Verify();
-        unitOfWorkMock.Verify();
+        holder.BookingStorageMock.Verify();
+        holder.EventStorageMock.Verify();
+        holder.UnitOfWorkMock.Verify();
         book.ProcessedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(10));
         book.Status.Should().Be(BookingStatus.Confirmed);
     }
@@ -747,31 +754,31 @@ public partial class BookingTests
     public async Task ProcessBookingAsync_EventNotExits_RejectBook()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _);
+        var service = CreateService(out var holder);
         var eventId = Guid.NewGuid();
         var book = new Booking(Guid.NewGuid(), eventId, Guid.NewGuid(), BookingStatus.Pending, DateTime.UtcNow);
 
         // Получили бронь
-        bookingStorageMock.Setup(s => s.GetByIdAsync(book.Id, GetMode.Edit, TestContext.Current.CancellationToken))
+        holder.BookingStorageMock.Setup(s => s.GetByIdAsync(book.Id, GetMode.Edit, TestContext.Current.CancellationToken))
             .ReturnsAsync(book)
             .Verifiable(Times.Once);
 
         // Событие не получено 
-        eventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
+        holder.EventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
             .ReturnsAsync((Event?)null)
             .Verifiable(Times.Once);
 
         // Сохранили изменения
-        unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
+        holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
         // Act
         await service.ProcessBookingAsync(book.Id, TestContext.Current.CancellationToken);
 
         // Assert
-        bookingStorageMock.Verify();
-        unitOfWorkMock.Verify();
-        eventStorageMock.Verify();
+        holder.BookingStorageMock.Verify();
+        holder.UnitOfWorkMock.Verify();
+        holder.EventStorageMock.Verify();
         book.ProcessedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(10));
         book.Status.Should().Be(BookingStatus.Rejected);
     }
@@ -780,28 +787,28 @@ public partial class BookingTests
     public async Task ProcessBookingAsync_BookNotExits_RejectBook()
     {
         // Arrange
-        var service = CreateService(out var bookingStorageMock, out var eventStorageMock, out var unitOfWorkMock, out var _);
+        var service = CreateService(out var holder);
         var bookId = Guid.NewGuid();
         // Бронь не найдена
-        bookingStorageMock.Setup(s => s.GetByIdAsync(bookId, GetMode.Edit, TestContext.Current.CancellationToken))
+        holder.BookingStorageMock.Setup(s => s.GetByIdAsync(bookId, GetMode.Edit, TestContext.Current.CancellationToken))
             .ReturnsAsync((Booking?)null)
             .Verifiable(Times.Once);
 
         // Не получали событие 
-        eventStorageMock.Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), GetMode.Edit, TestContext.Current.CancellationToken))
+        holder.EventStorageMock.Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), GetMode.Edit, TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Не сохраняли (нечего сохранять)
-        unitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
+        holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Act
         await service.ProcessBookingAsync(bookId, TestContext.Current.CancellationToken);
 
         // Assert
-        bookingStorageMock.Verify();
-        unitOfWorkMock.Verify();
-        eventStorageMock.Verify();
+        holder.BookingStorageMock.Verify();
+        holder.UnitOfWorkMock.Verify();
+        holder.EventStorageMock.Verify();
     }
 
     #endregion

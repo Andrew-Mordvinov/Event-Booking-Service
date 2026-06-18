@@ -23,18 +23,21 @@ public partial class MemoryEventFilterTests
     [Fact]
     public async Task FilterEvent_ParamValidStorageReturnNoElements_ReturnNull()
     {
+        // Arrange
         var service = CreateService(out var mock);
 
         mock.Setup(s => s.GetPageAsync(It.IsAny<Expression<Func<Event, bool>>>(), 1, 10, TestContext.Current.CancellationToken))
             .ReturnsAsync((PaginatedResult<Event>?)null)
             .Verifiable(Times.Once);
 
+        // Act
         var result = await service.GetEventsAsync(
             new EventFilters { Title = "неважно" },
             1,
             10,
             TestContext.Current.CancellationToken);
 
+        // Assert
         mock.Verify();
         result.Should().BeNull();
     }
@@ -50,9 +53,9 @@ public partial class MemoryEventFilterTests
         int expectedPageCount,
         Guid[] expectedIds)
     {
-        var service = CreateService(out var mock);
-
         // Arrange
+        var service = CreateService(out var mock);
+     
         var capturedFilter = new List<Expression<Func<Event, bool>>>();
         // Не важно, фильтрует репозиторий, сервис валидирует параметры и формирует выражение фильтра
         var noMatterResult = new PaginatedResult<Event>
@@ -98,13 +101,16 @@ public partial class MemoryEventFilterTests
         int pageSize,
         List<string> errors)
     {
+        // Arrange
         var service = CreateService(out var mock);
 
         mock.Setup(s => s.GetPageAsync(It.IsAny<Expression<Func<Event, bool>>>(), page, pageSize, TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
+        // Act
         var act = async () => await service.GetEventsAsync(filters, page, pageSize, TestContext.Current.CancellationToken);
 
+        // Assert
         var assertion = await act.Should()
             .ThrowExactlyAsync<ValidationException>();
 
@@ -121,6 +127,7 @@ public partial class MemoryEventFilterTests
         int pageSize,
         List<string> errors)
     {
+        // Arrange
         var service = CreateService(out var mock);
 
         mock.Setup(s => s.GetPageAsync(
@@ -131,8 +138,10 @@ public partial class MemoryEventFilterTests
             .ThrowsAsync(new ValidationException(errors))
             .Verifiable(Times.Once);
 
+        // Act
         var act = async () => await service.GetEventsAsync(filters, page, pageSize, TestContext.Current.CancellationToken);
 
+        // Assert
         var assertion = await act.Should()
             .ThrowExactlyAsync<ValidationException>();
 
