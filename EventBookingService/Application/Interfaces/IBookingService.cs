@@ -11,10 +11,9 @@ public interface IBookingService
     /// Создать заявку на бронирование события
     /// </summary>
     /// <param name="eventId">Идентификатор события, на которое подается бронь</param>
-    /// <param name="userId">Идентификатор пользователя, на которого бронируется событие</param>
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Объект брони</returns>
-    Task<Booking> CreateBookingAsync(Guid eventId, Guid userId, CancellationToken token = default);
+    Task<Booking> CreateBookingAsync(Guid eventId, CancellationToken token = default);
 
     /// <summary>
     /// Возвращает заявку на бронирование с заданным идентификатором

@@ -4,6 +4,8 @@ using Application.Infrastructure.Common;
 using Application.Interfaces;
 using Application.Settings;
 using Infrastructure.Ef;
+using Infrastructure.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,6 +49,9 @@ public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
 
         services.AddScoped<IEventRepository, EfEventRepository>();
         services.AddScoped<IBookingRepository, EfBookingRepository>();
+        services.AddScoped<IUserRepository, EfUserRepository>();
+        services.AddScoped<IUserContext, HttpUserContext>();
+        services.AddScoped<IHttpContextAccessor, HttpContextAccessor>();
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<IBookingService, BookingService>();
 

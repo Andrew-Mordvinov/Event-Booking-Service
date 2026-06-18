@@ -44,7 +44,7 @@ namespace Presentation.Exceptions
                     GetLoginNotUniqueProblemDetails)
 
                 .Register<AuthFailedException>(
-                    StatusCodes.Status400BadRequest,
+                    StatusCodes.Status404NotFound,
                     GetAuthFailedProblemDetails));
 
             return services;

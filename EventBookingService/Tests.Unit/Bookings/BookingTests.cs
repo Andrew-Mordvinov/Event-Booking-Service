@@ -214,6 +214,11 @@ public partial class BookingTests
         var bookEvent = new Event(eventId, "SomeTitle", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), CorrectSeatsCount);
         var beforeCount = bookEvent.AvailableSeats;
 
+        // Проверили пользователя
+        holder.UserContextMock.Setup(s => s.UserId)
+            .Returns(userId)
+            .Verifiable(Times.AtLeastOnce);
+
         // Проверили количество броней пользователя
         holder.BookingStorageMock.Setup(s => s.GetCountActiveBookingForPersonAsync(
                 userId,
@@ -237,7 +242,7 @@ public partial class BookingTests
             .Verifiable(Times.Once);
 
         // Act
-        var result = await service.CreateBookingAsync(eventId, userId, TestContext.Current.CancellationToken);
+        var result = await service.CreateBookingAsync(eventId, TestContext.Current.CancellationToken);
 
         // Assert
         holder.BookingStorageMock.Verify();
@@ -257,6 +262,11 @@ public partial class BookingTests
         var service = CreateService(out var holder);
         var userId = Guid.NewGuid();
         var eventId = Guid.NewGuid();
+
+        // Проверили пользователя
+        holder.UserContextMock.Setup(s => s.UserId)
+            .Returns(userId)
+            .Verifiable(Times.Once);
 
         // Проверили количество броней пользователя
         holder.BookingStorageMock.Setup(s => s.GetCountActiveBookingForPersonAsync(
@@ -279,7 +289,7 @@ public partial class BookingTests
             .Verifiable(Times.Never);
 
         // Act
-        var act = async () => await service.CreateBookingAsync(eventId, userId, TestContext.Current.CancellationToken);
+        var act = async () => await service.CreateBookingAsync(eventId, TestContext.Current.CancellationToken);
 
         // Assert
         await act.Should()
@@ -298,6 +308,11 @@ public partial class BookingTests
         var service = CreateService(out var holder);
         var userId = Guid.NewGuid();
         var eventId = Guid.NewGuid();
+
+        // Проверили пользователя
+        holder.UserContextMock.Setup(s => s.UserId)
+            .Returns(userId)
+            .Verifiable(Times.Once);
 
         // Проверили количество броней пользователя
         holder.BookingStorageMock.Setup(s => s.GetCountActiveBookingForPersonAsync(
@@ -320,7 +335,7 @@ public partial class BookingTests
             .Verifiable(Times.Never);
 
         // Act
-        var act = async () => await service.CreateBookingAsync(eventId, userId, TestContext.Current.CancellationToken);
+        var act = async () => await service.CreateBookingAsync(eventId, TestContext.Current.CancellationToken);
 
         // Assert
         await act.Should()
@@ -339,6 +354,11 @@ public partial class BookingTests
         var service = CreateService(out var holder);
         var userId = Guid.NewGuid();
         var eventId = Guid.NewGuid();
+
+        // Проверили пользователя
+        holder.UserContextMock.Setup(s => s.UserId)
+            .Returns(userId)
+            .Verifiable(Times.Once);
 
         // Проверили количество броней пользователя - максимум
         holder.BookingStorageMock.Setup(s => s.GetCountActiveBookingForPersonAsync(
@@ -360,7 +380,7 @@ public partial class BookingTests
             .Verifiable(Times.Never);
 
         // Act
-        var act = async () => await service.CreateBookingAsync(eventId, userId, TestContext.Current.CancellationToken);
+        var act = async () => await service.CreateBookingAsync(eventId, TestContext.Current.CancellationToken);
 
         // Assert
         await act.Should()

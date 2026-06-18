@@ -7,7 +7,10 @@ using Domain.Exceptions;
 using Domain.Users;
 using FluentAssertions;
 using Infrastructure.Ef;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace Tests.Integration.Ef.Bookings;
 
@@ -68,8 +71,19 @@ public class BookingServiceTests(SharedFixture sharedFixture) : IAsyncLifetime
                 using var scope = _sharedFixture.ServiceProvider.CreateScope();
 
                 var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
+                var httpContextAccessor = scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
+                // Нужен пользователь в контексте, но мы имитируем, поэтому по факту контекста нет
+                var claims = new List<Claim>
+                {
+                    new(JwtRegisteredClaimNames.Sub, user.Id.ToString())
+                };
 
-                return await service.CreateBookingAsync(@event.Id, user.Id, TestContext.Current.CancellationToken);
+                httpContextAccessor.HttpContext = new DefaultHttpContext()
+                {
+                    User = new ClaimsPrincipal(new ClaimsIdentity(claims, "dont care"))
+                };
+
+                return await service.CreateBookingAsync(@event.Id, TestContext.Current.CancellationToken);
             });
         }
 

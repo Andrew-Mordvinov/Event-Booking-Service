@@ -35,10 +35,10 @@ namespace Presentation.Application.Controllers
         /// <param name="request">Запрос на аутентификацию</param>
         /// <param name="cancellationToken">Токен отмены асинхронной операции</param>
         /// <response code="200">Аутентификация успешна - выдан токен</response>
-        /// <response code="400">Неверные данные</response>
+        /// <response code="404">Неверные данные</response>
         [Produces("application/json")]
         [ProducesResponseType(typeof(TokenResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [HttpPost("login")]
         public async Task<ActionResult<TokenResponse>> LoginAsync(AspAuthUserRequest request, CancellationToken cancellationToken = default)
         {

@@ -176,7 +176,7 @@ public class EventController(
     [HttpPost("{eventId}/book")]
     public async Task<ActionResult<BookingAcceptedResponse>> BookEventAsync(Guid eventId, CancellationToken cancellationToken)
     {
-        var result = await _bookingService.CreateBookingAsync(eventId, Guid.Empty, cancellationToken);
+        var result = await _bookingService.CreateBookingAsync(eventId, cancellationToken);
 
         return AcceptedAtRoute(
             nameof(BookingController.GetBookingByIdAsync),

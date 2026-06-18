@@ -24,7 +24,6 @@ public interface IBaseStorage<T> where T : IHasId
     /// <param name="item">Объект</param>
     /// <param name="token">Токен отмены асинхронной операции</param>
     /// <returns>Асинхронная задача</returns>
-    /// <exception cref="ConflictException"></exception>
     Task AddAsync(T item, CancellationToken token = default);
 
     /// <summary>

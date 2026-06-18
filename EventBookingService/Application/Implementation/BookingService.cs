@@ -40,10 +40,9 @@ public class BookingService(
 
     public async Task<Booking> CreateBookingAsync(
         Guid eventId,
-        Guid userId,
         CancellationToken token = default)
     {
-        var activeCount = await _storageBooking.GetCountActiveBookingForPersonAsync(userId, token);
+        var activeCount = await _storageBooking.GetCountActiveBookingForPersonAsync(_userContext.UserId, token);
         
         if (activeCount >= _maxBookingPerUser)
         {
@@ -57,7 +56,7 @@ public class BookingService(
             throw new ConflictException(BookingServiceErrors.NoAvailableSeats);
         }
 
-        var booking = new Booking(Guid.NewGuid(), eventId, userId, BookingStatus.Pending, DateTime.UtcNow);
+        var booking = new Booking(Guid.NewGuid(), eventId, _userContext.UserId, BookingStatus.Pending, DateTime.UtcNow);
 
         await _storageBooking.AddAsync(booking, token);
 

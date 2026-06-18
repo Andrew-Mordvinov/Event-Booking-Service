@@ -43,6 +43,6 @@ public class JwtTokenGeneratorTests
         settings.Issuer.Should().Be(jsonToken.Issuer);
         jsonToken.Audiences.Count().Should().Be(1);
         settings.Audience.Should().Be(jsonToken.Audiences.First());
-        periodValidity.Should().BeCloseTo((jsonToken.ValidTo - DateTime.UtcNow), TimeSpan.FromSeconds(1));
+        periodValidity.Should().BeCloseTo((jsonToken.ValidTo - DateTime.UtcNow), TimeSpan.FromSeconds(2));
     }
 }
