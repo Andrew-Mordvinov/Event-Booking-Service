@@ -35,7 +35,7 @@ namespace Presentation.Exceptions
                     StatusCodes.Status400BadRequest,
                     GetEventWasStartedProblemDetails)
 
-                .Register<BookingCancelledException>(
+                .Register<InvalidBookingOperationException>(
                     StatusCodes.Status409Conflict,
                     GetBookingCancelledProblemDetails)
 
@@ -106,7 +106,7 @@ namespace Presentation.Exceptions
                 Extensions = new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }
             };
 
-        private static ProblemDetails GetBookingCancelledProblemDetails(HttpContext context, BookingCancelledException exception) =>
+        private static ProblemDetails GetBookingCancelledProblemDetails(HttpContext context, InvalidBookingOperationException exception) =>
             new ProblemDetails
             {
                 Title = "Booking already cancelled",

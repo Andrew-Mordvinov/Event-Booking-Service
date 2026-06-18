@@ -3,6 +3,6 @@
 /// <summary>
 /// Исключение при попытке отменить уже отмененную бронь
 /// </summary>
-public class BookingCancelledException(string message) : Exception(message)
+public class InvalidBookingOperationException(string message) : Exception(message)
 {
 }

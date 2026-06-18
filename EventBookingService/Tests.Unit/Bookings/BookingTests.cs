@@ -396,8 +396,10 @@ public partial class BookingTests
 
     #region CancelBookingAsync
 
-    [Fact]
-    public async Task CancelBookingAsync_BookingAndEventExists_CancelSuccessfully()
+    [Theory]
+    [InlineData(BookingStatus.Pending)]
+    [InlineData(BookingStatus.Confirmed)]
+    public async Task CancelBookingAsync_BookingAndEventExists_CancelSuccessfully(BookingStatus status)
     {
         // Arrange
         var service = CreateService(out var holder);
@@ -408,7 +410,7 @@ public partial class BookingTests
             Guid.NewGuid(),
             bookEvent.Id,
             userId,
-            BookingStatus.Pending,
+            status,
             DateTime.UtcNow
         );
 
@@ -452,7 +454,6 @@ public partial class BookingTests
 
     [Theory]
     [InlineData(BookingStatus.Pending)]
-    [InlineData(BookingStatus.Rejected)]
     [InlineData(BookingStatus.Confirmed)]
     public async Task CancelBookingAsync_AdminCancelOtherPersonBooking_CancelSuccessfully(BookingStatus status)
     {
@@ -603,7 +604,65 @@ public partial class BookingTests
 
         // Assert
         await act.Should()
-            .ThrowExactlyAsync<BookingCancelledException>();
+            .ThrowExactlyAsync<InvalidBookingOperationException>()
+            .WithMessage(BookingServiceErrors.BookingAlreadyCancelled(bookingToReturn.Id));
+
+        holder.BookingStorageMock.Verify();
+        holder.EventStorageMock.Verify();
+        holder.UnitOfWorkMock.Verify();
+        holder.UserContextMock.Verify();
+    }
+
+    [Fact]
+    public async Task CancelBookingAsync_BookingRejected_ThrowBookingCancelled()
+    {
+        // Arrange
+        var service = CreateService(out var holder);
+        var userId = Guid.NewGuid();
+        var bookingToReturn = new Booking
+        (
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            userId,
+            BookingStatus.Rejected,
+            DateTime.UtcNow
+        );
+
+        // Запросили бронь для редактирования, но она была отклонена
+        holder.BookingStorageMock.Setup(s => s.GetByIdAsync(
+                bookingToReturn.Id,
+                GetMode.Edit,
+                TestContext.Current.CancellationToken))
+            .ReturnsAsync(bookingToReturn)
+            .Verifiable(Times.Once);
+
+        // Не запросили событие
+        holder.EventStorageMock.Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), GetMode.Edit, TestContext.Current.CancellationToken))
+            .Verifiable(Times.Never);
+
+        // Не сохраняли изменения
+        holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
+            .Verifiable(Times.Never);
+
+        // На всякий случай все изменения откачены и транзакция закрыта
+        holder.UnitOfWorkMock.Setup(s => s.RollbackChangesAsync(TestContext.Current.CancellationToken))
+            .Verifiable(Times.Once);
+
+        // Не вызывали, т.к. уже отклонено
+        holder.UserContextMock.Setup(s => s.UserId)
+            .Verifiable(Times.Never);
+
+        // Не вызывали, т.к. уже отклонено
+        holder.UserContextMock.Setup(s => s.IsAdmin(It.IsAny<CancellationToken>()))
+            .Verifiable(Times.Never);
+
+        // Act
+        var act = async () => await service.CancelBookingAsync(bookingToReturn.Id, TestContext.Current.CancellationToken);
+
+        // Assert
+        await act.Should()
+            .ThrowExactlyAsync<InvalidBookingOperationException>()
+            .WithMessage(BookingServiceErrors.BookingRejected(bookingToReturn.Id));
 
         holder.BookingStorageMock.Verify();
         holder.EventStorageMock.Verify();
@@ -613,7 +672,6 @@ public partial class BookingTests
 
     [Theory]
     [InlineData(BookingStatus.Pending)]
-    [InlineData(BookingStatus.Rejected)]
     [InlineData(BookingStatus.Confirmed)]
     public async Task CancelBookingAsync_UserCancelOtherPersonBooking_ThrowBookingOwnership(BookingStatus status)
     {
@@ -674,7 +732,6 @@ public partial class BookingTests
 
     [Theory]
     [InlineData(BookingStatus.Pending)]
-    [InlineData(BookingStatus.Rejected)]
     [InlineData(BookingStatus.Confirmed)]
     public async Task CancelBookingAsync_EventNotFound_ThrowNotFound(BookingStatus status)
     {

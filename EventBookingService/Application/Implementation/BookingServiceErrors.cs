@@ -8,5 +8,6 @@ public static class BookingServiceErrors
     public static string BookingNotFound(Guid id) => $"Бронирование с идентификатором {id} не найдено";
     public static string BookingAccessDenied(Guid id) => $"Бронирование с идентификатором {id} принадлежит другому пользователю";
     public static string BookingAlreadyCancelled(Guid id) => $"Бронирование с идентификатором {id} нельзя повторно отменить";
+    public static string BookingRejected(Guid id) => $"Бронирование с идентификатором {id} нельзя отменить, так как оно отклонено";
     public static string ExceedBookingLimit(int maxCount) => $"У этого пользователя уже достигнут лимит по количеству активных бронирований ({maxCount})";
 }

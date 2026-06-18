@@ -74,7 +74,13 @@ public class BookingService(
         if (booking.Status is BookingStatus.Cancelled)
         {
             await _unitOfWork.RollbackChangesAsync(token);
-            throw new BookingCancelledException(BookingServiceErrors.BookingAlreadyCancelled(bookingId));
+            throw new InvalidBookingOperationException(BookingServiceErrors.BookingAlreadyCancelled(bookingId));
+        }
+
+        if (booking.Status is BookingStatus.Rejected)
+        {
+            await _unitOfWork.RollbackChangesAsync(token);
+            throw new InvalidBookingOperationException(BookingServiceErrors.BookingRejected(bookingId));
         }
 
         if (booking.UserId != _userContext.UserId
@@ -83,6 +89,7 @@ public class BookingService(
             await _unitOfWork.RollbackChangesAsync(token);
             throw new BookingOwnershipException(BookingServiceErrors.BookingAccessDenied(bookingId));
         }
+
         // Не пользуемся свойством букинга, так как оно не защищено от параллельного доступа
         var @event = await _storageEvent.GetByIdAsync(booking.EventId, GetMode.Edit, token);
 
@@ -93,6 +100,7 @@ public class BookingService(
             throw new NotFoundException(BookingServiceErrors.EventNotFound(booking.EventId));
         }
         @event.TryReleaseSeats();
+
         booking.Cancel();
 
         await _unitOfWork.SaveChangesAsync(token);
