@@ -388,14 +388,38 @@ public partial class EfBookingRepositoryTests(SharedFixture sharedFixture) : IAs
     [MemberData(nameof(GetPendingBookingsAsync_Common))]
     public async Task GetPendingBookingsAsync_Common_ReturnValidGuids(List<Event> events, List<User> users, List<Booking> bookings, List<Guid> expectedBookings)
     {
+        // Arrange
         await AddBookingsUsersAndEventsAsync(events, users, bookings);
 
         using var scope = _sharedFixture.ServiceProvider.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
 
+        // Act
         var result = await repository.GetPendingBookingsAsync(TestContext.Current.CancellationToken);
 
+        // Assert
         result.Should().BeEquivalentTo(expectedBookings);
+    }
+
+    #endregion
+
+    #region GetPendingBookingsAsync
+
+    [Theory]
+    [MemberData(nameof(GetCountActiveBookingForPersonAsync_Common))]
+    public async Task GetCountActiveBookingForPersonAsync_Common_ReturnValidCount(List<Event> events, List<User> users, List<Booking> bookings, Guid userId, int expectedCount)
+    {
+        // Arrange
+        await AddBookingsUsersAndEventsAsync(events, users, bookings);
+
+        using var scope = _sharedFixture.ServiceProvider.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+
+        // Act
+        var result = await repository.GetCountActiveBookingForPersonAsync(userId, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Should().Be(expectedCount);
     }
 
     #endregion

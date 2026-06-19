@@ -44,7 +44,7 @@ public class BookingServiceTests(SharedFixture sharedFixture) : IAsyncLifetime
     public async Task CreateBookingAsync_ParallelBookMoreThanSeats_NoOverbookingOccurs()
     {
         // Arrange
-        var (@event, errors) = Event.TryCreate(Guid.NewGuid(), "Test title", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), 5);
+        var (@event, errors) = Event.TryCreate(Guid.NewGuid(), "Test title", DateTimeOffset.UtcNow.AddHours(1), DateTimeOffset.UtcNow.AddDays(1), 5);
         var user = new User(Guid.NewGuid(), "user", "somehash", Roles.User);
 
         if (@event is null)

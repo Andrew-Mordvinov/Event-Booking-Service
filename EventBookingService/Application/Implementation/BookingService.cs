@@ -50,6 +50,12 @@ public class BookingService(
         }
         
         var entity = await _storageEvent.GetByIdAsync(eventId, GetMode.Edit, token: token) ?? throw new NotFoundException(BookingServiceErrors.EventNotFound(eventId));
+        if (entity.StartAt < DateTime.UtcNow)
+        {
+            await _unitOfWork.RollbackChangesAsync(token);
+            throw new EventWasStartedException(BookingServiceErrors.EventStartedAlready(eventId));
+        }
+        
         if (!entity.TryReserveSeats())
         {
             await _unitOfWork.RollbackChangesAsync(token);

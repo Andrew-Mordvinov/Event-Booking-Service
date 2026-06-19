@@ -211,7 +211,7 @@ public partial class BookingTests
         var eventId = Guid.NewGuid();
         var bookingList = new List<Booking>();
         var userId = Guid.NewGuid();
-        var bookEvent = new Event(eventId, "SomeTitle", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), CorrectSeatsCount);
+        var bookEvent = new Event(eventId, "SomeTitle", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(1), CorrectSeatsCount);
         var beforeCount = bookEvent.AvailableSeats;
 
         // Проверили пользователя
@@ -302,13 +302,64 @@ public partial class BookingTests
     }
 
     [Fact]
+    public async Task CreateBookingAsync_EventWasStarted_ThrowEventWasStarted()
+    {
+        // Arrange
+        var service = CreateService(out var holder);
+        var userId = Guid.NewGuid();
+        var eventId = Guid.NewGuid();
+        var bookEvent = new Event(eventId, "SomeTitle", DateTime.UtcNow.AddHours(-1), DateTime.UtcNow.AddDays(1), CorrectSeatsCount);
+
+        // Проверили пользователя
+        holder.UserContextMock.Setup(s => s.UserId)
+            .Returns(userId)
+            .Verifiable(Times.Once);
+
+        // Проверили количество броней пользователя
+        holder.BookingStorageMock.Setup(s => s.GetCountActiveBookingForPersonAsync(
+                userId,
+                TestContext.Current.CancellationToken))
+            .ReturnsAsync(MaxBookingCount - 1)
+            .Verifiable(Times.Once);
+
+        // Получили событие, которое уже началось
+        holder.EventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
+            .ReturnsAsync(bookEvent)
+            .Verifiable(Times.Once);
+
+        // Не создали бронь и не пытались добавить ничего в хранилище
+        holder.BookingStorageMock.Setup(s => s.AddAsync(It.IsAny<Booking>(), TestContext.Current.CancellationToken))
+            .Verifiable(Times.Never);
+
+        // Откатили на всякий
+        holder.UnitOfWorkMock.Setup(s => s.RollbackChangesAsync(TestContext.Current.CancellationToken))
+            .Verifiable(Times.Once);
+
+        // Сохранение не вызывалось
+        holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
+            .Verifiable(Times.Never);
+
+        // Act
+        var act = async () => await service.CreateBookingAsync(eventId, TestContext.Current.CancellationToken);
+
+        // Assert
+        await act.Should()
+            .ThrowExactlyAsync<EventWasStartedException>()
+            .WithMessage(BookingServiceErrors.EventStartedAlready(eventId));
+
+        holder.BookingStorageMock.Verify();
+        holder.EventStorageMock.Verify();
+        holder.UnitOfWorkMock.Verify();
+    }
+
+    [Fact]
     public async Task CreateBookingAsync_NoSeatsAvailable_ThrowConflict()
     {
         // Arrange
         var service = CreateService(out var holder);
         var userId = Guid.NewGuid();
         var eventId = Guid.NewGuid();
-
+        var @event = new Event(eventId, "SomeTitle", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(1), CorrectSeatsCount, 0);
         // Проверили пользователя
         holder.UserContextMock.Setup(s => s.UserId)
             .Returns(userId)
@@ -323,12 +374,16 @@ public partial class BookingTests
 
         // Успешно получили событие без свободных мест
         holder.EventStorageMock.Setup(s => s.GetByIdAsync(eventId, GetMode.Edit, TestContext.Current.CancellationToken))
-            .ReturnsAsync(new Event(eventId, "SomeTitle", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), CorrectSeatsCount, 0))
+            .ReturnsAsync(@event)
             .Verifiable(Times.Once);
 
         // Не попытались сохранить бронь, потому что свободных мест нет
         holder.BookingStorageMock.Setup(s => s.AddAsync(It.IsAny<Booking>(), TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
+
+        // Откатили на всякий
+        holder.UnitOfWorkMock.Setup(s => s.RollbackChangesAsync(TestContext.Current.CancellationToken))
+            .Verifiable(Times.Once);
 
         // Сохранение не вызывалось
         holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))

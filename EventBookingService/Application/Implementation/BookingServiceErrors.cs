@@ -10,4 +10,5 @@ public static class BookingServiceErrors
     public static string BookingAlreadyCancelled(Guid id) => $"Бронирование с идентификатором {id} нельзя повторно отменить";
     public static string BookingRejected(Guid id) => $"Бронирование с идентификатором {id} нельзя отменить, так как оно отклонено";
     public static string ExceedBookingLimit(int maxCount) => $"У этого пользователя уже достигнут лимит по количеству активных бронирований ({maxCount})";
+    public static string EventStartedAlready(Guid id) => $"Событие с идентификатором {id} уже началось, бронирование невозможно";
 }

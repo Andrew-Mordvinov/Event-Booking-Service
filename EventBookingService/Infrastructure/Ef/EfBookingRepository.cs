@@ -11,7 +11,11 @@ public class EfBookingRepository(AppDbContext dbContext, IUnitOfWork efUnitOfWor
 {
     public Task<int> GetCountActiveBookingForPersonAsync(Guid userId, CancellationToken token = default)
     {
-        return Items.CountAsync(b => b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed, token);
+        return Items.CountAsync(
+            b => 
+                (b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed) 
+                && b.UserId == userId,
+            token);
     }
 
     public Task<List<Guid>> GetPendingBookingsAsync(CancellationToken token = default)
