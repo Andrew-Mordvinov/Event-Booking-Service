@@ -3,11 +3,6 @@
 /// <summary>
 /// Исключение, возникающее при попытке создать конфликтное состояние без формальных ошибок в аргументах
 /// </summary>
-public class ConflictException : Exception
+public class ConflictException(string message) : Exception(message)
 {
-    public ConflictException(string message)
-        : base(message)
-    {
-
-    }
 }

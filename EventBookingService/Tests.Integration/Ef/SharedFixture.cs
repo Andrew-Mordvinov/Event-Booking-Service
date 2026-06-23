@@ -2,8 +2,12 @@
 using Application.Infrastructure;
 using Application.Infrastructure.Common;
 using Application.Interfaces;
+using Application.Settings;
 using Infrastructure.Ef;
+using Infrastructure.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -17,6 +21,7 @@ public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
 {
     public PostgreSqlContainer Container { get; private set; }
     public ServiceProvider ServiceProvider { get; private set; }
+    public IConfiguration Configuration { get; private set; }
 
     public SharedFixture()
     {
@@ -26,13 +31,27 @@ public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
             .WithPassword("postgres")
             .Build();
 
-        var services = new ServiceCollection();
+        Configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+            .AddJsonFile("appsettings.test.json", optional: true, reloadOnChange: false)
+            .Build();
+
+        var services = new ServiceCollection();;
 
         services.AddDbContext<AppDbContext>(options => options
             .UseNpgsql(Container.GetConnectionString()));
 
+        services.AddOptions<BookingSettings>()
+            .Bind(Configuration.GetSection("BookingSettings"))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         services.AddScoped<IEventRepository, EfEventRepository>();
         services.AddScoped<IBookingRepository, EfBookingRepository>();
+        services.AddScoped<IUserRepository, EfUserRepository>();
+        services.AddScoped<IUserContext, HttpUserContext>();
+        services.AddScoped<IHttpContextAccessor, HttpContextAccessor>();
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<IBookingService, BookingService>();
 

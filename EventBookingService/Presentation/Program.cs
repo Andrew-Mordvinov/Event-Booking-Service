@@ -4,6 +4,7 @@ using Infrastructure.Ef;
 using Microsoft.EntityFrameworkCore;
 
 using Presentation.Application;
+using Presentation.Exceptions;
 using Presentation.Infrastructure;
 using Presentation.Middleware;
 using Presentation.Presentation;
@@ -19,6 +20,7 @@ builder.Host.UseSerilog((context, services, config) => config
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
 builder.Services.AddPresentation();
+builder.Services.AddExceptionMap();
 
 if (builder.Environment.IsDevelopment())
 {
@@ -44,9 +46,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseExceptionHandlingMiddleware();
-
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();

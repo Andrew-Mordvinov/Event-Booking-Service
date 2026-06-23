@@ -3,11 +3,6 @@
 /// <summary>
 /// Исключение, возникающее при ошибке получения модели (в случае отсутствия)
 /// </summary>
-public class NotFoundException : Exception
+public class NotFoundException(string message) : Exception(message)
 {
-    public NotFoundException(string message)
-        : base(message)
-    {
-
-    }
 }

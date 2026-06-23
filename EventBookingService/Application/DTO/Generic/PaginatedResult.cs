@@ -1,4 +1,4 @@
-namespace Application.Paging;
+namespace Application.DTO.Generic;
 
 public class PaginatedResult<T>
 {

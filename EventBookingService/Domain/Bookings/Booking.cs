@@ -1,5 +1,6 @@
 using Domain.Events;
 using Domain.Interfaces;
+using Domain.Users;
 
 namespace Domain.Bookings;
 
@@ -14,6 +15,10 @@ public class Booking : IHasId, ICopyable<Booking>
 
     public Event? Event { get; protected set; }
 
+    public Guid UserId { get; protected set; }
+
+    public User? User { get; protected set; }
+
     public BookingStatus Status { get; set; }
 
     public DateTimeOffset CreatedAt { get; protected set; }
@@ -25,16 +30,27 @@ public class Booking : IHasId, ICopyable<Booking>
 
     }
 
-    public Booking(Guid id, Guid eventId, BookingStatus status, DateTimeOffset created, DateTimeOffset? processed = null)
+    public Booking(
+        Guid id,
+        Guid eventId,
+        Guid userId,
+        BookingStatus status,
+        DateTimeOffset created,
+        DateTimeOffset? processed = null,
+        User? user = null,
+        Event? @event = null)
     {
         Id = id;
         EventId = eventId;
+        UserId = userId;
         Status = status;
         CreatedAt = created;
         ProcessedAt = processed;
+        User = user;
+        Event = @event;
     }
 
-    public Booking Copy() => new(Id, EventId, Status, CreatedAt, ProcessedAt);
+    public Booking Copy() => new(Id, EventId, UserId, Status, CreatedAt, ProcessedAt);
 
     public void Confirm()
     {
@@ -46,5 +62,10 @@ public class Booking : IHasId, ICopyable<Booking>
     {
         Status = BookingStatus.Rejected;
         ProcessedAt = DateTime.UtcNow;
+    }
+
+    public void Cancel()
+    {
+        Status = BookingStatus.Cancelled;
     }
 }

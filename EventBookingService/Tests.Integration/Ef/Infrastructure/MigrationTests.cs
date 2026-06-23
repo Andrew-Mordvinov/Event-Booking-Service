@@ -34,6 +34,7 @@ public class MigrationTests(SharedFixture sharedFixture)
             await db.Database.MigrateAsync(TestContext.Current.CancellationToken);
         };
 
+        // Assert
         await act.Should().NotThrowAsync();
     }
 }

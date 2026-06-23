@@ -1,4 +1,4 @@
-﻿using Application.Paging;
+﻿using Application.DTO.Generic;
 using System.Linq.Expressions;
 
 namespace Application.Infrastructure.Common;

@@ -4,9 +4,13 @@ using Application.Interfaces;
 using Domain.Bookings;
 using Domain.Events;
 using Domain.Exceptions;
+using Domain.Users;
 using FluentAssertions;
 using Infrastructure.Ef;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace Tests.Integration.Ef.Bookings;
 
@@ -40,7 +44,8 @@ public class BookingServiceTests(SharedFixture sharedFixture) : IAsyncLifetime
     public async Task CreateBookingAsync_ParallelBookMoreThanSeats_NoOverbookingOccurs()
     {
         // Arrange
-        var (@event, errors) = Event.TryCreate(Guid.NewGuid(), "Test title", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), 5);
+        var (@event, errors) = Event.TryCreate(Guid.NewGuid(), "Test title", DateTimeOffset.UtcNow.AddHours(1), DateTimeOffset.UtcNow.AddDays(1), 5);
+        var user = new User(Guid.NewGuid(), "user", "somehash", Roles.User);
 
         if (@event is null)
         {
@@ -50,8 +55,9 @@ public class BookingServiceTests(SharedFixture sharedFixture) : IAsyncLifetime
         using (var scope = _sharedFixture.ServiceProvider.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            // Добавление тестового события
+            // Добавление тестового события и пользователя
             db.Events.Add(@event);
+            db.Users.Add(user);
             await db.SaveChangesAsync(TestContext.Current.CancellationToken);
         }
 
@@ -65,6 +71,17 @@ public class BookingServiceTests(SharedFixture sharedFixture) : IAsyncLifetime
                 using var scope = _sharedFixture.ServiceProvider.CreateScope();
 
                 var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
+                var httpContextAccessor = scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
+                // Нужен пользователь в контексте, но мы имитируем, поэтому по факту контекста нет
+                var claims = new List<Claim>
+                {
+                    new(JwtRegisteredClaimNames.Sub, user.Id.ToString())
+                };
+
+                httpContextAccessor.HttpContext = new DefaultHttpContext()
+                {
+                    User = new ClaimsPrincipal(new ClaimsIdentity(claims, "dont care"))
+                };
 
                 return await service.CreateBookingAsync(@event.Id, TestContext.Current.CancellationToken);
             });

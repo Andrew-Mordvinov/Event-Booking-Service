@@ -1,5 +1,5 @@
 using Application.DTO.Events.Requests;
-using Application.Paging;
+using Application.DTO.Generic;
 using Domain.Events;
 
 namespace Application.Interfaces;

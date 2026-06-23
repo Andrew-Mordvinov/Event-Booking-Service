@@ -1,6 +1,6 @@
-﻿using Application.Infrastructure.Common;
+﻿using Application.DTO.Generic;
+using Application.Infrastructure.Common;
 using Application.Infrastructure.Enums;
-using Application.Paging;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +15,7 @@ public class EfRepository<T> : IRepository<T> where T : class, IHasId
 {
     private readonly AppDbContext _appDbContext;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly DbSet<T> _items;
+    protected readonly DbSet<T> _items;
     private readonly string _table;
 
     protected AppDbContext AppDbContext => _appDbContext;

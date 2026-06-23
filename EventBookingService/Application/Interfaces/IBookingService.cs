@@ -24,6 +24,14 @@ public interface IBookingService
     Task<Booking> GetBookingByIdAsync(Guid bookingId, CancellationToken token = default);
 
     /// <summary>
+    /// Отменяет бронирование с заданным идентификатором
+    /// </summary>
+    /// <param name="bookingId">Идентификатор брони</param>
+    /// <param name="token">Токен отмены операции</param>
+    /// <returns>Асинхронная задача</returns>
+    Task CancelBookingAsync(Guid bookingId, CancellationToken token = default);
+
+    /// <summary>
     /// Обработка конкретной брони
     /// </summary>
     /// <param name="bookingId">Идентификатор брони для обработки</param>

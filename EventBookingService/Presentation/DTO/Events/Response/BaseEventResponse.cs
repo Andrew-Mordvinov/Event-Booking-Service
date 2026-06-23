@@ -1,6 +1,6 @@
 using Domain.Events;
 
-namespace Application.DTO.Events.Response;
+namespace Presentation.DTO.Events.Response;
 
 /// <summary>
 /// Ответ на запрос о событии
@@ -10,37 +10,37 @@ public class BaseEventResponse
     /// <summary>
     /// Идентификатор события
     /// </summary>
-    public Guid Id { get; set; }
+    public Guid Id { get; init; }
 
     /// <summary>
     /// Наименование события
     /// </summary>
-    public string Title { get; set; } = string.Empty;
+    public string Title { get; init; } = string.Empty;
 
     /// <summary>
     /// Описание события
     /// </summary>
-    public string Description { get; set; } = string.Empty;
+    public string Description { get; init; } = string.Empty;
 
     /// <summary>
     /// Дата и время начала события
     /// </summary>
-    public DateTimeOffset StartAt { get; set; }
+    public DateTimeOffset StartAt { get; init; }
 
     /// <summary>
     /// Дата и время окончания события
     /// </summary>
-    public DateTimeOffset EndAt { get; set; }
+    public DateTimeOffset EndAt { get; init; }
 
     /// <summary>
     /// Общее число мест у события. Отражает максимальное количество участников
     /// </summary>
-    public int TotalSeats { get; set; }
+    public int TotalSeats { get; init; }
 
     /// <summary>
     /// Число доступных для бронирования мест
     /// </summary>
-    public int AvailableSeats { get; set; }
+    public int AvailableSeats { get; init; }
 
     public static BaseEventResponse FromEvent(Event entity) => new()
     {
