@@ -1,12 +1,5 @@
-﻿using Application.Implementation;
-using Application.Infrastructure;
-using Application.Infrastructure.Common;
-using Application.Infrastructure.Enums;
-using Application.Settings;
-using Domain.Bookings;
+﻿using Domain.Bookings;
 using Domain.Events;
-using Domain.Exceptions;
-using Domain.Exceptions.Bookings;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

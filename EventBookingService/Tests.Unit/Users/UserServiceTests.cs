@@ -1,11 +1,4 @@
-﻿using Application.DTO.Users;
-using Application.Implementation;
-using Application.Infrastructure;
-using Application.Infrastructure.Common;
-using Application.Validations;
-using Domain.Exceptions;
-using Domain.Exceptions.Users;
-using Domain.Users;
+﻿using Domain.Users;
 using FluentAssertions;
 using Moq;
 

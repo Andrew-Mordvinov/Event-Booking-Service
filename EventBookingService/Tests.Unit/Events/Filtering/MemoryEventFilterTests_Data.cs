@@ -1,6 +1,4 @@
-﻿using Application.Implementation;
-using Domain;
-using Domain.Events;
+﻿using Domain.Events;
 using Infrastructure.MemStorage;
 
 namespace Tests.Unit.Events.Filtering;

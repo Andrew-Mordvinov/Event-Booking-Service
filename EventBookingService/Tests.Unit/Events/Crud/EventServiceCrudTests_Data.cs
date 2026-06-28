@@ -1,5 +1,4 @@
-﻿using Application.DTO.Events.Requests;
-using Domain.Events;
+﻿using Domain.Events;
 
 namespace Tests.Unit.Events.Crud;
 

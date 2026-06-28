@@ -1,9 +1,5 @@
-﻿using Application.Infrastructure;
-using Application.Infrastructure.Enums;
-using Domain.Events;
-using Domain.Exceptions;
+﻿using Domain.Events;
 using FluentAssertions;
-using Infrastructure.Ef;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq.Expressions;

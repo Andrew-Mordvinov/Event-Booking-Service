@@ -1,0 +1,136 @@
+using Application.Bookings.Infrastructure;
+using Application.Bookings.Interfaces;
+using Application.Bookings.Settings;
+using Domain.Bookings;
+using Domain.Bookings.Exceptions.Bookings;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Shared.Exceptions;
+using Shared.Interfaces.Infrastructure;
+using Shared.Interfaces.Infrastructure.Enums;
+
+namespace Application.Bookings.Implementation;
+
+public class BookingService(
+    IBookingRepository _storageBooking,
+    IUnitOfWork _unitOfWork,
+    IUserContext _userContext,
+    IOptions<BookingSettings> options,
+    ILogger<BookingService> _logger) : IBookingService
+{
+    private const int _imitationDelay = 2000;
+
+    private readonly int _maxBookingPerUser = options.Value.MaxBookingPerUser ?? throw new ArgumentNullException("Не удалось инициализировать MaxBookingPerUser");
+
+    public async Task<Booking> GetBookingByIdAsync(
+        Guid bookingId,
+        CancellationToken token = default)
+    {
+        var booking = await _storageBooking.GetByIdAsync(bookingId, GetMode.Readonly, token) ?? throw new NotFoundException(BookingServiceErrors.BookingNotFound(bookingId));
+        
+        if (booking.UserId != _userContext.UserId
+            && !await _userContext.IsAdmin(token))
+        {
+            throw new BookingOwnershipException(BookingServiceErrors.BookingAccessDenied(bookingId));
+        }
+
+        return booking;
+    }
+
+    public async Task<Booking> CreateBookingAsync(
+        Guid eventId,
+        CancellationToken token = default)
+    {
+        var activeCount = await _storageBooking.GetCountActiveBookingForPersonAsync(_userContext.UserId, token);
+        
+        if (activeCount >= _maxBookingPerUser)
+        {
+            throw new BookingLimitExceededException(BookingServiceErrors.ExceedBookingLimit(_maxBookingPerUser));
+        }
+
+        var booking = new Booking(Guid.NewGuid(), eventId, _userContext.UserId, BookingStatus.Pending, DateTime.UtcNow);
+
+        await _storageBooking.AddAsync(booking, token);
+
+        await _unitOfWork.SaveChangesAsync(token);
+
+        return booking;
+    }
+
+    public async Task CancelBookingAsync(
+        Guid bookingId,
+        CancellationToken token = default)
+    {
+        var booking = await _storageBooking.GetByIdAsync(bookingId, GetMode.Edit, token) ?? throw new NotFoundException(BookingServiceErrors.BookingNotFound(bookingId));
+
+        if (booking.Status is BookingStatus.Cancelled)
+        {
+            await _unitOfWork.RollbackChangesAsync(token);
+            throw new InvalidBookingOperationException(BookingServiceErrors.BookingAlreadyCancelled(bookingId));
+        }
+
+        if (booking.Status is BookingStatus.Rejected)
+        {
+            await _unitOfWork.RollbackChangesAsync(token);
+            throw new InvalidBookingOperationException(BookingServiceErrors.BookingRejected(bookingId));
+        }
+
+        if (booking.UserId != _userContext.UserId
+            && !await _userContext.IsAdmin(token))
+        {
+            await _unitOfWork.RollbackChangesAsync(token);
+            throw new BookingOwnershipException(BookingServiceErrors.BookingAccessDenied(bookingId));
+        }
+
+        booking.Cancel();
+
+        await _unitOfWork.SaveChangesAsync(token);
+    }
+
+    public async Task ProcessBookingAsync(Guid bookingId, CancellationToken token = default)
+    {
+        try
+        {
+            _logger.LogInformation("Обработка бронирования {BookId}", bookingId);
+
+            await Task.Delay(_imitationDelay, token);
+            token.ThrowIfCancellationRequested();
+
+            var booking = await _storageBooking.GetByIdAsync(bookingId, token: token);
+            token.ThrowIfCancellationRequested();
+
+            if (booking is null)
+            {
+                _logger.LogInformation("Бронирование {BookId} не найдено в хранилище. Возможно оно было удалено", bookingId);
+                return;
+            }
+
+            // Пока просто закомментирую, чтобы можно было компилировать
+            //var eventResult = await _storageEvent.GetByIdAsync(booking.EventId, token: token);
+            //token.ThrowIfCancellationRequested();
+
+            //if (eventResult is null)
+            //{
+            //    booking.Reject();
+            //    _logger.LogWarning("Событие {EventId} не удалось получить. Бронь {BookId} отклонена.", booking.EventId, booking.Id);
+            //}
+            //else
+            //{
+            //    booking.Confirm();
+            //    _logger.LogInformation("Бронирование события {EventId} успешно обработано. Заявка с " +
+            //        "{BookId} получила статус {Status}", booking.EventId, booking.Id, booking.Status);
+            //}
+
+            await _unitOfWork.SaveChangesAsync(token);
+            _logger.LogInformation("Обработка бронирования {BookId} для события {EventId} завершена", booking.Id, booking.EventId);
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            _logger.LogInformation("Бронирование {BookId} не обработано - операция отменена", bookingId);
+        }
+        catch (Exception e)
+        {
+            _logger.LogCritical(e, "Произошло непредвиденное исключение при обработке бронирования с идентификатором {BookId}", bookingId);
+        }
+    }
+}

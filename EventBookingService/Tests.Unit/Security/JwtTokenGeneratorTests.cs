@@ -1,7 +1,5 @@
 ﻿using Domain.Users;
 using FluentAssertions;
-using Infrastructure.Security;
-using Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using System.Security.Claims;

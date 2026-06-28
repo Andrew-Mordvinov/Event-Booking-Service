@@ -1,12 +1,7 @@
-﻿using Application.Infrastructure;
-using Application.Infrastructure.Enums;
-using Application.Interfaces;
-using Domain.Bookings;
+﻿using Domain.Bookings;
 using Domain.Events;
-using Domain.Exceptions;
 using Domain.Users;
 using FluentAssertions;
-using Infrastructure.Ef;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System.IdentityModel.Tokens.Jwt;

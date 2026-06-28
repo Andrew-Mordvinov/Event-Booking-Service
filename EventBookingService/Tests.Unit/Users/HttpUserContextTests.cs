@@ -1,7 +1,5 @@
 ﻿using Domain.Users;
 using FluentAssertions;
-using Infrastructure.Http;
-using Infrastructure.Http.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using System.IdentityModel.Tokens.Jwt;

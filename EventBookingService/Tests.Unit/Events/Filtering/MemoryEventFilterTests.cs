@@ -1,9 +1,4 @@
-﻿using Application.DTO.Generic;
-using Application.Implementation;
-using Application.Infrastructure;
-using Application.Infrastructure.Common;
-using Domain.Events;
-using Domain.Exceptions;
+﻿using Domain.Events;
 using FluentAssertions;
 using Moq;
 using System.Linq.Expressions;

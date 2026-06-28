@@ -1,11 +1,4 @@
-﻿using Application.Implementation;
-using Application.Infrastructure;
-using Application.Infrastructure.Common;
-using Application.Interfaces;
-using Application.Settings;
-using Infrastructure.Ef;
-using Infrastructure.Http;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

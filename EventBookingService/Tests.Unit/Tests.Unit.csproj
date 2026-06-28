@@ -24,9 +24,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Application\Application.csproj" />
-    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
-    <ProjectReference Include="..\Presentation\Presentation.csproj" />
+    <ProjectReference Include="..\Application.Bookings\Application.Bookings.csproj" />
+    <ProjectReference Include="..\Application.Events\Application.Events.csproj" />
+    <ProjectReference Include="..\Application.Users\Application.Users.csproj" />
+    <ProjectReference Include="..\Domain.Bookings\Domain.Bookings.csproj" />
+    <ProjectReference Include="..\Domain.Events\Domain.Events.csproj" />
+    <ProjectReference Include="..\Domain.Users\Domain.Users.csproj" />
+    <ProjectReference Include="..\Infrastructure.Users\Infrastructure.Users.csproj" />
   </ItemGroup>
 
   <ItemGroup>

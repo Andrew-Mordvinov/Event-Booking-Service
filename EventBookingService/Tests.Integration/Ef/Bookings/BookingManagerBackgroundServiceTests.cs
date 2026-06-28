@@ -2,11 +2,9 @@
 using Domain.Events;
 using Domain.Users;
 using FluentAssertions;
-using Infrastructure.Ef;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Presentation.Infrastructure.Bookings;
 
 namespace Tests.Integration.Ef.Bookings;
 

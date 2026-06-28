@@ -1,8 +1,5 @@
-﻿using Application.Infrastructure.Common;
-using Domain.Exceptions.Users;
-using Domain.Users;
+﻿using Domain.Users;
 using FluentAssertions;
-using Infrastructure.Ef;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Tests.Integration.Ef.Infrastructure;

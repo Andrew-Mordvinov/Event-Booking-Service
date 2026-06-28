@@ -1,7 +1,5 @@
-﻿using Application.Infrastructure;
-using Domain.Users;
+﻿using Domain.Users;
 using FluentAssertions;
-using Infrastructure.Ef;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 

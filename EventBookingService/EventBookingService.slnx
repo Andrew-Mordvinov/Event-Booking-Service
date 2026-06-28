@@ -1,8 +1,18 @@
 <Solution>
-  <Project Path="Application/Application.csproj" Id="92dcea3c-db2c-4ec4-b10c-962a3a532422" />
-  <Project Path="Domain/Domain.csproj" Id="cd441633-23cc-49f5-9ff6-2295a9435153" />
-  <Project Path="Infrastructure/Infrastructure.csproj" Id="9b20d3c8-a62c-4d5d-8ecc-b43d48ad30c8" />
-  <Project Path="Presentation/Presentation.csproj" />
+  <Project Path="Application.Bookings/Application.Bookings.csproj" Id="92dcea3c-db2c-4ec4-b10c-962a3a532422" />
+  <Project Path="Application.Events/Application.Events.csproj" Id="06f0a36f-87a8-4bcc-8372-d92d16499c8e" />
+  <Project Path="Application.Users/Application.Users.csproj" Id="510725ec-1280-425b-bc77-51016d4b77ca" />
+  <Project Path="Domain.Bookings/Domain.Bookings.csproj" Id="cd441633-23cc-49f5-9ff6-2295a9435153" />
+  <Project Path="Domain.Events/Domain.Events.csproj" Id="8a8e2312-7c82-480f-a6c1-ce312e6232ee" />
+  <Project Path="Domain.Users/Domain.Users.csproj" Id="c1a7bac6-4afe-4b83-87ea-90791b56ebe6" />
+  <Project Path="Infrastructure.Bookings/Infrastructure.Bookings.csproj" Id="9b20d3c8-a62c-4d5d-8ecc-b43d48ad30c8" />
+  <Project Path="Infrastructure.Events/Infrastructure.Events.csproj" Id="5313f8da-2caf-4fec-86ed-9d12adb8454f" />
+  <Project Path="Infrastructure.Users/Infrastructure.Users.csproj" Id="ee7da43e-ff95-4e94-aede-04108ac48624" />
+  <Project Path="Presentation.Bookings/Presentation.Bookings.csproj" />
+  <Project Path="Presentation.Events/Presentation.Events.csproj" Id="65c7032f-e965-4fbe-b989-5c931a19b24c" />
+  <Project Path="Presentation.Users/Presentation.Users.csproj" Id="55b04206-48d9-4612-be00-99bac1e47b1f" />
+  <Project Path="Shared.Infrastructure/Shared.Infrastructure.csproj" Id="5de98a96-86dc-411d-95be-e3f383b6741f" />
+  <Project Path="Shared/Shared.csproj" Id="452e3fc2-4bc4-4061-a1b3-322171bf96ee" />
   <Project Path="Tests.Integration/Tests.Integration.csproj" Id="b1d5138f-6f9e-4c1d-8cb2-4124136c7fcf" />
   <Project Path="Tests.Unit/Tests.Unit.csproj" />
 </Solution>

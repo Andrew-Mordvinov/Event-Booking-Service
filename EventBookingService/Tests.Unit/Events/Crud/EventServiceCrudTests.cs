@@ -1,10 +1,4 @@
-﻿using Application.DTO.Events.Requests;
-using Application.Implementation;
-using Application.Infrastructure;
-using Application.Infrastructure.Common;
-using Application.Infrastructure.Enums;
-using Domain.Events;
-using Domain.Exceptions;
+﻿using Domain.Events;
 using FluentAssertions;
 using Moq;
 

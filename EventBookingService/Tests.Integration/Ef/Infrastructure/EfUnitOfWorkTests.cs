@@ -1,8 +1,6 @@
-﻿using Application.Infrastructure.Common;
-using Domain.Bookings;
+﻿using Domain.Bookings;
 using Domain.Events;
 using FluentAssertions;
-using Infrastructure.Ef;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 

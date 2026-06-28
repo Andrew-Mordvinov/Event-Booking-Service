@@ -1,5 +1,4 @@
 ﻿using Domain.Events;
-using Infrastructure.Ef.EfRepository;
 using System.Linq.Expressions;
 
 namespace Tests.Integration.Ef.Events;
