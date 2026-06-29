@@ -2,11 +2,14 @@ using Application.Users.DTO;
 using Application.Users.Infrastructure;
 using Application.Users.Validations;
 using Infrastructure.Users.Ef;
+using Infrastructure.Users.Ef.ExceptionPatterns;
 using Infrastructure.Users.Security;
 using Infrastructure.Users.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Infrastructure.Ef;
+using Shared.Infrastructure.Ef.ExceptionPatterns;
 using Shared.Interfaces.Infrastructure;
 using System.Text;
 
@@ -59,11 +62,12 @@ public static class DependencyInjection
 
         services.AddAuthorization();
 
-        //services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+        services.AddScoped<IUnitOfWork, EfUnitOfWork<UsersDbContext>>();
         services.AddScoped<IUserRepository, EfUserRepository>();
         services.AddScoped<ITokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IPasswordManager, DefautPasswordManager>();
         services.AddScoped<IValidator<RegisterUserRequest>, RegistrationRequestValidator>();
+        services.AddSingleton<IExceptionPatternsProvider, UsersExceptionPatternsProvider>();
 
         services.AddHttpContextAccessor();
 

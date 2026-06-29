@@ -10,4 +10,9 @@
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+	  <InternalsVisibleTo Include="Tests.Integration.Events" />
+	  <InternalsVisibleTo Include="Tests.Integration.Shared.Infrastructure" />
+	  <InternalsVisibleTo Include="Tests.Unit.Events" />
+  </ItemGroup>
 </Project>

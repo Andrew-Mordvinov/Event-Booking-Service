@@ -13,6 +13,11 @@
   <Project Path="Presentation.Users/Presentation.Users.csproj" Id="55b04206-48d9-4612-be00-99bac1e47b1f" />
   <Project Path="Shared.Infrastructure/Shared.Infrastructure.csproj" Id="5de98a96-86dc-411d-95be-e3f383b6741f" />
   <Project Path="Shared/Shared.csproj" Id="452e3fc2-4bc4-4061-a1b3-322171bf96ee" />
-  <Project Path="Tests.Integration/Tests.Integration.csproj" Id="b1d5138f-6f9e-4c1d-8cb2-4124136c7fcf" />
-  <Project Path="Tests.Unit/Tests.Unit.csproj" />
+  <Project Path="Tests.Integration.Bookings/Tests.Integration.Bookings.csproj" Id="b1d5138f-6f9e-4c1d-8cb2-4124136c7fcf" />
+  <Project Path="Tests.Integration.Events/Tests.Integration.Events.csproj" Id="7856ffb9-6601-477d-ba20-23a5557ca7f4" />
+  <Project Path="Tests.Integration.Shared.Infrastructure/Tests.Integration.Shared.Infrastructure.csproj" Id="263043c5-e136-41fc-bd7e-ed267b756646" />
+  <Project Path="Tests.Integration.Users/Tests.Integration.Users.csproj" Id="43a8734e-211b-4f7e-9791-4cb84b6af92c" />
+  <Project Path="Tests.Unit.Bookings/Tests.Unit.Bookings.csproj" />
+  <Project Path="Tests.Unit.Events/Tests.Unit.Events.csproj" Id="954fd03c-bfa3-4f47-bfbb-a4b7cd39b8ad" />
+  <Project Path="Tests.Unit.Users/Tests.Unit.Users.csproj" Id="8e37b056-2245-41f6-a7ca-d01d86f43a19" />
 </Solution>

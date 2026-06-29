@@ -7,8 +7,8 @@ using Shared.Infrastructure.Ef;
 
 namespace Infrastructure.Bookings.Ef;
 
-public class EfBookingRepository(BookingDbContext dbContext, IUnitOfWork efUnitOfWork)
-    : EfRepository<Booking, BookingDbContext>(dbContext, efUnitOfWork, TableNames.Bookings), IBookingRepository
+public class EfBookingRepository(BookingsDbContext dbContext, IUnitOfWork efUnitOfWork)
+    : EfRepository<Booking, BookingsDbContext>(dbContext, efUnitOfWork, TableNames.Bookings), IBookingRepository
 {
     public Task<int> GetCountActiveBookingForPersonAsync(Guid userId, CancellationToken token = default)
     {

@@ -1,5 +1,4 @@
 ﻿using Application.Users.DTO;
-using Application.Users.Validations;
 using Application.Users.Validations.ErrorTexts;
 
 namespace Application.Users.Validations;

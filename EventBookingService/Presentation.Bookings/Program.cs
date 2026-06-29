@@ -35,7 +35,7 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<BookingDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<BookingsDbContext>();
     db.Database.Migrate();
 }
 

@@ -4,13 +4,17 @@ using Application.Bookings.Infrastructure;
 using Application.Bookings.Settings;
 
 using Infrastructure.Bookings.Ef;
+using Infrastructure.Bookings.Ef.ExceptionPatterns;
 using Infrastructure.Bookings.Http;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+
 using Presentation.Bookings.Infrastructure.Bookings;
 
+using Shared.Infrastructure.Ef;
+using Shared.Infrastructure.Ef.ExceptionPatterns;
 using Shared.Interfaces.Infrastructure;
 
 namespace Presentation.Bookings.Infrastructure;
@@ -24,7 +28,7 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("Default")
             ?? throw new InvalidOperationException("Connection string 'Default' not found.");
 
-        services.AddDbContextPool<BookingDbContext>(options => options
+        services.AddDbContextPool<BookingsDbContext>(options => options
             .UseNpgsql(connectionString)
             .LogTo(message => Serilog.Log.Information(message), LogLevel.Error)
             .EnableDetailedErrors(), 100);
@@ -66,9 +70,10 @@ public static class DependencyInjection
 
         services.AddAuthorization();
 
-        //services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+        services.AddScoped<IUnitOfWork, EfUnitOfWork<BookingsDbContext>>();
         services.AddScoped<IBookingRepository, EfBookingRepository>();
         services.AddScoped<IUserContext, HttpUserContext>();
+        services.AddSingleton<IExceptionPatternsProvider, BookingsExceptionPatternsProvider>();
 
         services.AddHttpContextAccessor();
 
