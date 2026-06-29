@@ -13,6 +13,7 @@ namespace Application.Bookings.Implementation;
 
 public class BookingService(
     IBookingRepository _storageBooking,
+    IEventProducer _eventProducer,
     IUnitOfWork _unitOfWork,
     IUserContext _userContext,
     IOptions<BookingSettings> options,
@@ -83,7 +84,7 @@ public class BookingService(
         }
 
         booking.Cancel();
-
+        // При отмене бронирования по идее тоже надо место освобождать?
         await _unitOfWork.SaveChangesAsync(token);
     }
 
@@ -105,23 +106,14 @@ public class BookingService(
                 return;
             }
 
-            // Пока просто закомментирую, чтобы можно было компилировать
-            //var eventResult = await _storageEvent.GetByIdAsync(booking.EventId, token: token);
-            //token.ThrowIfCancellationRequested();
-
-            //if (eventResult is null)
-            //{
-            //    booking.Reject();
-            //    _logger.LogWarning("Событие {EventId} не удалось получить. Бронь {BookId} отклонена.", booking.EventId, booking.Id);
-            //}
-            //else
-            //{
-            //    booking.Confirm();
-            //    _logger.LogInformation("Бронирование события {EventId} успешно обработано. Заявка с " +
-            //        "{BookId} получила статус {Status}", booking.EventId, booking.Id, booking.Status);
-            //}
+            booking.Confirm();
+            _logger.LogInformation("Бронирование события {EventId} успешно обработано. Заявка с " +
+                "{BookId} получила статус {Status}", booking.EventId, booking.Id, booking.Status);
 
             await _unitOfWork.SaveChangesAsync(token);
+
+            await _eventProducer.BookingConfirmedAsync(token);
+
             _logger.LogInformation("Обработка бронирования {BookId} для события {EventId} завершена", booking.Id, booking.EventId);
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)

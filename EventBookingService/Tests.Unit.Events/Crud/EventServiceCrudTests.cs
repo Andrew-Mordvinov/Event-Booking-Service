@@ -2,6 +2,7 @@
 using Application.Events.Implementation;
 using Application.Events.Infrastructure;
 using Domain.Events;
+using Domain.Events.Exceptions;
 using FluentAssertions;
 using Moq;
 using Shared.Exceptions;

@@ -22,6 +22,7 @@ public partial class BookingTests
         public required Mock<IBookingRepository> BookingStorageMock { get; init; }
         public required Mock<IUnitOfWork> UnitOfWorkMock { get; init; }
         public required Mock<IUserContext> UserContextMock { get; init; }
+        public required Mock<IEventProducer> EventProducerMock { get; init; }
     }
 
     private static BookingService CreateService(
@@ -31,7 +32,8 @@ public partial class BookingTests
         {
             BookingStorageMock = new Mock<IBookingRepository>(),
             UnitOfWorkMock = new Mock<IUnitOfWork>(),
-            UserContextMock = new Mock<IUserContext>()
+            UserContextMock = new Mock<IUserContext>(),
+            EventProducerMock = new Mock<IEventProducer>()
         };
         
         var loggerMock = new Mock<ILogger<BookingService>>();
@@ -43,6 +45,7 @@ public partial class BookingTests
 
         return new BookingService(
             holder.BookingStorageMock.Object,
+            holder.EventProducerMock.Object,
             holder.UnitOfWorkMock.Object,
             holder.UserContextMock.Object,
             optionsMock.Object,

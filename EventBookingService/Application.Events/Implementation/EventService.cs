@@ -3,6 +3,7 @@ using Application.Events.DTO.Result;
 using Application.Events.Infrastructure;
 using Application.Events.Interfaces;
 using Domain.Events;
+using Domain.Events.Exceptions;
 using Shared;
 using Shared.Exceptions;
 using Shared.Interfaces.Infrastructure;
@@ -119,6 +120,18 @@ public class EventService(
         await _unitOfWork.SaveChangesAsync(token);
 
         return source;
+    }
+
+    public async Task HoldSeatsAsync(Guid eventId, int seats, CancellationToken token = default)
+    {
+        var @event = await _events.GetByIdAsync(eventId, token: token) ?? throw new NotFoundException(EventServiceErrors.EventNotFound(eventId));
+
+        if (@event.TryReserveSeats(seats))
+        {
+            throw new NoSeatsAvailableException(EventServiceErrors.EventHasNoSeats(eventId, seats));
+        }
+
+        await _unitOfWork.SaveChangesAsync(token);
     }
 
     #endregion
