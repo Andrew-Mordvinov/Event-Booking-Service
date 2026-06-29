@@ -16,6 +16,7 @@ using Presentation.Bookings.Infrastructure.Bookings;
 using Shared.Infrastructure.Ef;
 using Shared.Infrastructure.Ef.ExceptionPatterns;
 using Shared.Interfaces.Infrastructure;
+using Shared.Settings;
 
 namespace Presentation.Bookings.Infrastructure;
 
@@ -37,9 +38,9 @@ public static class DependencyInjection
             .Bind(configuration.GetSection("BookingSettings"))
             .ValidateDataAnnotations();
 
-        //services.AddOptionsWithValidateOnStart<JwtSettings>()
-        //    .Bind(configuration.GetSection("JwtSettings"))
-        //    .ValidateDataAnnotations();
+        services.AddOptionsWithValidateOnStart<JwtSettings>()
+            .Bind(configuration.GetSection("JwtSettings"))
+            .ValidateDataAnnotations();
 
         services.AddAuthentication(options =>
         {
@@ -48,21 +49,21 @@ public static class DependencyInjection
         })
         .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
         {
-            //var settings = configuration.GetSection("JwtSettings").Get<JwtSettings>() ?? throw new Exception("Couldn't load settings for jwt token");
+            var settings = configuration.GetSection("JwtSettings").Get<JwtSettings>() ?? throw new Exception("Couldn't load settings for jwt token");
 
-            //options.TokenValidationParameters = new TokenValidationParameters
-            //{
-            //    ValidateIssuer = true,
-            //    ValidIssuer = settings.Issuer,
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = settings.Issuer,
 
-            //    ValidateAudience = true,
-            //    ValidAudience = settings.Audience,
+                ValidateAudience = true,
+                ValidAudience = settings.Audience,
 
-            //    ValidateLifetime = true,
+                ValidateLifetime = true,
 
-            //    ValidateIssuerSigningKey = true,
-            //    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SecretKey)),
-            //};
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SecretKey)),
+            };
 
             // Опция, для того чтобы система сама не делала маппинг sub на какое-то длинное поле http-бла-бла-бла
             options.MapInboundClaims = false;
