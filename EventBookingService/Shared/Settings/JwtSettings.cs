@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Infrastructure.Users.Settings;
+namespace Shared.Settings;
 
 /// <summary>
 /// Настройки для Jwt токенов

@@ -5,7 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
 using Application.Users.Infrastructure;
-using Infrastructure.Users.Settings;
+using Shared.Settings;
 
 namespace Infrastructure.Users.Security;
 

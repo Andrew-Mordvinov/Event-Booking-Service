@@ -1,9 +1,11 @@
 using Application.Events.Infrastructure;
 using Infrastructure.Events.Ef;
+using Infrastructure.Events.Ef.ExceptionPatterns;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using Shared.Infrastructure.Ef;
+using Shared.Infrastructure.Ef.ExceptionPatterns;
+using Shared.Interfaces.Infrastructure;
 
 namespace Presentation.Events.Infrastructure;
 
@@ -54,8 +56,9 @@ public static class DependencyInjection
 
         services.AddAuthorization();
 
-        //services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+        services.AddScoped<IUnitOfWork, EfUnitOfWork<EventsDbContext>>();
         services.AddScoped<IEventRepository, EfEventRepository>();
+        services.AddSingleton<IExceptionPatternsProvider, EventsExceptionPatternsProvider>();
 
         return services;
     }

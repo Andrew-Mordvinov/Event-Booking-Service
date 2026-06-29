@@ -4,13 +4,13 @@ using Application.Users.Validations;
 using Infrastructure.Users.Ef;
 using Infrastructure.Users.Ef.ExceptionPatterns;
 using Infrastructure.Users.Security;
-using Infrastructure.Users.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Shared.Infrastructure.Ef;
 using Shared.Infrastructure.Ef.ExceptionPatterns;
 using Shared.Interfaces.Infrastructure;
+using Shared.Settings;
 using System.Text;
 
 namespace Presentation.Users.Infrastructure;

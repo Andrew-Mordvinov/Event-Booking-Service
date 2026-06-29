@@ -1,10 +1,10 @@
 ﻿using Domain.Users;
 using FluentAssertions;
 using Infrastructure.Users.Security;
-using Infrastructure.Users.Settings;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Shared;
+using Shared.Settings;
 using System.Security.Claims;
 
 namespace Tests.Unit.Users.Security;
