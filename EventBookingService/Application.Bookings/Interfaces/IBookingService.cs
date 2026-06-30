@@ -30,12 +30,4 @@ public interface IBookingService
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Асинхронная задача</returns>
     Task CancelBookingAsync(Guid bookingId, CancellationToken token = default);
-
-    /// <summary>
-    /// Обработка конкретной брони
-    /// </summary>
-    /// <param name="bookingId">Идентификатор брони для обработки</param>
-    /// <param name="token">Токен отмены операции</param>
-    /// <returns>Асинхронная задача</returns>
-    Task ProcessBookingAsync(Guid bookingId, CancellationToken token = default);
 }

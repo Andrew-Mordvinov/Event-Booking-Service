@@ -1,7 +1,6 @@
 ﻿using Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Infrastructure.Users.Ef;
 
 namespace Infrastructure.Users.Ef.ModelBuilders;
 

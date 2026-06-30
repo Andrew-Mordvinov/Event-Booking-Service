@@ -51,11 +51,5 @@ public interface IEventService
     /// <param name="token">Токен отмены асинхронной операции</param>
     Task DeleteEventByIdAsync(Guid id, CancellationToken token = default);
 
-    /// <summary>
-    /// Списать места у события
-    /// </summary>
-    /// <param name="eventId">Id события, которое нужно удалить</param>
-    /// <param name="seats">Количество мест, которые необходимо списать</param>
-    /// <param name="token">Токен отмены асинхронной операции</param>
-    Task HoldSeatsAsync(Guid eventId, int seats, CancellationToken token = default);
+
 }

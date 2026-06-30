@@ -49,7 +49,7 @@ public class EventController(
     /// <response code="400">Некорректный запрос, вернуть страницу невозможно</response>
     /// <response code="401">Пользователь не определен</response>
     [Produces("application/json")]
-    [ProducesResponseType(typeof(PaginatedResponse<BaseEventResponse>), StatusCodes.Status200OK)] 
+    [ProducesResponseType(typeof(PaginatedResponse<BaseEventResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [HttpGet]

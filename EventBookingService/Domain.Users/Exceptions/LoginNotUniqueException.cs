@@ -1,6 +1,4 @@
-﻿using Domain.Users.Exceptions;
-
-namespace Domain.Users.Exceptions;
+﻿namespace Domain.Users.Exceptions;
 
 /// <summary>
 /// Исключение, возникающее при попытке добавить пользователя с уже существующим логином

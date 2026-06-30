@@ -1,4 +1,4 @@
-﻿using Shared;
+﻿using Shared.Roles;
 
 namespace Application.Users.DTO;
 

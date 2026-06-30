@@ -3,20 +3,17 @@ using Application.Events.DTO.Result;
 using Application.Events.Infrastructure;
 using Application.Events.Interfaces;
 using Domain.Events;
-using Domain.Events.Exceptions;
-using Shared;
 using Shared.Exceptions;
-using Shared.Interfaces.Infrastructure;
-using Shared.Interfaces.Infrastructure.Enums;
+using Shared.Infrastructure.Abstract;
+using Shared.Infrastructure.Abstract.Enums;
 using Shared.LinqExtensions;
 using System.Linq.Expressions;
 using System.Reflection;
 
-
 namespace Application.Events.Implementation;
 
 /// <summary>
-/// Реализация <see cref="IEventService"/> с хранением данных в памяти приложения
+/// Реализация <see cref="IEventService"/>
 /// </summary>
 public class EventService(
     IEventRepository _events,
@@ -120,18 +117,6 @@ public class EventService(
         await _unitOfWork.SaveChangesAsync(token);
 
         return source;
-    }
-
-    public async Task HoldSeatsAsync(Guid eventId, int seats, CancellationToken token = default)
-    {
-        var @event = await _events.GetByIdAsync(eventId, token: token) ?? throw new NotFoundException(EventServiceErrors.EventNotFound(eventId));
-
-        if (@event.TryReserveSeats(seats))
-        {
-            throw new NoSeatsAvailableException(EventServiceErrors.EventHasNoSeats(eventId, seats));
-        }
-
-        await _unitOfWork.SaveChangesAsync(token);
     }
 
     #endregion

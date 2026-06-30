@@ -36,7 +36,7 @@ public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
             .AddJsonFile("appsettings.test.json", optional: true, reloadOnChange: false)
             .Build();
 
-        var services = new ServiceCollection();;
+        var services = new ServiceCollection(); ;
 
         services.AddDbContext<BookingsDbContext>(options => options
             .UseNpgsql(Container.GetConnectionString()));

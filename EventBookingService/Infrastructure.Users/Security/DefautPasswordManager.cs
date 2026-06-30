@@ -1,7 +1,7 @@
-﻿using Konscious.Security.Cryptography;
+﻿using Application.Users.Infrastructure;
+using Konscious.Security.Cryptography;
 using System.Security.Cryptography;
 using System.Text;
-using Application.Users.Infrastructure;
 
 namespace Infrastructure.Users.Security;
 

@@ -3,8 +3,8 @@ using Application.Events.Infrastructure;
 using Domain.Events;
 using Microsoft.EntityFrameworkCore;
 using Shared.Exceptions;
+using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Ef;
-using Shared.Interfaces.Infrastructure;
 using System.Linq.Expressions;
 
 namespace Infrastructure.Events.Ef;

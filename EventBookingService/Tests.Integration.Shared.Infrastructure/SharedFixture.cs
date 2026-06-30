@@ -5,8 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
+using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Ef;
-using Shared.Interfaces.Infrastructure;
 using Testcontainers.PostgreSql;
 
 namespace Tests.Integration.Shared.Infrastructure;
@@ -25,7 +25,7 @@ public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
             .WithPassword("postgres")
             .Build();
 
-        var services = new ServiceCollection();;
+        var services = new ServiceCollection(); ;
 
         services.AddDbContext<EventsDbContext>(options => options
             .UseNpgsql(Container.GetConnectionString()));

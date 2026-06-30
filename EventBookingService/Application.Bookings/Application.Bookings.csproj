@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Domain.Bookings\Domain.Bookings.csproj" />
+    <ProjectReference Include="..\Shared.Infrastructure.Abstract\Shared.Infrastructure.Abstract.csproj" />
+    <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
 </Project>

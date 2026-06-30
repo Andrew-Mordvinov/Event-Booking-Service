@@ -5,7 +5,7 @@ using Domain.Events;
 using FluentAssertions;
 using Moq;
 using Shared.Exceptions;
-using Shared.Interfaces.Infrastructure;
+using Shared.Infrastructure.Abstract;
 using System.Linq.Expressions;
 
 namespace Tests.Unit.Events.Filtering;
@@ -55,7 +55,7 @@ public partial class MemoryEventFilterTests
     {
         // Arrange
         var service = CreateService(out var mock);
-     
+
         var capturedFilter = new List<Expression<Func<Event, bool>>>();
         // Не важно, фильтрует репозиторий, сервис валидирует параметры и формирует выражение фильтра
         var noMatterResult = new PaginatedResult<Event>

@@ -7,7 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Shared\Shared.csproj" />
+    <ProjectReference Include="..\Shared.Entities\Shared.Entities.csproj" />
+    <ProjectReference Include="..\Shared.Roles\Shared.Roles.csproj" />
   </ItemGroup>
 
 </Project>

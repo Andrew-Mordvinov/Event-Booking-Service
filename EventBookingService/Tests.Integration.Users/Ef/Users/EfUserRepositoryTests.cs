@@ -4,7 +4,7 @@ using FluentAssertions;
 using Infrastructure.Users.Ef;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Shared;
+using Shared.Roles;
 
 namespace Tests.Integration.Users.Ef.Users;
 
@@ -96,14 +96,14 @@ public partial class EfUserRepositoryTests(SharedFixture sharedFixture) : IAsync
         var notUniqueLogin = "not_unique_login";
         var user = new User(Guid.NewGuid(), notUniqueLogin, "passwordhash", Roles.User);
         await AddUserAsync(notUniqueLogin);
-     
+
         using (var scope = _sharedFixture.ServiceProvider.CreateScope())
         {
             var repository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
             var db = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
 
             await repository.AddAsync(user, TestContext.Current.CancellationToken);
-    
+
             // Act
             var act = async () => await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -118,7 +118,7 @@ public partial class EfUserRepositoryTests(SharedFixture sharedFixture) : IAsync
     {
         // Arrange
         User? result;
-        await AddUsersAsync(users);      
+        await AddUsersAsync(users);
 
         using (var scope = _sharedFixture.ServiceProvider.CreateScope())
         {

@@ -1,5 +1,5 @@
-﻿using Shared;
-using Shared.Interfaces;
+﻿using Shared.Entities;
+using Shared.Roles;
 
 namespace Domain.Users;
 

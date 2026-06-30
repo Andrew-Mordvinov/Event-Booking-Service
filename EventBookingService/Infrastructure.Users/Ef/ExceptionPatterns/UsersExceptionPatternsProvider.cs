@@ -1,4 +1,4 @@
-﻿using Shared.Infrastructure.Ef.ExceptionPatterns;
+﻿using Shared.Infrastructure.Abstract.ExceptionPatterns;
 
 namespace Infrastructure.Users.Ef.ExceptionPatterns;
 

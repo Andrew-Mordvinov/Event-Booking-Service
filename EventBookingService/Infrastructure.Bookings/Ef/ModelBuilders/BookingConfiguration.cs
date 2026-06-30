@@ -1,7 +1,6 @@
 ﻿using Domain.Bookings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Infrastructure.Bookings.Ef;
 
 namespace Infrastructure.Bookings.Ef.ModelBuilders;
 

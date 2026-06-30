@@ -1,5 +1,4 @@
 using Domain.Events;
-using Presentation.Events.DTO.Response;
 
 namespace Presentation.Events.DTO.Response;
 

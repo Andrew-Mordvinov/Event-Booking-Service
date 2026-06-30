@@ -1,7 +1,3 @@
-
-using Microsoft.AspNetCore.Mvc;
-using Presentation.Events.Exceptions;
-
 namespace Presentation.Events.Exceptions
 {
     public static class DependencyInjection

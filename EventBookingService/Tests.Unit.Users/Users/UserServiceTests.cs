@@ -6,9 +6,9 @@ using Domain.Users;
 using Domain.Users.Exceptions;
 using FluentAssertions;
 using Moq;
-using Shared;
 using Shared.Exceptions;
-using Shared.Interfaces.Infrastructure;
+using Shared.Infrastructure.Abstract;
+using Shared.Roles;
 
 namespace Tests.Unit.Users.Users;
 
@@ -170,7 +170,7 @@ public class UserServiceTests
 
         // Добавили пользователя
         holder.UserRepositoryMock.Setup(t => t.AddAsync(
-                It.Is<User>(t => t.Role == request.Role && t.Login == request.Login && t.PasswordHash == hash), 
+                It.Is<User>(t => t.Role == request.Role && t.Login == request.Login && t.PasswordHash == hash),
                 TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 

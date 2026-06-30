@@ -1,7 +1,6 @@
 ﻿using Domain.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Infrastructure.Events.Ef;
 
 namespace Infrastructure.Events.Ef.ModelBuilders;
 

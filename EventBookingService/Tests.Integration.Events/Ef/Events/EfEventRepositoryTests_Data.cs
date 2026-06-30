@@ -1,7 +1,6 @@
 ﻿using Domain.Events;
 using Shared.Infrastructure.Ef;
 using System.Linq.Expressions;
-using Tests.Integration.Events.Ef.Events;
 
 namespace Tests.Integration.Events.Ef.Events;
 

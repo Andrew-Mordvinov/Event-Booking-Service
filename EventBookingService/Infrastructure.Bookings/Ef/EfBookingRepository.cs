@@ -1,8 +1,7 @@
-﻿using Domain.Bookings;
+﻿using Application.Bookings.Infrastructure;
+using Domain.Bookings;
 using Microsoft.EntityFrameworkCore;
-using Application.Bookings.Infrastructure;
-using Infrastructure.Bookings.Ef;
-using Shared.Interfaces.Infrastructure;
+using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Ef;
 
 namespace Infrastructure.Bookings.Ef;
@@ -13,8 +12,8 @@ public class EfBookingRepository(BookingsDbContext dbContext, IUnitOfWork efUnit
     public Task<int> GetCountActiveBookingForPersonAsync(Guid userId, CancellationToken token = default)
     {
         return Items.CountAsync(
-            b => 
-                (b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed) 
+            b =>
+                (b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed)
                 && b.UserId == userId,
             token);
     }

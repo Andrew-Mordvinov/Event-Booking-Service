@@ -1,6 +1,3 @@
-
-using Microsoft.AspNetCore.Mvc;
-
 namespace Presentation.Bookings.Exceptions
 {
     public static class DependencyInjection

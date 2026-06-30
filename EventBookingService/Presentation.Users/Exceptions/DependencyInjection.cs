@@ -1,7 +1,3 @@
-
-using Microsoft.AspNetCore.Mvc;
-using Presentation.Users.Exceptions;
-
 namespace Presentation.Users.Exceptions
 {
     public static class DependencyInjection

@@ -1,8 +1,8 @@
 ﻿using Application.Bookings.Infrastructure;
+using Infrastructure.Bookings.Http.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.JsonWebTokens;
-using Shared;
-using Infrastructure.Bookings.Http.Exceptions;
+using Shared.Roles;
 
 namespace Infrastructure.Bookings.Http;
 
@@ -22,7 +22,7 @@ public class HttpUserContext(IHttpContextAccessor _httpContextAccessor) : IUserC
                 return _userId.Value;
             }
 
-            var sub = _httpContextAccessor.HttpContext.User.FindFirst(JwtRegisteredClaimNames.Sub) 
+            var sub = _httpContextAccessor.HttpContext.User.FindFirst(JwtRegisteredClaimNames.Sub)
                 ?? throw new WrongUserFormatException("Неверный формат токена, отсутствует " + JwtRegisteredClaimNames.Sub);
 
             if (Guid.TryParse(sub.Value, out var userId))

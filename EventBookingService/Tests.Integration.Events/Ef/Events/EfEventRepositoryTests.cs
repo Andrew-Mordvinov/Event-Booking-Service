@@ -5,7 +5,7 @@ using Infrastructure.Events.Ef;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Exceptions;
-using Shared.Interfaces.Infrastructure.Enums;
+using Shared.Infrastructure.Abstract.Enums;
 using System.Linq.Expressions;
 
 namespace Tests.Integration.Events.Ef.Events;

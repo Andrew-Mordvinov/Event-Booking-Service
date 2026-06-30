@@ -27,7 +27,6 @@
     <ProjectReference Include="..\Domain.Events\Domain.Events.csproj" />
     <ProjectReference Include="..\Infrastructure.Events\Infrastructure.Events.csproj" />
     <ProjectReference Include="..\Presentation.Events\Presentation.Events.csproj" />
-    <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

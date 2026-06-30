@@ -1,5 +1,5 @@
 ﻿using Domain.Bookings;
-using Shared.Interfaces.Infrastructure;
+using Shared.Infrastructure.Abstract;
 
 namespace Application.Bookings.Infrastructure;
 

@@ -1,4 +1,5 @@
 ﻿using Domain.Bookings;
+using Infrastructure.Bookings.Ef.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Bookings.Ef;
@@ -9,6 +10,7 @@ namespace Infrastructure.Bookings.Ef;
 public class BookingsDbContext(DbContextOptions<BookingsDbContext> options) : DbContext(options)
 {
     public DbSet<Booking> Bookings => Set<Booking>();
+    public DbSet<BookingConfirmedOutboxItem> BookingConfirmed => Set<BookingConfirmedOutboxItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

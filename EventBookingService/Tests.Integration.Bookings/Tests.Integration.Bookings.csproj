@@ -29,7 +29,6 @@
     <ProjectReference Include="..\Domain.Bookings\Domain.Bookings.csproj" />
     <ProjectReference Include="..\Infrastructure.Bookings\Infrastructure.Bookings.csproj" />
     <ProjectReference Include="..\Presentation.Bookings\Presentation.Bookings.csproj" />
-    <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

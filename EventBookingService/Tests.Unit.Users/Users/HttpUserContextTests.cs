@@ -4,7 +4,7 @@ using Infrastructure.Bookings.Http.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Moq;
-using Shared;
+using Shared.Roles;
 using System.Security.Claims;
 
 namespace Tests.Unit.Users.Users;

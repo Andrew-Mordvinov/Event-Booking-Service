@@ -1,13 +1,15 @@
 using Application.Events.Infrastructure;
+using Contracts.Settings;
+using Infrastructure.Events.Background;
 using Infrastructure.Events.Ef;
 using Infrastructure.Events.Ef.ExceptionPatterns;
+using Infrastructure.Events.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Infrastructure.Abstract;
+using Shared.Infrastructure.Abstract.ExceptionPatterns;
 using Shared.Infrastructure.Ef;
-using Shared.Infrastructure.Ef.ExceptionPatterns;
-using Shared.Interfaces.Infrastructure;
-using Shared.Settings;
 using System.Text;
 
 namespace Presentation.Events.Infrastructure;
@@ -25,6 +27,14 @@ public static class DependencyInjection
             .UseNpgsql(connectionString)
             .LogTo(message => Serilog.Log.Information(message), LogLevel.Error)
             .EnableDetailedErrors(), 100);
+
+        services.AddOptionsWithValidateOnStart<KafkaSettings>()
+            .Bind(configuration.GetSection("KafkaSettings"))
+            .ValidateDataAnnotations();
+
+        services.AddOptionsWithValidateOnStart<KafkaConsumerSettings>()
+            .Bind(configuration.GetSection("KafkaConsumerSettings"))
+            .ValidateDataAnnotations();
 
         services.AddOptionsWithValidateOnStart<JwtSettings>()
             .Bind(configuration.GetSection("JwtSettings"))
@@ -61,7 +71,10 @@ public static class DependencyInjection
 
         services.AddScoped<IUnitOfWork, EfUnitOfWork<EventsDbContext>>();
         services.AddScoped<IEventRepository, EfEventRepository>();
+        services.AddScoped<IBookingEventsInboxRepository, EfBookingEventsInboxRepository>();
         services.AddSingleton<IExceptionPatternsProvider, EventsExceptionPatternsProvider>();
+
+        services.AddHostedService<BookEventBackgroundService>();
 
         return services;
     }

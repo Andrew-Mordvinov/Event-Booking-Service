@@ -1,4 +1,5 @@
 ﻿using Domain.Events;
+using Infrastructure.Events.Ef.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Events.Ef;
@@ -9,6 +10,7 @@ namespace Infrastructure.Events.Ef;
 public class EventsDbContext(DbContextOptions<EventsDbContext> options) : DbContext(options)
 {
     public DbSet<Event> Events => Set<Event>();
+    public DbSet<BookingConfirmedInboxItem> BookingConfirmed => Set<BookingConfirmedInboxItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

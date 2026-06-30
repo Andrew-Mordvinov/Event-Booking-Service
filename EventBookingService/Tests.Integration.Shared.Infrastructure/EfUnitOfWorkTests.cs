@@ -3,7 +3,7 @@ using FluentAssertions;
 using Infrastructure.Events.Ef;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Shared.Interfaces.Infrastructure;
+using Shared.Infrastructure.Abstract;
 
 namespace Tests.Integration.Shared.Infrastructure;
 
@@ -265,7 +265,7 @@ public class EfUnitOfWorkTests(SharedFixture sharedFixture) : IAsyncLifetime
             [
                 new Event
                 (
-                    duplicateId, 
+                    duplicateId,
                     "Duplicate1",
                     SharedFixture.TrimToMicroseconds(DateTimeOffset.UtcNow),
                     SharedFixture.TrimToMicroseconds(DateTimeOffset.UtcNow.AddDays(1)),

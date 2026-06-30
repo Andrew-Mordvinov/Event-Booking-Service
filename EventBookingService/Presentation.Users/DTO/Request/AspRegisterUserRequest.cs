@@ -1,7 +1,7 @@
-using System.ComponentModel.DataAnnotations;
 using Application.Users.DTO;
 using Application.Users.Validations.ErrorTexts;
-using Shared;
+using Shared.Roles;
+using System.ComponentModel.DataAnnotations;
 
 namespace Presentation.Users.DTO.Request
 {

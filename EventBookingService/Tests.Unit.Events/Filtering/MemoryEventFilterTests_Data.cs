@@ -1,6 +1,5 @@
 ﻿using Application.Events.Implementation;
 using Domain.Events;
-using Shared;
 
 namespace Tests.Unit.Events.Filtering;
 

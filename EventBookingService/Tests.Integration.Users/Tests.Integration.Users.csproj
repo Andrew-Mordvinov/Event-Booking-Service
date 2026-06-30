@@ -24,7 +24,6 @@
     <ProjectReference Include="..\Domain.Users\Domain.Users.csproj" />
     <ProjectReference Include="..\Infrastructure.Users\Infrastructure.Users.csproj" />
     <ProjectReference Include="..\Presentation.Users\Presentation.Users.csproj" />
-    <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

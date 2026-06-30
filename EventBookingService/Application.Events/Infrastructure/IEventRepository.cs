@@ -1,6 +1,6 @@
 ﻿using Application.Events.DTO.Result;
 using Domain.Events;
-using Shared.Interfaces.Infrastructure;
+using Shared.Infrastructure.Abstract;
 using System.Linq.Expressions;
 
 namespace Application.Events.Infrastructure;

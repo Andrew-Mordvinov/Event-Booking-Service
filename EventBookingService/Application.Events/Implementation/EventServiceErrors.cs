@@ -10,6 +10,4 @@ public static class EventServiceErrors
         $"Некорректное значение размера страницы: размер должен быть в диапазоне {pageMin}-{pageMax}";
 
     public static string EventNotFound(Guid id) => $"Событие с идентификатором {id} не найдено";
-
-    public static string EventHasNoSeats(Guid id, int seats) => $"У события с идентификатором {id} нет мест ({seats}) для бронирования";
 }

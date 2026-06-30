@@ -2,12 +2,11 @@
 using Application.Events.Implementation;
 using Application.Events.Infrastructure;
 using Domain.Events;
-using Domain.Events.Exceptions;
 using FluentAssertions;
 using Moq;
 using Shared.Exceptions;
-using Shared.Interfaces.Infrastructure;
-using Shared.Interfaces.Infrastructure.Enums;
+using Shared.Infrastructure.Abstract;
+using Shared.Infrastructure.Abstract.Enums;
 
 namespace Tests.Unit.Events.Crud;
 
@@ -24,8 +23,8 @@ public partial class EventServiceCrudTests
         IEnumerable<Event> collection,
         out Holder holder)
     {
-        holder = new Holder 
-        { 
+        holder = new Holder
+        {
             RepositoryMock = new Mock<IEventRepository>(),
             UnitOfWorkMock = new Mock<IUnitOfWork>(),
             ScopedCollection = collection.ToList() ?? [],

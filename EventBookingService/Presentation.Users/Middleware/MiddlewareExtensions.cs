@@ -1,5 +1,3 @@
-using Presentation.Users.Middleware;
-
 namespace Presentation.Users.Middleware;
 
 public static class MiddlewareExtensions

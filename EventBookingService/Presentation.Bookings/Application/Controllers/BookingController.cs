@@ -30,7 +30,7 @@ public class BookingController(IBookingService _bookingService) : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [HttpGet("{id}", Name = nameof(GetBookingByIdAsync))]  
+    [HttpGet("{id}", Name = nameof(GetBookingByIdAsync))]
     public async Task<ActionResult<BaseBookingResponse>> GetBookingByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var result = await _bookingService.GetBookingByIdAsync(id, cancellationToken);

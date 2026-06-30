@@ -3,8 +3,8 @@ using Domain.Users.Exceptions;
 using FluentAssertions;
 using Infrastructure.Users.Ef;
 using Microsoft.Extensions.DependencyInjection;
-using Shared;
-using Shared.Interfaces.Infrastructure;
+using Shared.Infrastructure.Abstract;
+using Shared.Roles;
 
 namespace Tests.Integration.Users.Ef.Infrastructure;
 

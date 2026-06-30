@@ -1,4 +1,4 @@
-using Shared.Interfaces;
+using Shared.Entities;
 
 namespace Domain.Events;
 

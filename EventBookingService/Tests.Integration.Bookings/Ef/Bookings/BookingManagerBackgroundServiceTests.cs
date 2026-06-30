@@ -1,10 +1,10 @@
 ﻿using Domain.Bookings;
 using FluentAssertions;
+using Infrastructure.Bookings.Background;
 using Infrastructure.Bookings.Ef;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Presentation.Bookings.Infrastructure.Bookings;
 
 namespace Tests.Integration.Bookings.Ef.Bookings;
 
@@ -25,12 +25,12 @@ public class BookingManagerBackgroundServiceTests(SharedFixture sharedFixture) :
 
     #region Helping
 
-    private BookingManagerBackgroundService CreateBackground()
+    private BookingConfirmationBackgroundService CreateBackground()
     {
-        return new BookingManagerBackgroundService
+        return new BookingConfirmationBackgroundService
         (
             _sharedFixture.ServiceProvider.GetRequiredService<IServiceScopeFactory>(),
-            _sharedFixture.ServiceProvider.GetRequiredService<ILogger<BookingManagerBackgroundService>>()
+            _sharedFixture.ServiceProvider.GetRequiredService<ILogger<BookingConfirmationBackgroundService>>()
         );
     }
 

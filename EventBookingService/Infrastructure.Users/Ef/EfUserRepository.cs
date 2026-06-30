@@ -1,8 +1,8 @@
 ﻿using Application.Users.Infrastructure;
 using Domain.Users;
 using Microsoft.EntityFrameworkCore;
+using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Ef;
-using Shared.Interfaces.Infrastructure;
 
 namespace Infrastructure.Users.Ef;
 

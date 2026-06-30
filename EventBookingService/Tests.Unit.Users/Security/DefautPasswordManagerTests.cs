@@ -50,7 +50,7 @@ public class DefautPasswordManagerTests
         var hasher = CreateHasher();
         var testPass = "SomePassword123!";
         var hash = hasher.HashPassword(testPass);
-        
+
         // Act
         var verifyResult = hasher.VerifyPassword(testPass, hash);
 

@@ -1,5 +1,4 @@
 using Presentation.Events.Exceptions;
-using Presentation.Events.Middleware;
 
 namespace Presentation.Events.Middleware;
 

@@ -1,5 +1,4 @@
-﻿using Infrastructure.Users.Ef.ExceptionPatterns;
-using Shared.Infrastructure.Ef.ExceptionPatterns;
+﻿using Shared.Infrastructure.Abstract.ExceptionPatterns;
 
 namespace Infrastructure.Bookings.Ef.ExceptionPatterns;
 

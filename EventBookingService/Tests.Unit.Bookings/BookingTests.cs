@@ -4,12 +4,11 @@ using Application.Bookings.Settings;
 using Domain.Bookings;
 using Domain.Bookings.Exceptions.Bookings;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Shared.Exceptions;
-using Shared.Interfaces.Infrastructure;
-using Shared.Interfaces.Infrastructure.Enums;
+using Shared.Infrastructure.Abstract;
+using Shared.Infrastructure.Abstract.Enums;
 
 namespace Tests.Unit.Bookings;
 
@@ -22,7 +21,6 @@ public partial class BookingTests
         public required Mock<IBookingRepository> BookingStorageMock { get; init; }
         public required Mock<IUnitOfWork> UnitOfWorkMock { get; init; }
         public required Mock<IUserContext> UserContextMock { get; init; }
-        public required Mock<IEventProducer> EventProducerMock { get; init; }
     }
 
     private static BookingService CreateService(
@@ -33,10 +31,8 @@ public partial class BookingTests
             BookingStorageMock = new Mock<IBookingRepository>(),
             UnitOfWorkMock = new Mock<IUnitOfWork>(),
             UserContextMock = new Mock<IUserContext>(),
-            EventProducerMock = new Mock<IEventProducer>()
         };
-        
-        var loggerMock = new Mock<ILogger<BookingService>>();
+
         var optionsMock = new Mock<IOptions<BookingSettings>>();
 
         var settings = new BookingSettings { MaxBookingPerUser = MaxBookingCount };
@@ -45,11 +41,9 @@ public partial class BookingTests
 
         return new BookingService(
             holder.BookingStorageMock.Object,
-            holder.EventProducerMock.Object,
             holder.UnitOfWorkMock.Object,
             holder.UserContextMock.Object,
-            optionsMock.Object,
-            loggerMock.Object);
+            optionsMock.Object);
     }
 
     #region GetBookingByIdAsync

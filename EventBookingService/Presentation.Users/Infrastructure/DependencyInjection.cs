@@ -1,16 +1,16 @@
 using Application.Users.DTO;
 using Application.Users.Infrastructure;
 using Application.Users.Validations;
+using Contracts.Settings;
 using Infrastructure.Users.Ef;
 using Infrastructure.Users.Ef.ExceptionPatterns;
 using Infrastructure.Users.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Infrastructure.Abstract;
+using Shared.Infrastructure.Abstract.ExceptionPatterns;
 using Shared.Infrastructure.Ef;
-using Shared.Infrastructure.Ef.ExceptionPatterns;
-using Shared.Interfaces.Infrastructure;
-using Shared.Settings;
 using System.Text;
 
 namespace Presentation.Users.Infrastructure;
