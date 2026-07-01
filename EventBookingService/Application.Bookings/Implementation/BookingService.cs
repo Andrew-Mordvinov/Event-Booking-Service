@@ -2,7 +2,7 @@ using Application.Bookings.Infrastructure;
 using Application.Bookings.Interfaces;
 using Application.Bookings.Settings;
 using Domain.Bookings;
-using Domain.Bookings.Exceptions.Bookings;
+using Domain.Bookings.Exceptions;
 using Microsoft.Extensions.Options;
 using Shared.Exceptions;
 using Shared.Infrastructure.Abstract;

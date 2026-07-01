@@ -64,7 +64,7 @@ public class BookingEventSenderBackgroundService(
 
         if (messages.Count < 1)
         {
-            await Task.Delay(100, stoppingToken);
+            await Task.Delay(1000, stoppingToken);
             return;
         }
         // TODO можно организовать группировку по eventId и отправлять группы параллельно

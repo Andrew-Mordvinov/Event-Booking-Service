@@ -153,34 +153,5 @@ public class EventController(
 
         return NoContent();
     }
-
-    // Пока закомментируем, ибо не до конца понятно как это теперь переносить
-
-    /// <summary>
-    /// Бронирование места на событие. Создает ожидающее обработки бронирование и возвращает ссылку на него для отслеживания статуса
-    /// </summary>
-    /// <param name="eventId">Идентификатор события, на которое бронируется место</param>
-    /// <param name="cancellationToken">Токен отмены асинхронной операции</param>
-    /// <response code="202">Бронирование создано и ожидает обработки</response>
-    /// <response code="400">Событие уже началось</response>
-    /// <response code="401">Пользователь не определен</response>
-    /// <response code="404">Событие не найдено</response>
-    /// <response code="409">Бронирование не создано, так как мест на событие не осталось или превышен лимит активных бронирований</response>
-    //[Produces("application/json")]
-    //[ProducesResponseType(typeof(BookingAcceptedResponse), StatusCodes.Status202Accepted)]
-    //[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    //[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
-    //[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    //[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-    //[HttpPost("{eventId}/book")]
-    //public async Task<ActionResult<BookingAcceptedResponse>> BookEventAsync(Guid eventId, CancellationToken cancellationToken)
-    //{
-    //    var result = await _bookingService.CreateBookingAsync(eventId, cancellationToken);
-
-    //    return AcceptedAtRoute(
-    //        nameof(BookingController.GetBookingByIdAsync),
-    //        new { id = result.Id },
-    //        BookingAcceptedResponse.FromBooking(result));
-    //}
 }
 

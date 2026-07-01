@@ -1,4 +1,4 @@
-﻿namespace Domain.Bookings.Exceptions.Bookings;
+﻿namespace Domain.Bookings.Exceptions;
 
 /// <summary>
 /// Исключение при попытке пользователя взаимодействовать с чужим бронированием

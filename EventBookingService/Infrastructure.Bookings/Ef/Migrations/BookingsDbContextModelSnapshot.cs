@@ -54,6 +54,30 @@ namespace Infrastructure.Bookings.Ef.Migrations
 
                     b.ToTable("bookings", (string)null);
                 });
+
+            modelBuilder.Entity("Infrastructure.Bookings.Ef.Models.BookingConfirmedOutboxItem", b =>
+                {
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("Approved")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Seats")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("BookingId", "EventId");
+
+                    b.HasIndex("EventId");
+
+                    b.ToTable("booking_confirmed_outbox", (string)null);
+                });
 #pragma warning restore 612, 618
         }
     }

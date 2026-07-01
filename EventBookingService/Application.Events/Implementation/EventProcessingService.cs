@@ -12,7 +12,6 @@ public class EventProcessingService(
     IUnitOfWork _unitOfWork,
     ILogger<EventProcessingService> _logger) : IEventProcessingService
 {
-    // Возможно слою приложения лучше отвязаться от BookingConfirmed и использовать dto
     public async Task ProcessConfirmationAsync(BookingConfirmedRequest bookingConfirmed, CancellationToken token = default)
     {
         var messageAlreadyProcessed = await _inboxManager.CheckIfProcessedAsync(bookingConfirmed, token);
@@ -25,12 +24,22 @@ public class EventProcessingService(
         }
 
         var @event = await _eventStorage.GetByIdAsync(bookingConfirmed.EventId, token: token);
+
+        // Пока что кроме логгирования ничего нет, поэтому сразу сохраняем
+        await _inboxManager.AddAsync(bookingConfirmed, token);
+
+        await _unitOfWork.SaveChangesAsync(token);
+
         if (@event is null)
         {
-            await _inboxManager.AddAsync(bookingConfirmed, token);
             _logger.LogError("Ошибка при обработке {@Message}: не найдено событие", bookingConfirmed);
 
-            await _unitOfWork.SaveChangesAsync(token);
+            return;
+        }
+
+        if (@event.StartAt < DateTimeOffset.Now)
+        {
+            _logger.LogError("Ошибка при обработке {@Message}: событие уже началось", bookingConfirmed);
 
             return;
         }
@@ -39,9 +48,6 @@ public class EventProcessingService(
         {
             _logger.LogError("Ошибка при обработке {@Message}: недостаточно мест", bookingConfirmed);
         }
-
-        await _inboxManager.AddAsync(bookingConfirmed, token);
-        await _unitOfWork.SaveChangesAsync(token);
     }
 }
 

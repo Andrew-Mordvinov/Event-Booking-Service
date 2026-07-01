@@ -26,6 +26,6 @@ public class BookingAcceptedResponse
     {
         Id = entity.Id,
         EventId = entity.EventId,
-        Status = entity.Status,
+        Status = entity.Status
     };
 }
