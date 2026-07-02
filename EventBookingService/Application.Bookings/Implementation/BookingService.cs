@@ -53,6 +53,7 @@ public class BookingService(
         return booking;
     }
 
+    // TODO возможно здесь тоже нужно какое-то событие публиковать, хотя в задании не сказано
     public async Task CancelBookingAsync(
         Guid bookingId,
         CancellationToken token = default)

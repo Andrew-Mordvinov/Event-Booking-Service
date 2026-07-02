@@ -90,10 +90,12 @@ public class BookingManagerBackgroundServiceTests(SharedFixture sharedFixture) :
 
         var db = scope.ServiceProvider.GetRequiredService<BookingsDbContext>();
 
-        var unprocessed = await db.Bookings.Where(t => !t.ProcessedAt.HasValue).CountAsync(TestContext.Current.CancellationToken);
-        var pending = await db.Bookings.Where(t => t.Status == BookingStatus.Pending).CountAsync(TestContext.Current.CancellationToken);
+        var unprocessed = await db.Bookings.CountAsync(t => !t.ProcessedAt.HasValue, TestContext.Current.CancellationToken);
+        var pending = await db.Bookings.CountAsync(t => t.Status == BookingStatus.Pending, TestContext.Current.CancellationToken);
+        var producedEventInOutbox = await db.BookingConfirmed.CountAsync(TestContext.Current.CancellationToken);
 
         unprocessed.Should().Be(0, "Обнаружены бронирования, у которых не установлено время обработки");
         pending.Should().Be(0, "Обнаружены бронирования в статусе Pending");
+        producedEventInOutbox.Should().Be(4, "В outbox должно быть ровно столько сообщений, сколько было обработано броней в тестовой пачке");
     }
 }

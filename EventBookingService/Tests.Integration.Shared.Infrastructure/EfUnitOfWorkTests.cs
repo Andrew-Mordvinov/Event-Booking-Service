@@ -242,13 +242,16 @@ public class EfUnitOfWorkTests(SharedFixture sharedFixture) : IAsyncLifetime
         }
     }
 
+    // TODO этот и следующий тест лучше переделать, когда будет левый дб контекст, чтобы транзакция падала из-за ключей или уникальности
     [Fact]
     public async Task SaveChangesAsync_ErrorOccuredInTransaction_ChangesRollback()
     {
         // Arrange
         var addedEventId = Guid.NewGuid();
         var duplicateId = Guid.NewGuid();
+        var titleForAnotherDuplicate = "Another title text";
         await AddEventAsync(addedEventId);
+        await AddEventAsync(duplicateId);
 
         using (var scope = _sharedFixture.ServiceProvider.CreateScope())
         {
@@ -260,25 +263,17 @@ public class EfUnitOfWorkTests(SharedFixture sharedFixture) : IAsyncLifetime
             // Выполнение сырого sql в транзакции
             await db.Database.ExecuteSqlAsync($"DELETE FROM events WHERE \"Id\" = {addedEventId}", TestContext.Current.CancellationToken);
 
-            // Добавление дубликатов события, чтобы вызвать ошибку
+            // Добавление дубликата события, чтобы вызвать ошибку
             db.Events.AddRange(
             [
                 new Event
                 (
                     duplicateId,
-                    "Duplicate1",
+                    titleForAnotherDuplicate,
                     SharedFixture.TrimToMicroseconds(DateTimeOffset.UtcNow),
                     SharedFixture.TrimToMicroseconds(DateTimeOffset.UtcNow.AddDays(1)),
                     10
-                ),
-                new Event
-                (
-                    duplicateId,
-                    "Duplicate2",
-                    SharedFixture.TrimToMicroseconds(DateTimeOffset.UtcNow),
-                    SharedFixture.TrimToMicroseconds(DateTimeOffset.UtcNow.AddDays(1)),
-                    10
-                ),
+                )
             ]);
 
             // Act
@@ -297,8 +292,10 @@ public class EfUnitOfWorkTests(SharedFixture sharedFixture) : IAsyncLifetime
             (await db.Events.FirstOrDefaultAsync(t => t.Id == addedEventId, TestContext.Current.CancellationToken))?.Id
                 .Should()
                 .Be(addedEventId);
-            // Дубликаты не были добавлены
-            (await db.Events.AnyAsync(t => t.Id == duplicateId, TestContext.Current.CancellationToken)).Should().BeFalse();
+            // Дубликат c новым тайтлом не добавился, остался только старый
+            var duplicates = await db.Events.Where(t => t.Id == duplicateId).ToListAsync(TestContext.Current.CancellationToken);
+            duplicates.Count.Should().Be(1);
+            duplicates.First().Title.Should().NotBe(titleForAnotherDuplicate);
         }
     }
 
@@ -308,7 +305,9 @@ public class EfUnitOfWorkTests(SharedFixture sharedFixture) : IAsyncLifetime
         // Arrange
         var addedEventId = Guid.NewGuid();
         var duplicateId = Guid.NewGuid();
+        var titleForAnotherDuplicate = "Another title text";
         await AddEventAsync(addedEventId);
+        await AddEventAsync(duplicateId);
 
         using (var scope = _sharedFixture.ServiceProvider.CreateScope())
         {
@@ -321,19 +320,11 @@ public class EfUnitOfWorkTests(SharedFixture sharedFixture) : IAsyncLifetime
                 new Event
                 (
                     duplicateId,
-                    "Duplicate1",
+                    titleForAnotherDuplicate,
                     SharedFixture.TrimToMicroseconds(DateTimeOffset.UtcNow),
                     SharedFixture.TrimToMicroseconds(DateTimeOffset.UtcNow.AddDays(1)),
                     10
-                ),
-                new Event
-                (
-                    duplicateId,
-                    "Duplicate2",
-                    SharedFixture.TrimToMicroseconds(DateTimeOffset.UtcNow),
-                    SharedFixture.TrimToMicroseconds(DateTimeOffset.UtcNow.AddDays(1)),
-                    10
-                ),
+                )
             ]);
             // Удаление события ранее добавленного
             var toDelete = await db.Events.FirstOrDefaultAsync(t => t.Id == addedEventId, TestContext.Current.CancellationToken);
@@ -353,8 +344,10 @@ public class EfUnitOfWorkTests(SharedFixture sharedFixture) : IAsyncLifetime
             (await db.Events.FirstOrDefaultAsync(t => t.Id == addedEventId, TestContext.Current.CancellationToken))?.Id
                 .Should()
                 .Be(addedEventId);
-            // Дубликаты не были добавлены
-            (await db.Events.AnyAsync(t => t.Id == duplicateId, TestContext.Current.CancellationToken)).Should().BeFalse();
+            // Дубликат c новым тайтлом не добавился, остался только старый
+            var duplicates = await db.Events.Where(t => t.Id == duplicateId).ToListAsync(TestContext.Current.CancellationToken);
+            duplicates.Count.Should().Be(1);
+            duplicates.First().Title.Should().NotBe(titleForAnotherDuplicate);
         }
     }
 

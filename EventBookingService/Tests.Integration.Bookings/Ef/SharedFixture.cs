@@ -3,14 +3,16 @@ using Application.Bookings.Infrastructure;
 using Application.Bookings.Interfaces;
 using Application.Bookings.Settings;
 using Infrastructure.Bookings.Ef;
-using Infrastructure.Bookings.Http;
-using Microsoft.AspNetCore.Http;
+using Infrastructure.Bookings.Ef.ExceptionPatterns;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
+using Shared.Infrastructure.Abstract;
+using Shared.Infrastructure.Abstract.ExceptionPatterns;
+using Shared.Infrastructure.Ef;
 using Testcontainers.PostgreSql;
 
 namespace Tests.Integration.Bookings.Ef;
@@ -46,16 +48,13 @@ public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-
         services.AddScoped<IBookingRepository, EfBookingRepository>();
-
-        services.AddScoped<IUserContext, HttpUserContext>();
-        services.AddScoped<IHttpContextAccessor, HttpContextAccessor>();
-        // TODO Сделать юнит
-        //services.AddScoped<IUnitOfWork, EfUnitOfWork>();
-        services.AddScoped<IBookingService, BookingService>();
+        services.AddScoped<IBookingEventsProducer, EfBookingEventsProducer>();
+        services.AddScoped<IBookingProcessingService, BookingProcessingService>();
+        services.AddScoped<IUnitOfWork, EfUnitOfWork<BookingsDbContext>>();
 
         services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddSingleton<IExceptionPatternsProvider, BookingsExceptionPatternsProvider>();
 
         ServiceProvider = services.BuildServiceProvider();
     }

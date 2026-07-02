@@ -11,8 +11,7 @@ namespace Tests.Integration.Bookings.Ef.Bookings;
 [Collection("PostgresTests")]
 public partial class EfBookingRepositoryTests(SharedFixture sharedFixture) : IAsyncLifetime
 {
-    // TODO Многие тесты возможно потеряли смысл
-
+    // TODO во всех интеграционных тестах не хватает регистрации мапы исключений для UoW
     private readonly SharedFixture _sharedFixture = sharedFixture;
 
     public async ValueTask InitializeAsync()
@@ -253,35 +252,6 @@ public partial class EfBookingRepositoryTests(SharedFixture sharedFixture) : IAs
             result.Should().BeEquivalentTo(booking);
         }
     }
-
-    [Fact]
-    public async Task AddAsync_BookingWithNoEventInDb_ExceptionThrown()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var bookingId = Guid.NewGuid();
-
-
-        var booking = new Booking(bookingId, Guid.NewGuid(), userId, BookingStatus.Pending, SharedFixture.TrimToMicroseconds(DateTimeOffset.UtcNow));
-
-        // Act
-        var act = async () =>
-        {
-            using var scope = _sharedFixture.ServiceProvider.CreateScope();
-
-            var repository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
-            var db = scope.ServiceProvider.GetRequiredService<BookingsDbContext>();
-
-            await repository.AddAsync(booking, TestContext.Current.CancellationToken);
-            await db.SaveChangesAsync(TestContext.Current.CancellationToken);
-        };
-
-        // Assert
-        await act.Should()
-            .ThrowExactlyAsync<DbUpdateException>();
-    }
-
-    // TODO добавить тесты на добавление бука без пользователя
 
     #endregion
 

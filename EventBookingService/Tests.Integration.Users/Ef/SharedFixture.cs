@@ -1,11 +1,15 @@
 ﻿using Application.Users.Infrastructure;
 using Infrastructure.Users.Ef;
+using Infrastructure.Users.Ef.ExceptionPatterns;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
+using Shared.Infrastructure.Abstract;
+using Shared.Infrastructure.Abstract.ExceptionPatterns;
+using Shared.Infrastructure.Ef;
 using Testcontainers.PostgreSql;
 
 namespace Tests.Integration.Users.Ef;
@@ -37,9 +41,10 @@ public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
             .UseNpgsql(Container.GetConnectionString()));
 
         services.AddScoped<IUserRepository, EfUserRepository>();
-        //services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+        services.AddScoped<IUnitOfWork, EfUnitOfWork<UsersDbContext>>();
 
         services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddScoped<IExceptionPatternsProvider, UsersExceptionPatternsProvider>();
 
         ServiceProvider = services.BuildServiceProvider();
     }

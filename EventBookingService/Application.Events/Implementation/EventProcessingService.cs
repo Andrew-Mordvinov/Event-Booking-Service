@@ -37,7 +37,7 @@ public class EventProcessingService(
             return;
         }
 
-        if (@event.StartAt < DateTimeOffset.Now)
+        if (@event.StartAt < DateTimeOffset.UtcNow)
         {
             _logger.LogError("Ошибка при обработке {@Message}: событие уже началось", bookingConfirmed);
 

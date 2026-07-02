@@ -1,11 +1,15 @@
 ﻿using Application.Events.Infrastructure;
 using Infrastructure.Events.Ef;
+using Infrastructure.Events.Ef.ExceptionPatterns;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
+using Shared.Infrastructure.Abstract;
+using Shared.Infrastructure.Abstract.ExceptionPatterns;
+using Shared.Infrastructure.Ef;
 using Testcontainers.PostgreSql;
 
 namespace Tests.Integration.Events.Ef;
@@ -37,9 +41,11 @@ public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
             .UseNpgsql(Container.GetConnectionString()));
 
         services.AddScoped<IEventRepository, EfEventRepository>();
-        //services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+        services.AddScoped<IBookingEventsInboxRepository, EfBookingEventsInboxRepository>();
+        services.AddScoped<IUnitOfWork, EfUnitOfWork<EventsDbContext>>();
 
         services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddSingleton<IExceptionPatternsProvider, EventsExceptionPatternsProvider>();
 
         ServiceProvider = services.BuildServiceProvider();
     }

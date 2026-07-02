@@ -77,7 +77,7 @@ public static class DependencyInjection
 
         services.AddScoped<IUnitOfWork, EfUnitOfWork<BookingsDbContext>>();
         services.AddScoped<IBookingRepository, EfBookingRepository>();
-        services.AddScoped<IBookingEventsProducer, BookingEventsProducer>();
+        services.AddScoped<IBookingEventsProducer, EfBookingEventsProducer>();
         services.AddScoped<IUserContext, HttpUserContext>();
         services.AddSingleton<IExceptionPatternsProvider, BookingsExceptionPatternsProvider>();
 
