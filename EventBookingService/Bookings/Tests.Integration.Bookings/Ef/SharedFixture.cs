@@ -1,18 +1,23 @@
-﻿using Application.Bookings.Implementation;
+using Application.Bookings.Implementation;
 using Application.Bookings.Infrastructure;
 using Application.Bookings.Interfaces;
 using Application.Bookings.Settings;
+
 using Infrastructure.Bookings.Ef;
 using Infrastructure.Bookings.Ef.ExceptionPatterns;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+
 using Npgsql;
+
 using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Abstract.ExceptionPatterns;
 using Shared.Infrastructure.Ef;
+
 using Testcontainers.PostgreSql;
 
 namespace Tests.Integration.Bookings.Ef;

@@ -25,14 +25,12 @@ public class EventProcessingService(
 
         var @event = await _eventStorage.GetByIdAsync(bookingConfirmed.EventId, token: token);
 
-        // Пока что кроме логгирования ничего нет, поэтому сразу сохраняем
         await _inboxManager.AddAsync(bookingConfirmed, token);
-
-        await _unitOfWork.SaveChangesAsync(token);
 
         if (@event is null)
         {
             _logger.LogError("Ошибка при обработке {@Message}: не найдено событие", bookingConfirmed);
+            await _unitOfWork.SaveChangesAsync(token);
 
             return;
         }
@@ -40,6 +38,7 @@ public class EventProcessingService(
         if (@event.StartAt < DateTimeOffset.UtcNow)
         {
             _logger.LogError("Ошибка при обработке {@Message}: событие уже началось", bookingConfirmed);
+            await _unitOfWork.SaveChangesAsync(token);
 
             return;
         }
@@ -48,6 +47,8 @@ public class EventProcessingService(
         {
             _logger.LogError("Ошибка при обработке {@Message}: недостаточно мест", bookingConfirmed);
         }
+
+        await _unitOfWork.SaveChangesAsync(token);
     }
 }
 

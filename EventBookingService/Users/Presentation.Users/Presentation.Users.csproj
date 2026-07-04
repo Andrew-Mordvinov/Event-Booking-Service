@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Shared\Shared.Infrastructure.Ef\Shared.Infrastructure.Ef.csproj" />
     <ProjectReference Include="..\Application.Users\Application.Users.csproj" />
     <ProjectReference Include="..\Domain.Users\Domain.Users.csproj" />
     <ProjectReference Include="..\Infrastructure.Users\Infrastructure.Users.csproj" />

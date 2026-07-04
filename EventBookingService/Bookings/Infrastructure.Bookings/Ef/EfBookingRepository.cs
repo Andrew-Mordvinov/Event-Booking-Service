@@ -1,6 +1,9 @@
-﻿using Application.Bookings.Infrastructure;
+using Application.Bookings.Infrastructure;
+
 using Domain.Bookings;
+
 using Microsoft.EntityFrameworkCore;
+
 using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Ef;
 

@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Shared\Shared.Infrastructure.Ef\Shared.Infrastructure.Ef.csproj" />
     <ProjectReference Include="..\Application.Bookings\Application.Bookings.csproj" />
     <ProjectReference Include="..\Domain.Bookings\Domain.Bookings.csproj" />
     <ProjectReference Include="..\Infrastructure.Bookings\Infrastructure.Bookings.csproj" />

@@ -1,11 +1,15 @@
-﻿using Application.Events.DTO.Result;
+using System.Linq.Expressions;
+
+using Application.Events.DTO.Result;
 using Application.Events.Infrastructure;
+
 using Domain.Events;
+
 using Microsoft.EntityFrameworkCore;
+
 using Shared.Exceptions;
 using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Ef;
-using System.Linq.Expressions;
 
 namespace Infrastructure.Events.Ef;
 

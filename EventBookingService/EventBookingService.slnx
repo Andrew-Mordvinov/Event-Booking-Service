@@ -20,7 +20,7 @@
     <Project Path="Shared/Shared.Exceptions/Shared.Exceptions.csproj" Id="4a46bdde-3e1f-41d2-aa4d-8d1473fb8b08" />
     <Project Path="Shared/Shared.Helpers/Shared.Helpers.csproj" Id="dee85aa3-7350-4257-af86-b094346fea4c" />
     <Project Path="Shared/Shared.Infrastructure.Abstract/Shared.Infrastructure.Abstract.csproj" Id="71bf258e-8f66-4a54-bf79-a8f920d86530" />
-    <Project Path="Shared/Shared.Infrastructure/Shared.Infrastructure.Ef.csproj" Id="5de98a96-86dc-411d-95be-e3f383b6741f" />
+    <Project Path="Shared/Shared.Infrastructure.Ef/Shared.Infrastructure.Ef.csproj" Id="5de98a96-86dc-411d-95be-e3f383b6741f" />
     <Project Path="Shared/Shared.Roles/Shared.Roles.csproj" Id="3d01cd0c-d3c2-4da0-a287-21c5ca852d3f" />
     <Project Path="Shared/Shared.ValidationAttributes/Shared.ValidationAttributes.csproj" Id="452e3fc2-4bc4-4061-a1b3-322171bf96ee" />
     <Project Path="Shared/Tests.Integration.Shared.Infrastructure/Tests.Integration.Shared.Infrastructure.csproj" Id="263043c5-e136-41fc-bd7e-ed267b756646" />

@@ -1,0 +1,34 @@
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+WORKDIR /app
+EXPOSE 80
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY ["EventBookingService/Shared/Shared.Entities/Shared.Entities.csproj", "EventBookingService/Shared/Shared.Entities/"]
+COPY ["EventBookingService/Shared/Shared.Exceptions/Shared.Exceptions.csproj", "EventBookingService/Shared/Shared.Exceptions/"]
+COPY ["EventBookingService/Shared/Shared.Helpers/Shared.Helpers.csproj", "EventBookingService/Shared/Shared.Helpers/"]
+COPY ["EventBookingService/Shared/Shared.Infrastructure.Abstract/Shared.Infrastructure.Abstract.csproj", "EventBookingService/Shared/Shared.Infrastructure.Abstract/"]
+COPY ["EventBookingService/Shared/Shared.Infrastructure.Ef/Shared.Infrastructure.Ef.csproj", "EventBookingService/Shared/Shared.Infrastructure.Ef/"]
+COPY ["EventBookingService/Shared/Shared.Roles/Shared.Roles.csproj", "EventBookingService/Shared/Shared.Roles/"]
+COPY ["EventBookingService/Shared/Shared.ValidationAttributes/Shared.ValidationAttributes.csproj", "EventBookingService/Shared/Shared.ValidationAttributes/"]
+
+COPY ["EventBookingService/Contracts/Contracts.csproj", "EventBookingService/Contracts/"]
+
+COPY ["EventBookingService/Events/Domain.Events/Domain.Events.csproj", "EventBookingService/Events/Domain.Events/"]
+COPY ["EventBookingService/Events/Application.Events/Application.Events.csproj", "EventBookingService/Events/Application.Events/"]
+COPY ["EventBookingService/Events/Infrastructure.Events/Infrastructure.Events.csproj", "EventBookingService/Events/Infrastructure.Events/"]
+COPY ["EventBookingService/Events/Presentation.Events/Presentation.Events.csproj", "EventBookingService/Events/Presentation.Events/"]
+
+RUN dotnet restore "EventBookingService/Events/Presentation.Events/Presentation.Events.csproj"
+
+COPY . .
+
+WORKDIR "/src/EventBookingService/Events/Presentation.Events"
+RUN dotnet build "Presentation.Events.csproj" -c Release -o /app/build
+RUN dotnet publish "Presentation.Events.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "Presentation.Events.dll"]
