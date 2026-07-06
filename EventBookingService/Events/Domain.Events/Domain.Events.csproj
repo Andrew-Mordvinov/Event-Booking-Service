@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+	  <InternalsVisibleTo Include="Tests.Integration.Events" />
+	  <InternalsVisibleTo Include="Tests.Integration.Shared.Infrastructure" />
+	  <InternalsVisibleTo Include="Tests.Unit.Events" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\Shared.Entities\Shared.Entities.csproj" />
+  </ItemGroup>
+</Project>
