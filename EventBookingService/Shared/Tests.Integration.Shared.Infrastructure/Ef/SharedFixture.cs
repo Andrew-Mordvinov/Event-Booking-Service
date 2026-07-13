@@ -16,11 +16,12 @@ using Shared.Infrastructure.Ef;
 
 using Testcontainers.PostgreSql;
 
-namespace Tests.Integration.Shared.Infrastructure;
+namespace Tests.Integration.Shared.Infrastructure.Ef;
 
-[CollectionDefinition("PostgresTests")]
+[CollectionDefinition(PostgresTests)]
 public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
 {
+    public const string PostgresTests = "PostgresTests";
     public PostgreSqlContainer Container { get; private set; }
     public ServiceProvider ServiceProvider { get; private set; }
 
@@ -32,7 +33,7 @@ public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
             .WithPassword("postgres")
             .Build();
 
-        var services = new ServiceCollection(); ;
+        var services = new ServiceCollection();
 
         services.AddDbContext<EventsDbContext>(options => options
             .UseNpgsql(Container.GetConnectionString()));

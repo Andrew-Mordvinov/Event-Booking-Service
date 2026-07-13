@@ -1,11 +1,17 @@
-﻿using Contracts.Settings;
+using System.Security.Claims;
+
+using Contracts.Settings;
+
 using Domain.Users;
+
 using FluentAssertions;
+
 using Infrastructure.Users.Security;
+
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
+
 using Shared.Roles;
-using System.Security.Claims;
 
 namespace Tests.Unit.Users.Security;
 

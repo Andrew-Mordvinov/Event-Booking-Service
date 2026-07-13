@@ -1,5 +1,7 @@
-﻿using Domain.Bookings;
+using Domain.Bookings;
+
 using Infrastructure.Bookings.Ef.Models;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Bookings.Ef;

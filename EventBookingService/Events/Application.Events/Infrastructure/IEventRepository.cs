@@ -1,7 +1,10 @@
-﻿using Application.Events.DTO.Result;
-using Domain.Events;
-using Shared.Infrastructure.Abstract;
 using System.Linq.Expressions;
+
+using Application.Events.DTO.Result;
+
+using Domain.Events;
+
+using Shared.Infrastructure.Abstract;
 
 namespace Application.Events.Infrastructure;
 

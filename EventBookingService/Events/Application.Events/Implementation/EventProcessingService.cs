@@ -1,7 +1,9 @@
 using Application.Events.DTO.Requests;
 using Application.Events.Infrastructure;
 using Application.Events.Interfaces;
+
 using Microsoft.Extensions.Logging;
+
 using Shared.Infrastructure.Abstract;
 
 namespace Application.Events.Implementation;

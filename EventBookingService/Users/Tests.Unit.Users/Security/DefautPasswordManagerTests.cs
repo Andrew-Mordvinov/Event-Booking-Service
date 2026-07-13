@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+using FluentAssertions;
+
 using Infrastructure.Users.Security;
 
 namespace Tests.Unit.Users.Security;

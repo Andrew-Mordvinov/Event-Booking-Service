@@ -1,16 +1,22 @@
-﻿using Application.Events.Infrastructure;
+using System.Linq.Expressions;
+
+using Application.Events.Infrastructure;
+
 using Domain.Events;
+
 using FluentAssertions;
+
 using Infrastructure.Events.Ef;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 using Shared.Exceptions;
 using Shared.Infrastructure.Abstract.Enums;
-using System.Linq.Expressions;
 
 namespace Tests.Integration.Events.Ef.Events;
 
-[Collection("PostgresTests")]
+[Collection(SharedFixture.PostgresTests)]
 public partial class EfEventRepositoryTests(SharedFixture sharedFixture) : IAsyncLifetime
 {
     private readonly SharedFixture _sharedFixture = sharedFixture;

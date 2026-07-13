@@ -1,7 +1,10 @@
-﻿using Domain.Bookings;
+using Domain.Bookings;
+
 using FluentAssertions;
+
 using Infrastructure.Bookings.Background;
 using Infrastructure.Bookings.Ef;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

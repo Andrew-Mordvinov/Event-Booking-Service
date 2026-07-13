@@ -1,5 +1,6 @@
 using Application.Events.DTO.Requests;
 using Application.Events.DTO.Result;
+
 using Domain.Events;
 
 namespace Application.Events.Interfaces;

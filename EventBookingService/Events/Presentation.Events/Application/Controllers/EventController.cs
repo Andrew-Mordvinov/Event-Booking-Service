@@ -1,9 +1,11 @@
 
 using Application.Events.Interfaces;
+
 using Domain.Events;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using Presentation.Events.DTO.Requests;
 using Presentation.Events.DTO.Response;
 

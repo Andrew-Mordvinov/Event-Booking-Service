@@ -1,8 +1,12 @@
-﻿using Domain.Users;
+using Domain.Users;
 using Domain.Users.Exceptions;
+
 using FluentAssertions;
+
 using Infrastructure.Users.Ef;
+
 using Microsoft.Extensions.DependencyInjection;
+
 using Shared.Infrastructure.Abstract;
 using Shared.Roles;
 

@@ -1,4 +1,5 @@
-﻿using Domain.Events;
+using Domain.Events;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

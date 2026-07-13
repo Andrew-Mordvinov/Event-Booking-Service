@@ -1,4 +1,5 @@
-﻿using Infrastructure.Bookings.Ef.Models;
+using Infrastructure.Bookings.Ef.Models;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

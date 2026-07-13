@@ -1,9 +1,13 @@
-﻿using Application.Events.DTO.Requests;
+using Application.Events.DTO.Requests;
 using Application.Events.Implementation;
 using Application.Events.Infrastructure;
+
 using Domain.Events;
+
 using FluentAssertions;
+
 using Moq;
+
 using Shared.Exceptions;
 using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Abstract.Enums;
@@ -62,7 +66,7 @@ public partial class EventServiceCrudTests
         var service = CreateService(baseCollection, out var holder);
 
         holder.RepositoryMock.Setup(s => s.GetByIdAsync(id, GetMode.Readonly, TestContext.Current.CancellationToken))
-            .ReturnsAsync((Event?)null)
+            .ReturnsAsync((Event?) null)
             .Verifiable(Times.Once);
 
         // Act
@@ -211,7 +215,7 @@ public partial class EventServiceCrudTests
         var service = CreateService(baseCollection, out var holder);
 
         holder.RepositoryMock.Setup(s => s.GetByIdAsync(id, GetMode.Edit, TestContext.Current.CancellationToken))
-            .ReturnsAsync((Event?)null)
+            .ReturnsAsync((Event?) null)
             .Verifiable(Times.Once);
 
         holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))

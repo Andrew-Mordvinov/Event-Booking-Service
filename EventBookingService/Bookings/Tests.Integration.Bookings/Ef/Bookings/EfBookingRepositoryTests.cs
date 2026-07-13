@@ -1,9 +1,14 @@
-﻿using Application.Bookings.Infrastructure;
+using Application.Bookings.Infrastructure;
+
 using Domain.Bookings;
+
 using FluentAssertions;
+
 using Infrastructure.Bookings.Ef;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 using Shared.Infrastructure.Abstract.Enums;
 
 namespace Tests.Integration.Bookings.Ef.Bookings;

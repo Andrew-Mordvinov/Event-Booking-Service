@@ -1,22 +1,28 @@
-﻿using Application.Events.Infrastructure;
+using Application.Events.Infrastructure;
+
 using Infrastructure.Events.Ef;
 using Infrastructure.Events.Ef.ExceptionPatterns;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+
 using Npgsql;
+
 using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Abstract.ExceptionPatterns;
 using Shared.Infrastructure.Ef;
+
 using Testcontainers.PostgreSql;
 
 namespace Tests.Integration.Events.Ef;
 
-[CollectionDefinition("PostgresTests")]
+[CollectionDefinition(PostgresTests)]
 public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
 {
+    public const string PostgresTests = "PostgresTests";
     public PostgreSqlContainer Container { get; private set; }
     public ServiceProvider ServiceProvider { get; private set; }
     public IConfiguration Configuration { get; private set; }

@@ -1,14 +1,17 @@
-﻿using Application.Events.DTO.Requests;
+using Application.Events.DTO.Requests;
 using Application.Events.Infrastructure;
+
 using FluentAssertions;
+
 using Infrastructure.Events.Ef;
 using Infrastructure.Events.Ef.Models;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Tests.Integration.Events.Ef.Events;
 
-[Collection("PostgresTests")]
+[Collection(SharedFixture.PostgresTests)]
 public class EfBookingEventsInboxRepositoryTests(SharedFixture sharedFixture) : IAsyncLifetime
 {
     private readonly SharedFixture _sharedFixture = sharedFixture;
@@ -71,7 +74,7 @@ public class EfBookingEventsInboxRepositoryTests(SharedFixture sharedFixture) : 
             usersIds[i] = Guid.NewGuid();
         }
 
-        return 
+        return
         [
             new(Guid.NewGuid(), eventIds[0], usersIds[5], 1, DateTimeOffset.UtcNow.AddMinutes(-5)),
             new(Guid.NewGuid(), eventIds[1], usersIds[4], 1, DateTimeOffset.UtcNow.AddMinutes(-1)),

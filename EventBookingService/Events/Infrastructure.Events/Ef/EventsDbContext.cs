@@ -1,5 +1,7 @@
-﻿using Domain.Events;
+using Domain.Events;
+
 using Infrastructure.Events.Ef.Models;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Events.Ef;

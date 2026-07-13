@@ -1,11 +1,14 @@
 
 using Infrastructure.Events.Ef;
+
 using Microsoft.EntityFrameworkCore;
+
 using Presentation.Events.Application;
 using Presentation.Events.Exceptions;
 using Presentation.Events.Infrastructure;
 using Presentation.Events.Middleware;
 using Presentation.Events.Presentation;
+
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);

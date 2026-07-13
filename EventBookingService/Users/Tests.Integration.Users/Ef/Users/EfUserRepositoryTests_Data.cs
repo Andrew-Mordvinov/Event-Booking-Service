@@ -1,4 +1,5 @@
-﻿using Domain.Users;
+using Domain.Users;
+
 using Shared.Roles;
 
 namespace Tests.Integration.Users.Ef.Users;

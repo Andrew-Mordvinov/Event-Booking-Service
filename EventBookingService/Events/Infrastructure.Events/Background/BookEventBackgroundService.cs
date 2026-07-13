@@ -1,84 +1,42 @@
-﻿using Application.Events.Interfaces;
-using Confluent.Kafka;
+using Application.Events.Interfaces;
+
 using Contracts.Messages;
-using Contracts.Settings;
 using Contracts.Topics;
+
 using Infrastructure.Events.ExtensionMethods;
-using Infrastructure.Events.Settings;
+
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
+
+using Shared.Infrastructure.Kafka;
+using Shared.Infrastructure.Kafka.Settings;
 
 namespace Infrastructure.Events.Background;
 
 /// <summary>
 /// Фоновый сервис обработки списания мест у забронированных событий
 /// </summary>
-public class BookEventBackgroundService(
-    IServiceScopeFactory _scopeFactory,
-    IOptions<KafkaSettings> _kafkaSettings,
-    IOptions<KafkaConsumerSettings> _kafkaConsumerSettings,
-    ILogger<BookEventBackgroundService> _logger) : BackgroundService
+public class BookEventBackgroundService : KafkaBackgroundConsumer<BookingConfirmed>
 {
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    private readonly IServiceScopeFactory _scopeFactory;
+
+    public BookEventBackgroundService(
+        IServiceScopeFactory scopeFactory,
+        IOptions<KafkaSettings> kafkaSettings,
+        IOptions<KafkaConsumerSettings> kafkaConsumerSettings,
+        ILoggerFactory loggerFactory)
+        : base(kafkaSettings, kafkaConsumerSettings, loggerFactory, BookingEventsTopic.Name)
     {
-        _logger.LogInformation($"Сервис {nameof(BookEventBackgroundService)} начал работу");
-
-        var consumerConfig = new ConsumerConfig
-        {
-            BootstrapServers = _kafkaSettings.Value.BootstrapServer,
-            GroupId = _kafkaConsumerSettings.Value.GroupId,
-            AutoOffsetReset = _kafkaConsumerSettings.Value.AutoOffsetReset,
-            EnableAutoCommit = false,
-            EnableAutoOffsetStore = false
-        };
-
-        using var consumer = new ConsumerBuilder<string, string>(consumerConfig).Build();
-        consumer.Subscribe(BookingEventsTopic.Name);
-
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                await ProcessMessage(consumer, stoppingToken);
-            }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-            {
-                break;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogCritical(ex, "При обработке сообщений возникло исключение");
-            }
-        }
-
-        _logger.LogInformation($"Сервис {nameof(BookEventBackgroundService)} остановлен");
+        _scopeFactory = scopeFactory;
     }
 
-    internal async Task ProcessMessage(IConsumer<string, string> consumer, CancellationToken stoppingToken)
+    public override async Task ProcessMessageAsync(BookingConfirmed message, CancellationToken stoppingToken)
     {
-        var consumeResult = consumer.Consume(stoppingToken);
-
-        var message = JsonSerializer.Deserialize<BookingConfirmed>(consumeResult.Message.Value);
-        
-        if (message is null)
-        {
-            _logger.LogError("Сообщение не десериализовано корректно {message}", consumeResult.Message.Value);
-            // TODO нужно добавить dlq
-            consumer.Commit(consumeResult);
-            return;
-        }
-
-        _logger.LogInformation("Сообщение: {@Message}", message);
-
         using var scope = _scopeFactory.CreateScope();
 
         var eventProcessingService = scope.ServiceProvider.GetRequiredService<IEventProcessingService>();
 
         await eventProcessingService.ProcessConfirmationAsync(message.ToBookingConfirmedRequest(), stoppingToken);
-
-        consumer.Commit(consumeResult);
     }
 }

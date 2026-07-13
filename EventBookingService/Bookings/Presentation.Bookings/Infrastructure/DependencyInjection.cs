@@ -17,6 +17,7 @@ using Microsoft.IdentityModel.Tokens;
 using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Abstract.ExceptionPatterns;
 using Shared.Infrastructure.Ef;
+using Shared.Infrastructure.Kafka.Settings;
 
 namespace Presentation.Bookings.Infrastructure;
 

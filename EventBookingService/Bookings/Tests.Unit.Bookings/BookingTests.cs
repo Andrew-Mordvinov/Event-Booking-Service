@@ -1,11 +1,16 @@
-﻿using Application.Bookings.Implementation;
+using Application.Bookings.Implementation;
 using Application.Bookings.Infrastructure;
 using Application.Bookings.Settings;
+
 using Domain.Bookings;
 using Domain.Bookings.Exceptions;
+
 using FluentAssertions;
+
 using Microsoft.Extensions.Options;
+
 using Moq;
+
 using Shared.Exceptions;
 using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Abstract.Enums;
@@ -92,7 +97,7 @@ public partial class BookingTests
 
         var bookId = Guid.NewGuid();
         holder.BookingStorageMock.Setup(s => s.GetByIdAsync(bookId, GetMode.Readonly, TestContext.Current.CancellationToken))
-            .ReturnsAsync((Booking?)null)
+            .ReturnsAsync((Booking?) null)
             .Verifiable(Times.Once);
 
         // Не вызывали, т.к. выбросили исключение раньше
@@ -393,7 +398,7 @@ public partial class BookingTests
                 bookingId,
                 GetMode.Edit,
                 TestContext.Current.CancellationToken))
-            .ReturnsAsync((Booking?)null)
+            .ReturnsAsync((Booking?) null)
             .Verifiable(Times.Once);
 
         // Не сохраняли изменения

@@ -1,10 +1,15 @@
-﻿using Application.Events.DTO.Requests;
+using Application.Events.DTO.Requests;
 using Application.Events.Implementation;
 using Application.Events.Infrastructure;
+
 using Domain.Events;
+
 using FluentAssertions;
+
 using Microsoft.Extensions.Logging;
+
 using Moq;
+
 using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Abstract.Enums;
 
@@ -162,7 +167,7 @@ public class EventProcessingServiceTests
 
         // Запросили событие
         holder.RepositoryMock.Setup(s => s.GetByIdAsync(bookRequest.EventId, GetMode.Edit, TestContext.Current.CancellationToken))
-            .ReturnsAsync((Event?)null)
+            .ReturnsAsync((Event?) null)
             .Verifiable(Times.Once);
 
         // Добавили в inbox

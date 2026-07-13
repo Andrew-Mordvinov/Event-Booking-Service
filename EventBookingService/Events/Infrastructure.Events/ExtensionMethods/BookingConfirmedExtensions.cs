@@ -1,4 +1,5 @@
-﻿using Application.Events.DTO.Requests;
+using Application.Events.DTO.Requests;
+
 using Contracts.Messages;
 
 namespace Infrastructure.Events.ExtensionMethods;

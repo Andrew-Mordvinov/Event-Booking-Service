@@ -1,15 +1,20 @@
-﻿using Application.Users.Infrastructure;
+using Application.Users.Infrastructure;
+
 using Infrastructure.Users.Ef;
 using Infrastructure.Users.Ef.ExceptionPatterns;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+
 using Npgsql;
+
 using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Abstract.ExceptionPatterns;
 using Shared.Infrastructure.Ef;
+
 using Testcontainers.PostgreSql;
 
 namespace Tests.Integration.Users.Ef;

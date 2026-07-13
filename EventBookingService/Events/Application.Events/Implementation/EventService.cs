@@ -1,14 +1,17 @@
+using System.Linq.Expressions;
+using System.Reflection;
+
 using Application.Events.DTO.Requests;
 using Application.Events.DTO.Result;
 using Application.Events.Infrastructure;
 using Application.Events.Interfaces;
+
 using Domain.Events;
+
 using Shared.Exceptions;
+using Shared.Helpers.LinqExtensions;
 using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Abstract.Enums;
-using System.Linq.Expressions;
-using System.Reflection;
-using Shared.Helpers.LinqExtensions;
 
 namespace Application.Events.Implementation;
 

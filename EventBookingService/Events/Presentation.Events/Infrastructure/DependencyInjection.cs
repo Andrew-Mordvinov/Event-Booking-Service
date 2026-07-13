@@ -7,7 +7,6 @@ using Contracts.Settings;
 using Infrastructure.Events.Background;
 using Infrastructure.Events.Ef;
 using Infrastructure.Events.Ef.ExceptionPatterns;
-using Infrastructure.Events.Settings;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Abstract.ExceptionPatterns;
 using Shared.Infrastructure.Ef;
+using Shared.Infrastructure.Kafka.Settings;
 
 namespace Presentation.Events.Infrastructure;
 

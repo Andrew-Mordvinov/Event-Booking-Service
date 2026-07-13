@@ -10,6 +10,7 @@ COPY ["EventBookingService/Shared/Shared.Exceptions/Shared.Exceptions.csproj", "
 COPY ["EventBookingService/Shared/Shared.Helpers/Shared.Helpers.csproj", "EventBookingService/Shared/Shared.Helpers/"]
 COPY ["EventBookingService/Shared/Shared.Infrastructure.Abstract/Shared.Infrastructure.Abstract.csproj", "EventBookingService/Shared/Shared.Infrastructure.Abstract/"]
 COPY ["EventBookingService/Shared/Shared.Infrastructure.Ef/Shared.Infrastructure.Ef.csproj", "EventBookingService/Shared/Shared.Infrastructure.Ef/"]
+COPY ["EventBookingService/Shared/Shared.Infrastructure.Kafka/Shared.Infrastructure.Kafka.csproj", "EventBookingService/Shared/Shared.Infrastructure.Kafka/"]
 COPY ["EventBookingService/Shared/Shared.Roles/Shared.Roles.csproj", "EventBookingService/Shared/Shared.Roles/"]
 COPY ["EventBookingService/Shared/Shared.ValidationAttributes/Shared.ValidationAttributes.csproj", "EventBookingService/Shared/Shared.ValidationAttributes/"]
 

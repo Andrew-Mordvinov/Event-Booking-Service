@@ -1,11 +1,15 @@
-﻿using Application.Users.DTO;
+using Application.Users.DTO;
 using Application.Users.Implementation;
 using Application.Users.Infrastructure;
 using Application.Users.Validations;
+
 using Domain.Users;
 using Domain.Users.Exceptions;
+
 using FluentAssertions;
+
 using Moq;
+
 using Shared.Exceptions;
 using Shared.Infrastructure.Abstract;
 using Shared.Roles;
@@ -87,7 +91,7 @@ public class UserServiceTests
 
         // Не получили пользователя по логину
         holder.UserRepositoryMock.Setup(t => t.GetByLoginAsync(request.Login, TestContext.Current.CancellationToken))
-            .ReturnsAsync((User?)null)
+            .ReturnsAsync((User?) null)
             .Verifiable(Times.Once);
 
         // Не проверяли пароль

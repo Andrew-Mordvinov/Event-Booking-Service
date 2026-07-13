@@ -1,4 +1,5 @@
-﻿using Domain.Bookings;
+using Domain.Bookings;
+
 using Shared.Infrastructure.Abstract;
 
 namespace Application.Bookings.Infrastructure;

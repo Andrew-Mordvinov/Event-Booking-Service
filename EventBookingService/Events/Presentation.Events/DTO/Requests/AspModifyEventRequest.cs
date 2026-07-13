@@ -1,7 +1,9 @@
 
-using Application.Events.DTO.Requests;
-using Shared.ValidationAttributes;
 using System.ComponentModel.DataAnnotations;
+
+using Application.Events.DTO.Requests;
+
+using Shared.ValidationAttributes;
 
 namespace Presentation.Events.DTO.Requests;
 

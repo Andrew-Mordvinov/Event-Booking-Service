@@ -1,12 +1,17 @@
-﻿using Application.Events.DTO.Result;
+using System.Linq.Expressions;
+
+using Application.Events.DTO.Result;
 using Application.Events.Implementation;
 using Application.Events.Infrastructure;
+
 using Domain.Events;
+
 using FluentAssertions;
+
 using Moq;
+
 using Shared.Exceptions;
 using Shared.Infrastructure.Abstract;
-using System.Linq.Expressions;
 
 namespace Tests.Unit.Events.Filtering;
 
@@ -27,7 +32,7 @@ public partial class MemoryEventFilterTests
         var service = CreateService(out var mock);
 
         mock.Setup(s => s.GetPageAsync(It.IsAny<Expression<Func<Event, bool>>>(), 1, 10, TestContext.Current.CancellationToken))
-            .ReturnsAsync((PaginatedResult<Event>?)null)
+            .ReturnsAsync((PaginatedResult<Event>?) null)
             .Verifiable(Times.Once);
 
         // Act

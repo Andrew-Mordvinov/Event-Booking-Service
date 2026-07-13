@@ -1,7 +1,10 @@
-﻿using FluentAssertions;
+using FluentAssertions;
+
 using Infrastructure.Users.Ef;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 using Npgsql;
 
 namespace Tests.Integration.Users.Ef.Infrastructure;
