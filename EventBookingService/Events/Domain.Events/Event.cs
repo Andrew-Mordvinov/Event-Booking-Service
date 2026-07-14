@@ -178,13 +178,5 @@ public class Event : IHasId, ICopyable<Event>
 
     public Event Copy() => new(Id, Title, StartAt, EndAt, TotalSeats, AvailableSeats, Description);
 
-    public bool Equivalent(Event other) =>
-        Title == other.Title
-        && Description == other.Description
-        && StartAt == other.StartAt
-        && EndAt == other.EndAt
-        && TotalSeats == other.TotalSeats
-        && AvailableSeats == other.AvailableSeats;
-
     #endregion
 }

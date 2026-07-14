@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 using Domain.Events;
 
 namespace Application.Events.Infrastructure;
@@ -21,15 +19,15 @@ public interface IEventCache
     /// <summary>
     /// Установить событие в кэш
     /// </summary>
-    /// <param name="event">Событие</param>
+    /// <param name="event">Событие или null, если надо сбросить состояние кэша</param>
     /// <param name="token">Токен отмены асинхронной операции</param>
     /// <returns>Асинхронная задача</returns>
-    Task SetEventAsync(Event @event, CancellationToken token = default);
+    Task SetEventAsync(Event? @event, CancellationToken token = default);
 
     /// <summary>
     /// Получить топ-10 событий по продажам из кэша
     /// </summary>
-    /// <param name="event">Топ событий, выбранный из кэша</param>
+    /// <param name="topEvents">Топ событий, выбранный из кэша</param>
     /// <param name="token">Токен отмены асинхронной операции</param>
     /// <returns>true, если запрос в кэш вернул результат</returns>
     Task<bool> GetTopSalesEventAsync(out List<Event> topEvents, CancellationToken token = default);
@@ -37,8 +35,9 @@ public interface IEventCache
     /// <summary>
     /// Установить топ-10 событий по продажам в кэш
     /// </summary>
-    /// <param name="topEvents">Список самых продаваемых событий</param>
+    /// <param name="topEvents">Список самых продаваемых событий или null, 
+    /// если надо сбросить состояние кэша</param>
     /// <param name="token">Токен отмены асинхронной операции</param>
     /// <returns>Асинхронная задача</returns>
-    Task SetTopSalesEventAsync(List<Event> topEvents, CancellationToken token = default);
+    Task SetTopSalesEventAsync(List<Event>? topEvents, CancellationToken token = default);
 }

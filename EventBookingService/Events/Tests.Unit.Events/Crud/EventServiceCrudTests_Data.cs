@@ -27,118 +27,6 @@ public partial class EventServiceCrudTests
         public static readonly Guid ReadingClub = Guid.Parse("5c9f2e7a-4d3b-4f1a-9c8d-2b6e1a5f8c4d");
     }
 
-    /// <summary>
-    /// Лист с событиями для тестирования операций удаления/модификации/получения/создания
-    /// </summary>
-    private readonly static IEnumerable<Event> BasicEventList =
-    [
-        new Event
-        (
-            EventIds.RockFestival,
-            "Рок-фестиваль 'Красная Площадь'",
-            new DateTime(2026, 3, 19, 18, 0, 0),
-            new DateTime(2026, 3, 19, 23, 0, 0),
-            10000,
-            description: "Выступление лучших рок-групп города"
-        ),
-        new Event
-        (
-            EventIds.SymphonyConcert,
-            "Концерт симфонического оркестра",
-            new DateTime(2026, 3, 19, 19, 0, 0),
-            new DateTime(2026, 3, 19, 21, 30, 0),
-            120,
-            description: "Исполнение классических произведений Чайковского"
-        ),
-        new Event
-        (
-            EventIds.ArtExhibition,
-            "Выставка современного искусства",
-            new DateTime(2026, 3, 20, 11, 0, 0),
-            new DateTime(2026, 3, 20, 20, 0, 0),
-            250,
-            description: "Работы молодых художников из 10 стран мира"
-        ),
-        new Event
-        (
-            EventIds.MovieMarathon,
-            "Ночной киномарафон",
-            new DateTime(2026, 3, 20, 22, 0, 0),
-            new DateTime(2026, 3, 21, 6, 0, 0),
-            140,
-            description: "Показ культовых фильмов под открытым небом"
-        ),
-        new Event
-        (
-            EventIds.FoodFestival,
-            "Фестиваль уличной еды",
-            new DateTime(2026, 3, 21, 12, 0, 0),
-            new DateTime(2026, 3, 21, 22, 0, 0),
-            75,
-            description: "Дегустация блюд от лучших фудтраков города"
-        ),
-        new Event
-        (
-            EventIds.StandupEvening,
-            "Вечер стендап-комедии",
-            new DateTime(2026, 3, 21, 20, 0, 0),
-            new DateTime(2026, 3, 21, 22, 30, 0),
-            50,
-            description: "Выступление популярных комиков"
-        ),
-        new Event
-        (
-            EventIds.PotteryMasterclass,
-            "Мастер-класс по гончарному делу",
-            new DateTime(2026, 3, 22, 14, 0, 0),
-            new DateTime(2026, 3, 22, 17, 0, 0),
-            4,
-            description: "Создай свою керамическую кружку"
-        ),
-        new Event
-        (
-            EventIds.JazzNight,
-            "Джазовый квартирник",
-            new DateTime(2026, 3, 22, 19, 0, 0),
-            new DateTime(2026, 3, 22, 22, 0, 0),
-            12,
-            description: "Уютный вечер с живой музыкой"
-        ),
-        new Event
-        (
-            EventIds.TheaterPlay,
-            "Спектакль 'Вишневый сад'",
-            new DateTime(2026, 3, 23, 18, 30, 0),
-            new DateTime(2026, 3, 23, 21, 0, 0),
-            220,
-            description: "Премьера в городском театре"
-        ),
-        new Event
-        (
-            EventIds.CraftFair,
-            "Ярмарка мастеров",
-            new DateTime(2026, 3, 23, 10, 0, 0),
-            new DateTime(2026, 3, 23, 19, 0, 0),
-            35,
-            description: null
-        )
-    ];
-
-    #endregion
-
-    #region GetEvent
-
-    public static IEnumerable<object?[]> GetEvent_ExistingEventId =>
-    [
-        [BasicEventList, EventIds.TheaterPlay, BasicEventList.FirstOrDefault(t => t.Id == EventIds.TheaterPlay)]
-    ];
-
-    public static IEnumerable<object?[]> GetEvent_BadId =>
-    [
-        [BasicEventList, EventIds.BadId],
-        [Enumerable.Empty<Event>(), EventIds.BadId]
-    ];
-
     #endregion
 
     #region CreateEvent
@@ -146,7 +34,6 @@ public partial class EventServiceCrudTests
     public static IEnumerable<object?[]> CreateEvent_ValidModel =>
     [
         [
-            BasicEventList,
             new CreateEventRequest
             {
                 Title = "Живая музыка в баре 'Ноты и Кофе'",
@@ -166,7 +53,6 @@ public partial class EventServiceCrudTests
             )
         ],
         [
-            BasicEventList,
             new CreateEventRequest
             {
                 Title = "Живая музыка в баре 'Ноты и Кофе'",
@@ -186,7 +72,6 @@ public partial class EventServiceCrudTests
             )
         ],
         [
-            Enumerable.Empty<Event>(),
             new CreateEventRequest
             {
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
@@ -206,7 +91,6 @@ public partial class EventServiceCrudTests
             )
         ],
         [
-            Enumerable.Empty<Event>(),
             new CreateEventRequest
             {
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
@@ -231,7 +115,6 @@ public partial class EventServiceCrudTests
     [
         // Название null
         [
-            Enumerable.Empty<Event>(),
             new CreateEventRequest
             {
                 Title = null,
@@ -247,7 +130,6 @@ public partial class EventServiceCrudTests
         ],
         // Название пустая строка
         [
-            Enumerable.Empty<Event>(),
             new CreateEventRequest
             {
                 Title = "",
@@ -263,7 +145,6 @@ public partial class EventServiceCrudTests
         ],
         // Название только пробел
         [
-            Enumerable.Empty<Event>(),
             new CreateEventRequest
             {
                 Title = " ",
@@ -279,7 +160,6 @@ public partial class EventServiceCrudTests
         ],
         // Нет обеих дат
         [
-            Enumerable.Empty<Event>(),
             new CreateEventRequest
             {
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
@@ -296,7 +176,6 @@ public partial class EventServiceCrudTests
         ],
         // Дата начала пуста
         [
-            Enumerable.Empty<Event>(),
             new CreateEventRequest
             {
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
@@ -312,7 +191,6 @@ public partial class EventServiceCrudTests
         ],
         // Дата окончания пуста
         [
-            Enumerable.Empty<Event>(),
             new CreateEventRequest
             {
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
@@ -328,7 +206,6 @@ public partial class EventServiceCrudTests
         ],
         // Дата начала позже даты окончания
         [
-            Enumerable.Empty<Event>(),
             new CreateEventRequest
             {
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
@@ -344,7 +221,6 @@ public partial class EventServiceCrudTests
         ],
         // Не передано число мест
         [
-            Enumerable.Empty<Event>(),
             new CreateEventRequest
             {
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
@@ -360,7 +236,6 @@ public partial class EventServiceCrudTests
         ],
         // Число мест 0
         [
-            Enumerable.Empty<Event>(),
             new CreateEventRequest
             {
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
@@ -376,7 +251,6 @@ public partial class EventServiceCrudTests
         ],
         // Число мест меньше 0
         [
-            Enumerable.Empty<Event>(),
             new CreateEventRequest
             {
                 Title = "Книжный клуб: обсуждение 'Мастера и Маргариты'",
@@ -392,7 +266,6 @@ public partial class EventServiceCrudTests
         ],
         // Полностью пустой объект
         [
-            Enumerable.Empty<Event>(),
             new CreateEventRequest
             {
                 Title = null,
@@ -413,36 +286,11 @@ public partial class EventServiceCrudTests
 
     #endregion
 
-    #region DeleteEvent
-
-    public static IEnumerable<object?[]> DeleteEvent_ExistingEventId =>
-    [
-        [
-            BasicEventList,
-            EventIds.JazzNight
-        ]
-    ];
-
-    public static IEnumerable<object?[]> DeleteEvent_BadId =>
-    [
-        [
-            BasicEventList,
-            EventIds.BadId
-        ],
-        [
-            Enumerable.Empty<Event>(),
-            EventIds.BadId
-        ],
-    ];
-
-    #endregion
-
     #region ModifyEvent
 
     public static IEnumerable<object?[]> ModifyEvent_ValidDataAndId =>
     [
         [
-            BasicEventList,
             EventIds.JazzNight,
             new ModifyEventRequest
             {
@@ -472,7 +320,6 @@ public partial class EventServiceCrudTests
             )
         ],
         [
-            BasicEventList,
             EventIds.CraftFair,
             new ModifyEventRequest
             {
@@ -504,7 +351,6 @@ public partial class EventServiceCrudTests
             )
         ],
         [
-            BasicEventList,
             EventIds.FoodFestival,
             new ModifyEventRequest
             {
@@ -540,7 +386,6 @@ public partial class EventServiceCrudTests
     public static IEnumerable<object?[]> ModifyEvent_ValidDataAndBadId =>
     [
         [
-            BasicEventList,
             EventIds.BadId,
             new ModifyEventRequest
             {
@@ -552,7 +397,6 @@ public partial class EventServiceCrudTests
             }
         ],
         [
-            BasicEventList,
             EventIds.BadId,
             new ModifyEventRequest
             {
@@ -564,7 +408,6 @@ public partial class EventServiceCrudTests
             }
         ],
         [
-            Enumerable.Empty<Event>(),
             EventIds.BadId,
             new ModifyEventRequest
             {
@@ -581,7 +424,6 @@ public partial class EventServiceCrudTests
     [
         // Название null
         [
-            BasicEventList,
             EventIds.FoodFestival,
             new ModifyEventRequest
             {
@@ -598,7 +440,6 @@ public partial class EventServiceCrudTests
         ],
         // Название пустая строка
         [
-            BasicEventList,
             EventIds.FoodFestival,
             new ModifyEventRequest
             {
@@ -615,7 +456,6 @@ public partial class EventServiceCrudTests
         ],
         // Название только пробел
         [
-            BasicEventList,
             EventIds.FoodFestival,
             new ModifyEventRequest
             {
@@ -632,7 +472,6 @@ public partial class EventServiceCrudTests
         ],
         // Нет обеих дат
         [
-            BasicEventList,
             EventIds.FoodFestival,
             new ModifyEventRequest
             {
@@ -650,7 +489,6 @@ public partial class EventServiceCrudTests
         ],
         // Дата начала пуста
         [
-            BasicEventList,
             EventIds.FoodFestival,
             new ModifyEventRequest
             {
@@ -667,7 +505,6 @@ public partial class EventServiceCrudTests
         ],
         // Дата окончания пуста
         [
-            BasicEventList,
             EventIds.FoodFestival,
             new ModifyEventRequest
             {
@@ -684,7 +521,6 @@ public partial class EventServiceCrudTests
         ],
         // Дата начала позже даты окончания
         [
-            BasicEventList,
             EventIds.FoodFestival,
             new ModifyEventRequest
             {
@@ -700,8 +536,8 @@ public partial class EventServiceCrudTests
             }
         ],
         // Количество мест 0
+        // (из-за логики модификации число доступных мест тоже пересчитывается и соответственно проверяется)
         [
-            BasicEventList,
             EventIds.FoodFestival,
             new ModifyEventRequest
             {
@@ -713,12 +549,12 @@ public partial class EventServiceCrudTests
             },
             new List<string>
             {
-                EventErrors.TotalSeatsMustPositive
+                EventErrors.TotalSeatsMustPositive,
+                EventErrors.AvailableSeatsMustPositive
             }
         ],
         // Количество мест меньше 0
         [
-            BasicEventList,
             EventIds.FoodFestival,
             new ModifyEventRequest
             {
@@ -736,7 +572,6 @@ public partial class EventServiceCrudTests
         ],
         // Полностью пустой объект
         [
-            BasicEventList,
             EventIds.FoodFestival,
             new ModifyEventRequest
             {

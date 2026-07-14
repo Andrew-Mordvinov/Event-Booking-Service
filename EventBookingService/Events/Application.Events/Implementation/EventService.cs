@@ -52,6 +52,8 @@ public class EventService(
         if (deleted)
         {
             await _unitOfWork.SaveChangesAsync(token);
+            // Сброс кэша
+            await _eventCache.SetEventAsync(null, token);
             return;
         }
 
@@ -70,6 +72,8 @@ public class EventService(
 
         await _eventRepository.AddAsync(entity, token);
         await _unitOfWork.SaveChangesAsync(token);
+
+        await _eventCache.SetEventAsync(entity, token);
 
         return entity;
     }
@@ -126,6 +130,8 @@ public class EventService(
 
         baseEvent.FillFrom(source);
         await _unitOfWork.SaveChangesAsync(token);
+
+        await _eventCache.SetEventAsync(baseEvent, token);
 
         return source;
     }
