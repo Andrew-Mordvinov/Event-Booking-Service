@@ -19,7 +19,8 @@ namespace Application.Events.Implementation;
 /// Реализация <see cref="IEventService"/>
 /// </summary>
 public class EventService(
-    IEventRepository _events,
+    IEventRepository _eventRepository,
+    IEventCache _eventCache,
     IUnitOfWork _unitOfWork) : IEventService
 {
     #region Private fields
@@ -33,14 +34,21 @@ public class EventService(
 
     public async Task<Event> GetEventByIdAsync(Guid id, CancellationToken token = default)
     {
-        var @event = await _events.GetByIdAsync(id, GetMode.Readonly, token);
+        if (await _eventCache.GetEventAsync(id, out var @event, token) && @event is not null)
+        {
+            return @event;
+        }
 
-        return @event is null ? throw new NotFoundException(EventServiceErrors.EventNotFound(id)) : @event;
+        @event = await _eventRepository.GetByIdAsync(id, GetMode.Readonly, token) ?? throw new NotFoundException(EventServiceErrors.EventNotFound(id));
+        
+        await _eventCache.SetEventAsync(@event, token);
+
+        return @event;
     }
 
     public async Task DeleteEventByIdAsync(Guid id, CancellationToken token = default)
     {
-        var deleted = await _events.RemoveAsync(id, token);
+        var deleted = await _eventRepository.RemoveAsync(id, token);
         if (deleted)
         {
             await _unitOfWork.SaveChangesAsync(token);
@@ -60,7 +68,7 @@ public class EventService(
             throw new ValidationException(errors);
         }
 
-        await _events.AddAsync(entity, token);
+        await _eventRepository.AddAsync(entity, token);
         await _unitOfWork.SaveChangesAsync(token);
 
         return entity;
@@ -91,7 +99,7 @@ public class EventService(
 
         var expression = GetFilterExpression(filters);
 
-        return _events.GetPageAsync(expression, page, pageSize, token);
+        return _eventRepository.GetPageAsync(expression, page, pageSize, token);
     }
 
     public async Task<Event> ModifyEventAsync(
@@ -99,7 +107,7 @@ public class EventService(
         ModifyEventRequest request,
         CancellationToken token = default)
     {
-        var baseEvent = await _events.GetByIdAsync(id, token: token) ?? throw new NotFoundException(EventServiceErrors.EventNotFound(id));
+        var baseEvent = await _eventRepository.GetByIdAsync(id, token: token) ?? throw new NotFoundException(EventServiceErrors.EventNotFound(id));
 
         // Создаем объект, чтобы прогнать все валидации, т.к. поля в ModifyEventRequest nullable
         var (source, errors) = Event.TryCreate(
@@ -120,6 +128,20 @@ public class EventService(
         await _unitOfWork.SaveChangesAsync(token);
 
         return source;
+    }
+
+    public async Task<List<Event>> GetTopSalesEventsAsync(CancellationToken token = default)
+    {
+        if (await _eventCache.GetTopSalesEventAsync(out var result, token))
+        {
+            return result;
+        }
+
+        result = await _eventRepository.GetTopSalesEventsAsync(token);
+
+        await _eventCache.SetTopSalesEventAsync(result, token);
+
+        return result;
     }
 
     #endregion

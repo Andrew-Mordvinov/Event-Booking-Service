@@ -19,6 +19,7 @@ public partial class EventServiceCrudTests
     private class Holder
     {
         public required Mock<IEventRepository> RepositoryMock { get; init; }
+        public required Mock<IEventCache> CacheMock { get; init; }
         public required Mock<IUnitOfWork> UnitOfWorkMock { get; init; }
         public required List<Event> ScopedCollection { get; init; }
     }
@@ -30,12 +31,15 @@ public partial class EventServiceCrudTests
         holder = new Holder
         {
             RepositoryMock = new Mock<IEventRepository>(),
+            CacheMock = new Mock<IEventCache>(),
             UnitOfWorkMock = new Mock<IUnitOfWork>(),
             ScopedCollection = collection.ToList() ?? [],
         };
 
-        return new EventService(holder.RepositoryMock.Object, holder.UnitOfWorkMock.Object);
+        return new EventService(holder.RepositoryMock.Object, holder.CacheMock.Object, holder.UnitOfWorkMock.Object);
     }
+
+    // TODO тесты дополнить кэшем, плюс новый метод
 
     #region GetEvent
 

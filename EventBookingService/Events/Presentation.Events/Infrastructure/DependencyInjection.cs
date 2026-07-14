@@ -7,6 +7,7 @@ using Contracts.Settings;
 using Infrastructure.Events.Background;
 using Infrastructure.Events.Ef;
 using Infrastructure.Events.Ef.ExceptionPatterns;
+using Infrastructure.Events.Redis;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -44,6 +45,7 @@ public static class DependencyInjection
         services.AddOptionsWithValidateOnStart<JwtSettings>()
             .Bind(configuration.GetSection("JwtSettings"))
             .ValidateDataAnnotations();
+        // TODO добавить настройки и их получение
 
         services.AddAuthentication(options =>
         {
@@ -76,6 +78,7 @@ public static class DependencyInjection
 
         services.AddScoped<IUnitOfWork, EfUnitOfWork<EventsDbContext>>();
         services.AddScoped<IEventRepository, EfEventRepository>();
+        services.AddScoped<IEventCache, RedisEventCache>();
         services.AddScoped<IBookingEventsInboxRepository, EfBookingEventsInboxRepository>();
         services.AddSingleton<IExceptionPatternsProvider, EventsExceptionPatternsProvider>();
 

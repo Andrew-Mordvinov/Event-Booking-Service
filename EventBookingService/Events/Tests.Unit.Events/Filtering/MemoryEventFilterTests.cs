@@ -21,8 +21,9 @@ public partial class MemoryEventFilterTests
     {
         storageMock = new Mock<IEventRepository>();
         var unitOfWorkMock = new Mock<IUnitOfWork>();
+        var cacheMock = new Mock<IEventCache>();
 
-        return new EventService(storageMock.Object, unitOfWorkMock.Object);
+        return new EventService(storageMock.Object, cacheMock.Object, unitOfWorkMock.Object);
     }
 
     [Fact]
