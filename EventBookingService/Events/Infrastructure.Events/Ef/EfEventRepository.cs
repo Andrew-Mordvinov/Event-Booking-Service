@@ -66,7 +66,10 @@ public class EfEventRepository(EventsDbContext dbContext, IUnitOfWork efUnitOfWo
 
     public Task<List<Event>> GetTopSalesEventsAsync(CancellationToken token = default)
     {
-        // TODO Реализовать поиск
-        throw new NotImplementedException();
+        return AppDbContext.Events
+            .OrderByDescending(e => (double)(e.TotalSeats - e.AvailableSeats) / e.TotalSeats)
+            .Take(10)
+            .AsNoTracking()
+            .ToListAsync(token);
     }
 }

@@ -38,6 +38,7 @@ public partial class EfEventRepositoryTests
             new DateTimeOffset(2026, 3, 19, 18, 0, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 3, 19, 23, 0, 0, TimeSpan.Zero),
             10,
+            1,
             description: "Выступление лучших рок-групп города"
         ),
         new Event
@@ -47,6 +48,7 @@ public partial class EfEventRepositoryTests
             new DateTimeOffset(2026, 3, 19, 19, 0, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 3, 19, 21, 30, 0, TimeSpan.Zero),
             80,
+            34,
             description: "Исполнение классических произведений Чайковского"
         ),
         new Event
@@ -56,6 +58,7 @@ public partial class EfEventRepositoryTests
             new DateTimeOffset(2026, 3, 19, 12, 0, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 3, 20, 0, 0, 0, TimeSpan.Zero),
             25,
+            13,
             description: "Работы молодых художников из 10 стран мира"
         ),
         new Event
@@ -65,6 +68,7 @@ public partial class EfEventRepositoryTests
             new DateTimeOffset(2026, 3, 20, 0, 0, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 3, 20, 6, 0, 0, TimeSpan.Zero),
             120,
+            83,
             description: "Показ культовых фильмов под открытым небом"
         ),
         new Event
@@ -74,6 +78,7 @@ public partial class EfEventRepositoryTests
             new DateTimeOffset(2026, 3, 21, 12, 0, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 3, 21, 22, 0, 0, TimeSpan.Zero),
             50,
+            8,
             description: "Дегустация блюд от лучших фудтраков города"
         ),
         new Event(
@@ -82,6 +87,7 @@ public partial class EfEventRepositoryTests
             new DateTimeOffset(2026, 3, 21, 20, 0, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 3, 22, 0, 0, 0, TimeSpan.Zero),
             250,
+            112,
             description: "Выступление популярных комиков"
         ),
         new Event
@@ -91,6 +97,7 @@ public partial class EfEventRepositoryTests
             new DateTimeOffset(2026, 3, 22, 14, 0, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 3, 22, 17, 0, 0, TimeSpan.Zero),
             5,
+            4,
             description: "Создай свою керамическую кружку"
         ),
         new Event
@@ -100,6 +107,7 @@ public partial class EfEventRepositoryTests
             new DateTimeOffset(2026, 3, 22, 19, 0, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 3, 22, 22, 0, 0, TimeSpan.Zero),
             12,
+            4,
             description: "Уютный вечер с живой музыкой"
         ),
         new Event
@@ -109,6 +117,7 @@ public partial class EfEventRepositoryTests
             new DateTimeOffset(2026, 3, 23, 18, 30, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 3, 23, 21, 0, 0, TimeSpan.Zero),
             500,
+            455,
             description: "Премьера в городском театре"
         ),
         new Event
@@ -118,6 +127,7 @@ public partial class EfEventRepositoryTests
             new DateTimeOffset(2026, 3, 23, 10, 0, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 3, 23, 19, 0, 0, TimeSpan.Zero),
             50,
+            45,
             description: null
         ),
         new Event
@@ -136,6 +146,7 @@ public partial class EfEventRepositoryTests
             new DateTimeOffset(2026, 4, 2, 18, 30, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 4, 2, 20, 30, 0, TimeSpan.Zero),
             10,
+            5,
             description: "Встреча любителей литературы. Обсуждаем роман Булгакова за чашечкой чая"
         )
     ];
@@ -359,5 +370,36 @@ public partial class EfEventRepositoryTests
             1,
             10
         ],
+    ];
+
+    public static IEnumerable<object?[]> GetTopSalesEventsAsync_CommonCase =>
+    [
+        [
+            BasicEventList,
+            new Guid[] 
+            {
+                EventIds.RockFestival,
+                EventIds.FoodFestival,
+                EventIds.JazzNight,
+                EventIds.SymphonyConcert,
+                EventIds.StandupEvening,
+                EventIds.ReadingClub,
+                EventIds.ArtExhibition,
+                EventIds.MovieMarathon,
+                EventIds.PotteryMasterclass,
+                EventIds.CraftFair
+            }
+        ],
+        [
+            BasicEventList.Take(5).ToList(),
+            new Guid[]
+            {
+                EventIds.RockFestival,
+                EventIds.FoodFestival,
+                EventIds.SymphonyConcert,
+                EventIds.ArtExhibition,
+                EventIds.MovieMarathon
+            }
+        ]
     ];
 }

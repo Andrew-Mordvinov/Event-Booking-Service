@@ -327,4 +327,47 @@ public partial class EfEventRepositoryTests(SharedFixture sharedFixture) : IAsyn
     }
 
     #endregion
+
+    #region GetTopSalesEventsAsync
+
+    [Theory]
+    [MemberData(nameof(GetTopSalesEventsAsync_CommonCase))]
+    public async Task GetTopSalesEventsAsync_CommonCase_ReturnCorrectList(
+        IEnumerable<Event> all,
+        Guid[] expectedIds)
+    {
+        // Arrange
+        await AddEventsAsync(all);
+
+        using var scope = _sharedFixture.ServiceProvider.CreateScope();
+
+        var dbContext = scope.ServiceProvider.GetRequiredService<EventsDbContext>();
+        var repository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
+
+        // Act
+        var result = await repository.GetTopSalesEventsAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Select(t => t.Id).Should().BeEqualTo(expectedIds);
+        dbContext.ChangeTracker.Entries().Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetTopSalesEventsAsync_NoItems_ReturnEmptyList()
+    {
+        // Arrange
+        using var scope = _sharedFixture.ServiceProvider.CreateScope();
+
+        var dbContext = scope.ServiceProvider.GetRequiredService<EventsDbContext>();
+        var repository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
+
+        // Act
+        var result = await repository.GetTopSalesEventsAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Should().BeEmpty();
+        dbContext.ChangeTracker.Entries().Should().BeEmpty();
+    }
+
+    #endregion
 }
