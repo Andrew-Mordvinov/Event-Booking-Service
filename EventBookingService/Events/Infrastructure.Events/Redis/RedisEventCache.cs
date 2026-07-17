@@ -19,12 +19,12 @@ public class RedisEventCache : IEventCache
         return Task.FromResult(false);
     }
 
-    public Task SetEventAsync(Event @event, CancellationToken token = default)
+    public Task SetEventAsync(Event? @event, CancellationToken token = default)
     {
         return Task.CompletedTask;
     }
 
-    public Task SetTopSalesEventAsync(List<Event> topEvents, CancellationToken token = default)
+    public Task SetTopSalesEventAsync(List<Event>? topEvents, CancellationToken token = default)
     {
         return Task.CompletedTask;
     }

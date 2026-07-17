@@ -11,6 +11,7 @@ namespace Application.Events.Implementation;
 public class EventProcessingService(
     IEventRepository _eventStorage,
     IBookingEventsInboxRepository _inboxManager,
+    IEventCache _eventCache,
     IUnitOfWork _unitOfWork,
     ILogger<EventProcessingService> _logger) : IEventProcessingService
 {
@@ -48,9 +49,13 @@ public class EventProcessingService(
         if (!@event.TryReserveSeats(bookingConfirmed.Seats))
         {
             _logger.LogError("Ошибка при обработке {@Message}: недостаточно мест", bookingConfirmed);
+            await _unitOfWork.SaveChangesAsync(token);
+
+            return;
         }
 
         await _unitOfWork.SaveChangesAsync(token);
+        await _eventCache.SetEventAsync(@event, token);
     }
 }
 
