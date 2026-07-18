@@ -34,14 +34,15 @@ public class EventService(
 
     public async Task<Event> GetEventByIdAsync(Guid id, CancellationToken token = default)
     {
-        if (await _eventCache.GetEventAsync(id, out var @event, token) && @event is not null)
+        var (status, @event) = await _eventCache.GetEventAsync(id, token);
+        if (status && @event is not null)
         {
             return @event;
         }
 
         @event = await _eventRepository.GetByIdAsync(id, GetMode.Readonly, token) ?? throw new NotFoundException(EventServiceErrors.EventNotFound(id));
         
-        await _eventCache.SetEventAsync(@event, token);
+        await _eventCache.SetEventAsync(id, @event, token);
 
         return @event;
     }
@@ -53,7 +54,7 @@ public class EventService(
         {
             await _unitOfWork.SaveChangesAsync(token);
             // Сброс кэша
-            await _eventCache.SetEventAsync(null, token);
+            await _eventCache.SetEventAsync(id, null, token);
             return;
         }
 
@@ -73,7 +74,7 @@ public class EventService(
         await _eventRepository.AddAsync(entity, token);
         await _unitOfWork.SaveChangesAsync(token);
 
-        await _eventCache.SetEventAsync(entity, token);
+        await _eventCache.SetEventAsync(entity.Id, entity, token);
 
         return entity;
     }
@@ -131,14 +132,15 @@ public class EventService(
         baseEvent.FillFrom(source);
         await _unitOfWork.SaveChangesAsync(token);
 
-        await _eventCache.SetEventAsync(baseEvent, token);
+        await _eventCache.SetEventAsync(id,baseEvent, token);
 
         return source;
     }
 
     public async Task<List<Event>> GetTopSalesEventsAsync(CancellationToken token = default)
     {
-        if (await _eventCache.GetTopSalesEventAsync(out var result, token))
+        var (status, result) = await _eventCache.GetTopSalesEventAsync(token);
+        if (status && result is not null)
         {
             return result;
         }

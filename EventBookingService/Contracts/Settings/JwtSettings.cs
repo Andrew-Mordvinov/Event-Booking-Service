@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Contracts.Settings;
 
@@ -9,7 +9,11 @@ public class JwtSettings
 {
     [MinLength(32, ErrorMessage = "Слишком короткий SecretKey - минимум 32 символа")]
     public required string SecretKey { get; init; }
+
+    [Required(AllowEmptyStrings = false, ErrorMessage = "Не указан Issuer")]
     public required string Issuer { get; init; }
+
+    [Required(AllowEmptyStrings = false, ErrorMessage = "Не указан Audience")]
     public required string Audience { get; init; }
 
     [Required(ErrorMessage = "Не указан параметр ExpiryMinutes")]

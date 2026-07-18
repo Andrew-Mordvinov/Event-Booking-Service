@@ -8,15 +8,19 @@ using Infrastructure.Events.Background;
 using Infrastructure.Events.Ef;
 using Infrastructure.Events.Ef.ExceptionPatterns;
 using Infrastructure.Events.Redis;
+using Infrastructure.Events.Redis.Serializer;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Abstract.ExceptionPatterns;
 using Shared.Infrastructure.Ef;
 using Shared.Infrastructure.Kafka.Settings;
+
+using StackExchange.Redis;
 
 namespace Presentation.Events.Infrastructure;
 
@@ -45,7 +49,14 @@ public static class DependencyInjection
         services.AddOptionsWithValidateOnStart<JwtSettings>()
             .Bind(configuration.GetSection("JwtSettings"))
             .ValidateDataAnnotations();
-        // TODO добавить настройки и их получение
+
+        services.AddOptionsWithValidateOnStart<TTLSettings>()
+            .Bind(configuration.GetSection("TTLSettings"))
+            .ValidateDataAnnotations();
+
+        services.AddOptionsWithValidateOnStart<RedisSettings>()
+            .Bind(configuration.GetSection("RedisSettings"))
+            .ValidateDataAnnotations();
 
         services.AddAuthentication(options =>
         {
@@ -79,10 +90,32 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, EfUnitOfWork<EventsDbContext>>();
         services.AddScoped<IEventRepository, EfEventRepository>();
         services.AddScoped<IEventCache, RedisEventCache>();
+        services.AddScoped<ICacheEventSerializer, CacheEventSerializer>();
         services.AddScoped<IBookingEventsInboxRepository, EfBookingEventsInboxRepository>();
         services.AddSingleton<IExceptionPatternsProvider, EventsExceptionPatternsProvider>();
 
         services.AddHostedService<BookEventBackgroundService>();
+
+        services.AddSingleton<IConnectionMultiplexer>(sp =>
+        {
+            var settings = sp.GetRequiredService<IOptions<RedisSettings>>().Value;
+
+            var endpoints = new EndPointCollection();
+            foreach (var item in settings.EndPoints)
+            {
+                endpoints.Add(item);
+            }
+
+            return ConnectionMultiplexer.Connect(new ConfigurationOptions
+            {
+                EndPoints = endpoints,
+                Password = settings.Password,
+                SyncTimeout = settings.Timeout,
+                ConnectTimeout = settings.ConnectTimeout,
+                ConnectRetry = settings.Retries,
+                AbortOnConnectFail = false
+            });
+        });
 
         return services;
     }

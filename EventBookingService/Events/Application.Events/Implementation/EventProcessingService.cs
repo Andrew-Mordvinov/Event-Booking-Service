@@ -55,7 +55,7 @@ public class EventProcessingService(
         }
 
         await _unitOfWork.SaveChangesAsync(token);
-        await _eventCache.SetEventAsync(@event, token);
+        await _eventCache.SetEventAsync(@event.Id, @event, token);
     }
 }
 

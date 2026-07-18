@@ -73,7 +73,7 @@ public class EventProcessingServiceTests
             .Verifiable(Times.Once);
 
         // Обновили кешу
-        holder.EventCacheMock.Setup(s => s.SetEventAsync(@event, TestContext.Current.CancellationToken))
+        holder.EventCacheMock.Setup(s => s.SetEventAsync(@event.Id, @event, TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
         // Act
@@ -115,7 +115,7 @@ public class EventProcessingServiceTests
             .Verifiable(Times.Once);
 
         // Кешу не трогали
-        holder.EventCacheMock.Setup(s => s.SetEventAsync(It.IsAny<Event>(), TestContext.Current.CancellationToken))
+        holder.EventCacheMock.Setup(s => s.SetEventAsync(It.IsAny<Guid>(), It.IsAny<Event>(), TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Act
@@ -157,7 +157,7 @@ public class EventProcessingServiceTests
             .Verifiable(Times.Once);
 
         // Кешу не трогали
-        holder.EventCacheMock.Setup(s => s.SetEventAsync(It.IsAny<Event>(), TestContext.Current.CancellationToken))
+        holder.EventCacheMock.Setup(s => s.SetEventAsync(It.IsAny<Guid>(), It.IsAny<Event>(), TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Act
@@ -197,7 +197,7 @@ public class EventProcessingServiceTests
             .Verifiable(Times.Once);
 
         // Кешу не трогали
-        holder.EventCacheMock.Setup(s => s.SetEventAsync(It.IsAny<Event>(), TestContext.Current.CancellationToken))
+        holder.EventCacheMock.Setup(s => s.SetEventAsync(It.IsAny<Guid>(), It.IsAny<Event>(), TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Act

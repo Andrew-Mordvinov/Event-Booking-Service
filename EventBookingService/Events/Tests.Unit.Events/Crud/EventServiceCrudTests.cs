@@ -51,12 +51,8 @@ public partial class EventServiceCrudTests
         var @event = CreateTestEvent(id);
 
         // Получение из кэша успешно
-        holder.CacheMock.Setup(s => s.GetEventAsync(id, out It.Ref<Event?>.IsAny, TestContext.Current.CancellationToken))
-            .Callback((Guid itemId, out Event? item, CancellationToken ct) =>
-            {
-                item = @event;
-            })
-            .ReturnsAsync(true)
+        holder.CacheMock.Setup(s => s.GetEventAsync(id, TestContext.Current.CancellationToken))
+            .ReturnsAsync((true, @event))
             .Verifiable(Times.Once);
 
         // Не трогали базу
@@ -64,7 +60,7 @@ public partial class EventServiceCrudTests
             .Verifiable(Times.Never);
 
         // Не устанавливали значение кэша
-        holder.CacheMock.Setup(s => s.SetEventAsync(It.IsAny<Event>(), TestContext.Current.CancellationToken))
+        holder.CacheMock.Setup(s => s.SetEventAsync(It.IsAny<Guid>(), It.IsAny<Event>(), TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Act
@@ -85,12 +81,8 @@ public partial class EventServiceCrudTests
         var @event = CreateTestEvent(id);
 
         // В кэше нет
-        holder.CacheMock.Setup(s => s.GetEventAsync(id, out It.Ref<Event?>.IsAny, TestContext.Current.CancellationToken))
-            .Callback((Guid itemId, out Event? item, CancellationToken ct) =>
-            {
-                item = null;
-            })
-            .ReturnsAsync(false)
+        holder.CacheMock.Setup(s => s.GetEventAsync(id, TestContext.Current.CancellationToken))
+            .ReturnsAsync((false, null))
             .Verifiable(Times.Once);
 
         // Нашли в БД
@@ -99,7 +91,7 @@ public partial class EventServiceCrudTests
             .Verifiable(Times.Once);
 
         // Установили в кэш
-        holder.CacheMock.Setup(s => s.SetEventAsync(@event, TestContext.Current.CancellationToken))
+        holder.CacheMock.Setup(s => s.SetEventAsync(@event.Id, @event, TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
         // Act
@@ -119,12 +111,8 @@ public partial class EventServiceCrudTests
         var id = Guid.NewGuid();
 
         // В кэше нет
-        holder.CacheMock.Setup(s => s.GetEventAsync(id, out It.Ref<Event?>.IsAny, TestContext.Current.CancellationToken))
-            .Callback((Guid itemId, out Event? item, CancellationToken ct) =>
-            {
-                item = null;
-            })
-            .ReturnsAsync(false)
+        holder.CacheMock.Setup(s => s.GetEventAsync(id, TestContext.Current.CancellationToken))
+            .ReturnsAsync((false, null))
             .Verifiable(Times.Once);
 
         // Не нашли в БД
@@ -133,7 +121,7 @@ public partial class EventServiceCrudTests
             .Verifiable(Times.Once);
 
         // Не установили в кэш, так как нет ничего
-        holder.CacheMock.Setup(s => s.SetEventAsync(It.IsAny<Event?>(), TestContext.Current.CancellationToken))
+        holder.CacheMock.Setup(s => s.SetEventAsync(It.IsAny<Guid>(), It.IsAny<Event?>(), TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Act
@@ -155,10 +143,11 @@ public partial class EventServiceCrudTests
     {
         // Arrange
         var service = CreateService(out var holder);
-        var captured = new List<Event>();
+        var capturedEvents = new List<Event>();
+        var capturedIds = new List<Guid>();
 
         // Добавили в репо
-        holder.RepositoryMock.Setup(s => s.AddAsync(Capture.In(captured), TestContext.Current.CancellationToken))
+        holder.RepositoryMock.Setup(s => s.AddAsync(Capture.In(capturedEvents), TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
         // Зафиксировали изменения
@@ -166,7 +155,7 @@ public partial class EventServiceCrudTests
             .Verifiable(Times.Once);
 
         // Установили кэш
-        holder.CacheMock.Setup(s => s.SetEventAsync(Capture.In(captured), TestContext.Current.CancellationToken))
+        holder.CacheMock.Setup(s => s.SetEventAsync(Capture.In(capturedIds), Capture.In(capturedEvents), TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
         // Act
@@ -179,7 +168,8 @@ public partial class EventServiceCrudTests
         result.Should().NotBeNull();
         // Id выделяется динамически, его не проверяем
         result.Should().BeEquivalentTo(expected, options => options.Excluding(e => e.Id));
-        captured.Should().AllBeEquivalentTo(expected, options => options.Excluding(e => e.Id));
+        capturedEvents.Should().AllBeEquivalentTo(expected, options => options.Excluding(e => e.Id));
+        capturedIds.Should().AllBeEquivalentTo(result.Id);
     }
 
     [Theory]
@@ -198,7 +188,7 @@ public partial class EventServiceCrudTests
             .Verifiable(Times.Never);
 
         // Не установили кэш
-        holder.CacheMock.Setup(s => s.SetEventAsync(It.IsAny<Event?>(), TestContext.Current.CancellationToken))
+        holder.CacheMock.Setup(s => s.SetEventAsync(It.IsAny<Guid>(), It.IsAny<Event?>(), TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Act
@@ -235,7 +225,7 @@ public partial class EventServiceCrudTests
             .Verifiable(Times.Once);
 
         // Сбросили кэш
-        holder.CacheMock.Setup(s => s.SetEventAsync(null, TestContext.Current.CancellationToken))
+        holder.CacheMock.Setup(s => s.SetEventAsync(id, null, TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
         // Act
@@ -264,7 +254,7 @@ public partial class EventServiceCrudTests
             .Verifiable(Times.Never);
 
         // Не установили в кэш, так как не нашли
-        holder.CacheMock.Setup(s => s.SetEventAsync(It.IsAny<Event?>(), TestContext.Current.CancellationToken))
+        holder.CacheMock.Setup(s => s.SetEventAsync(It.IsAny<Guid>(), It.IsAny<Event?>(), TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Act
@@ -299,7 +289,7 @@ public partial class EventServiceCrudTests
             .Verifiable(Times.Once);
 
         // Закэшировали
-        holder.CacheMock.Setup(s => s.SetEventAsync(Capture.In(captured), TestContext.Current.CancellationToken))
+        holder.CacheMock.Setup(s => s.SetEventAsync(id, Capture.In(captured), TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
         // Act
@@ -310,7 +300,7 @@ public partial class EventServiceCrudTests
         holder.RepositoryMock.Verify();
         holder.UnitOfWorkMock.Verify();
         result.Should().BeEquivalentTo(expected);
-        captured.First().Should().BeEquivalentTo(expected);
+        captured.Should().AllBeEquivalentTo(expected);
     }
 
     [Theory]
@@ -330,7 +320,7 @@ public partial class EventServiceCrudTests
             .Verifiable(Times.Never);
 
         // Не кэшировали
-        holder.CacheMock.Setup(s => s.SetEventAsync(It.IsAny<Event>(), TestContext.Current.CancellationToken))
+        holder.CacheMock.Setup(s => s.SetEventAsync(It.IsAny<Guid>(), It.IsAny<Event>(), TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Act
@@ -361,7 +351,7 @@ public partial class EventServiceCrudTests
             .Verifiable(Times.Never);
 
         // Не кэшировали
-        holder.CacheMock.Setup(s => s.SetEventAsync(It.IsAny<Event>(), TestContext.Current.CancellationToken))
+        holder.CacheMock.Setup(s => s.SetEventAsync(It.IsAny<Guid>(), It.IsAny<Event>(), TestContext.Current.CancellationToken))
             .Verifiable(Times.Never);
 
         // Act
@@ -375,6 +365,68 @@ public partial class EventServiceCrudTests
         holder.RepositoryMock.Verify();
         holder.UnitOfWorkMock.Verify();
         assertion.Which.Errors.Should().BeEquivalentTo(errors);
+    }
+
+    #endregion
+
+    #region GetTopSalesEventsAsync
+
+    [Fact]
+    public async Task GetTopSalesEventsAsync_CacheHit_ReturnedFromCache()
+    {
+        // Arrange
+        var service = CreateService(out var holder);
+        List<Event> eventList = [CreateTestEvent(Guid.NewGuid())];
+
+        // Получение из кэша успешно
+        holder.CacheMock.Setup(s => s.GetTopSalesEventAsync(TestContext.Current.CancellationToken))
+            .ReturnsAsync((true, eventList))
+            .Verifiable(Times.Once);
+
+        // Не трогали базу
+        holder.RepositoryMock.Setup(s => s.GetTopSalesEventsAsync(TestContext.Current.CancellationToken))
+            .Verifiable(Times.Never);
+
+        // Не устанавливали значение кэша
+        holder.CacheMock.Setup(s => s.SetTopSalesEventAsync(It.IsAny<List<Event>>(), TestContext.Current.CancellationToken))
+            .Verifiable(Times.Never);
+
+        // Act
+        var result = await service.GetTopSalesEventsAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        holder.CacheMock.Verify();
+        holder.RepositoryMock.Verify();
+        result.Should().BeEquivalentTo(eventList);
+    }
+
+    [Fact]
+    public async Task GetTopSalesEventsAsync_CacheMiss_ReturnFromDb()
+    {
+        // Arrange
+        var service = CreateService(out var holder);
+        List<Event> eventList = [CreateTestEvent(Guid.NewGuid())];
+
+        // В кэше нет
+        holder.CacheMock.Setup(s => s.GetTopSalesEventAsync(TestContext.Current.CancellationToken))
+            .ReturnsAsync((false, []))
+            .Verifiable(Times.Once);
+
+        // Нашли в БД
+        holder.RepositoryMock.Setup(s => s.GetTopSalesEventsAsync(TestContext.Current.CancellationToken))
+            .ReturnsAsync(eventList)
+            .Verifiable(Times.Once);
+
+        // Установили в кэш
+        holder.CacheMock.Setup(s => s.SetTopSalesEventAsync(eventList, TestContext.Current.CancellationToken))
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await service.GetTopSalesEventsAsync(TestContext.Current.CancellationToken);
+        // Assert
+        holder.CacheMock.Verify();
+        holder.RepositoryMock.Verify();
+        result.Should().BeEquivalentTo(eventList);
     }
 
     #endregion
