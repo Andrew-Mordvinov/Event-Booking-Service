@@ -25,7 +25,6 @@ public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
     public const string PostgresTests = "PostgresTests";
     public PostgreSqlContainer Container { get; private set; }
     public ServiceProvider ServiceProvider { get; private set; }
-    public IConfiguration Configuration { get; private set; }
 
     public SharedFixture()
     {
@@ -35,13 +34,7 @@ public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
             .WithPassword("postgres")
             .Build();
 
-        Configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
-            .AddJsonFile("appsettings.test.json", optional: true, reloadOnChange: false)
-            .Build();
-
-        var services = new ServiceCollection(); ;
+        var services = new ServiceCollection();
 
         services.AddDbContext<EventsDbContext>(options => options
             .UseNpgsql(Container.GetConnectionString()));

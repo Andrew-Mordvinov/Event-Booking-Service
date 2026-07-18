@@ -24,7 +24,6 @@ public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
 {
     public PostgreSqlContainer Container { get; private set; }
     public ServiceProvider ServiceProvider { get; private set; }
-    public IConfiguration Configuration { get; private set; }
 
     public SharedFixture()
     {
@@ -32,12 +31,6 @@ public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
             .WithDatabase("testdb")
             .WithUsername("postgres")
             .WithPassword("postgres")
-            .Build();
-
-        Configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
-            .AddJsonFile("appsettings.test.json", optional: true, reloadOnChange: false)
             .Build();
 
         var services = new ServiceCollection(); ;
@@ -75,11 +68,5 @@ public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
         await db.Database.EnsureDeletedAsync(token);
         // Создание БД
         await db.Database.MigrateAsync(token);
-    }
-
-    public static DateTimeOffset TrimToMicroseconds(DateTimeOffset dto)
-    {
-        var ticksToRemove = dto.Ticks % TimeSpan.TicksPerMicrosecond;
-        return dto.AddTicks(-ticksToRemove);
     }
 }

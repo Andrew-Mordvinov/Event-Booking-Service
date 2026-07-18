@@ -27,4 +27,8 @@
     <ProjectReference Include="..\Domain.Events\Domain.Events.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Tests.Integration.Events" />
+  </ItemGroup>
+
 </Project>

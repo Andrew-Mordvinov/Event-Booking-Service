@@ -19,7 +19,7 @@ namespace Tests.Integration.Shared.Infrastructure.Kafka;
 public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
 {
     public const string KafkaTests = "KafkaTests";
-    public string CurrentTestTopicName { get; private set; }
+    public string CurrentTestTopicName { get; private set; } = string.Empty;
 
     public KafkaContainer KafkaContainer { get; private set; }
     public PostgreSqlContainer PgContainer { get; private set; }

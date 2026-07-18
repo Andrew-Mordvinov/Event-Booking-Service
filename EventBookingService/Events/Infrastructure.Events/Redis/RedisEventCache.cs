@@ -39,7 +39,7 @@ public class RedisEventCache(
 
     public async Task<(bool, Event?)> GetEventAsync(Guid id, CancellationToken token = default)
     {
-        if (_connectionMultiplexer.IsConnected)
+        if (!_connectionMultiplexer.IsConnected)
         {
             _logger.LogWarning("Соединение с Redis не установлено, обращение к кэшу не удалось");
 
@@ -69,7 +69,7 @@ public class RedisEventCache(
 
     public async Task<(bool, List<Event>)> GetTopSalesEventAsync(CancellationToken token = default)
     {
-        if (_connectionMultiplexer.IsConnected)
+        if (!_connectionMultiplexer.IsConnected)
         {
             return (false, []);
         }
@@ -97,7 +97,7 @@ public class RedisEventCache(
 
     public async Task SetEventAsync(Guid id, Event? @event, CancellationToken token = default)
     {
-        if (_connectionMultiplexer.IsConnected)
+        if (!_connectionMultiplexer.IsConnected)
         {
             return;
         }
@@ -124,7 +124,7 @@ public class RedisEventCache(
 
     public async Task SetTopSalesEventAsync(List<Event>? topEvents, CancellationToken token = default)
     {
-        if (_connectionMultiplexer.IsConnected)
+        if (!_connectionMultiplexer.IsConnected)
         {
             return;
         }
