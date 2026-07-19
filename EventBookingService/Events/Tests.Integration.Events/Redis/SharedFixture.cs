@@ -23,7 +23,7 @@ namespace Tests.Integration.Events.Redis
 
         public SharedFixture()
         {
-            Container = new RedisBuilder("redis:8.8.0")
+            Container = new RedisBuilder("redis:8.8.0-alpine")
                 .Build();
         }
 
