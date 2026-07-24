@@ -71,7 +71,7 @@ public abstract class KafkaBackgroundProducer<TMessage, TDbContext> : Background
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex, "При обработке сообщений возникло исключение");
+                _logger.LogError(ex, "При обработке сообщений возникло исключение");
             }
         }
     }

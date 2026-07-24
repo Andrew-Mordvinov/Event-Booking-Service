@@ -117,8 +117,6 @@ public class RedisEventCache(
         catch (Exception ex)
         {
             _logger.LogError(ex, "Возникло исключение при установке значения в кэш");
-
-            return;
         }
     }
 
@@ -144,8 +142,6 @@ public class RedisEventCache(
         catch (Exception ex)
         {
             _logger.LogError(ex, "Возникло исключение при установке значения в кэш");
-
-            return;
         }
     }
 }

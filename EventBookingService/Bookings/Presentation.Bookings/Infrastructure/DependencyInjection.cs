@@ -32,7 +32,6 @@ public static class DependencyInjection
 
         services.AddDbContextPool<BookingsDbContext>(options => options
             .UseNpgsql(connectionString)
-            .LogTo(message => Serilog.Log.Information(message), LogLevel.Error)
             .EnableDetailedErrors(), 100);
 
         services.AddOptionsWithValidateOnStart<BookingSettings>()

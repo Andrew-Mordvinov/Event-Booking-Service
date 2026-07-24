@@ -49,7 +49,7 @@ public class BookingProcessingService(
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Произошло непредвиденное исключение при обработке бронирования с идентификатором {BookId}", bookingId);
+            _logger.LogError(e, "Произошло непредвиденное исключение при обработке бронирования с идентификатором {BookId}", bookingId);
         }
     }
 }
