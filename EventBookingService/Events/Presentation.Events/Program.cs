@@ -49,6 +49,8 @@ app.UseExceptionHandlingMiddleware();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapPrometheusScrapingEndpoint();
 app.MapControllers();
 
 app.Run();
