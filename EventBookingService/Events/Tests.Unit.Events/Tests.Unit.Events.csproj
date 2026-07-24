@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Application.Events\Application.Events.csproj" />
+    <ProjectReference Include="..\Infrastructure.Events\Infrastructure.Events.csproj" />
   </ItemGroup>
 
   <ItemGroup>

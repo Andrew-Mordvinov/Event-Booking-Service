@@ -1,15 +1,20 @@
-﻿using Application.Users.Infrastructure;
+using Application.Users.Infrastructure;
+
 using Infrastructure.Users.Ef;
 using Infrastructure.Users.Ef.ExceptionPatterns;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+
 using Npgsql;
+
 using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Abstract.ExceptionPatterns;
 using Shared.Infrastructure.Ef;
+
 using Testcontainers.PostgreSql;
 
 namespace Tests.Integration.Users.Ef;
@@ -19,7 +24,6 @@ public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
 {
     public PostgreSqlContainer Container { get; private set; }
     public ServiceProvider ServiceProvider { get; private set; }
-    public IConfiguration Configuration { get; private set; }
 
     public SharedFixture()
     {
@@ -27,12 +31,6 @@ public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
             .WithDatabase("testdb")
             .WithUsername("postgres")
             .WithPassword("postgres")
-            .Build();
-
-        Configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
-            .AddJsonFile("appsettings.test.json", optional: true, reloadOnChange: false)
             .Build();
 
         var services = new ServiceCollection(); ;
@@ -70,11 +68,5 @@ public class SharedFixture : IAsyncLifetime, ICollectionFixture<SharedFixture>
         await db.Database.EnsureDeletedAsync(token);
         // Создание БД
         await db.Database.MigrateAsync(token);
-    }
-
-    public static DateTimeOffset TrimToMicroseconds(DateTimeOffset dto)
-    {
-        var ticksToRemove = dto.Ticks % TimeSpan.TicksPerMicrosecond;
-        return dto.AddTicks(-ticksToRemove);
     }
 }

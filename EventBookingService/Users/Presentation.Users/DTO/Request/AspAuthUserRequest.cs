@@ -1,6 +1,7 @@
+using System.ComponentModel.DataAnnotations;
+
 using Application.Users.DTO;
 using Application.Users.Implementation;
-using System.ComponentModel.DataAnnotations;
 
 namespace Presentation.Users.DTO.Request;
 

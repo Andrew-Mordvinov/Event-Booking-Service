@@ -1,9 +1,12 @@
 using Application.Bookings.Infrastructure;
 using Application.Bookings.Interfaces;
 using Application.Bookings.Settings;
+
 using Domain.Bookings;
 using Domain.Bookings.Exceptions;
+
 using Microsoft.Extensions.Options;
+
 using Shared.Exceptions;
 using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Abstract.Enums;
@@ -11,7 +14,7 @@ using Shared.Infrastructure.Abstract.Enums;
 namespace Application.Bookings.Implementation;
 
 public class BookingService(
-    IBookingRepository _storageBooking,
+    IBookingRepository _bookingRepository,
     IUnitOfWork _unitOfWork,
     IUserContext _userContext,
     IOptions<BookingSettings> options) : IBookingService
@@ -22,7 +25,7 @@ public class BookingService(
         Guid bookingId,
         CancellationToken token = default)
     {
-        var booking = await _storageBooking.GetByIdAsync(bookingId, GetMode.Readonly, token) ?? throw new NotFoundException(BookingServiceErrors.BookingNotFound(bookingId));
+        var booking = await _bookingRepository.GetByIdAsync(bookingId, GetMode.Readonly, token) ?? throw new NotFoundException(BookingServiceErrors.BookingNotFound(bookingId));
 
         if (booking.UserId != _userContext.UserId
             && !await _userContext.IsAdmin(token))
@@ -37,7 +40,7 @@ public class BookingService(
         Guid eventId,
         CancellationToken token = default)
     {
-        var activeCount = await _storageBooking.GetCountActiveBookingForPersonAsync(_userContext.UserId, token);
+        var activeCount = await _bookingRepository.GetCountActiveBookingForPersonAsync(_userContext.UserId, token);
 
         if (activeCount >= _maxBookingPerUser)
         {
@@ -46,7 +49,7 @@ public class BookingService(
 
         var booking = new Booking(Guid.NewGuid(), eventId, _userContext.UserId, BookingStatus.Pending, DateTime.UtcNow);
 
-        await _storageBooking.AddAsync(booking, token);
+        await _bookingRepository.AddAsync(booking, token);
 
         await _unitOfWork.SaveChangesAsync(token);
 
@@ -58,7 +61,7 @@ public class BookingService(
         Guid bookingId,
         CancellationToken token = default)
     {
-        var booking = await _storageBooking.GetByIdAsync(bookingId, GetMode.Edit, token) ?? throw new NotFoundException(BookingServiceErrors.BookingNotFound(bookingId));
+        var booking = await _bookingRepository.GetByIdAsync(bookingId, GetMode.Edit, token) ?? throw new NotFoundException(BookingServiceErrors.BookingNotFound(bookingId));
 
         if (booking.Status is BookingStatus.Cancelled)
         {

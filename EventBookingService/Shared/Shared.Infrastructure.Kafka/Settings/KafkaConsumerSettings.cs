@@ -1,6 +1,6 @@
-﻿using Confluent.Kafka;
+using Confluent.Kafka;
 
-namespace Infrastructure.Events.Settings;
+namespace Shared.Infrastructure.Kafka.Settings;
 
 /// <summary>
 /// Настройки консьюмера Kafka

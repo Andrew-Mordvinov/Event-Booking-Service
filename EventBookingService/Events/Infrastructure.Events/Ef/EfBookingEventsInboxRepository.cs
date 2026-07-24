@@ -1,6 +1,8 @@
-﻿using Application.Events.DTO.Requests;
+using Application.Events.DTO.Requests;
 using Application.Events.Infrastructure;
+
 using Infrastructure.Events.ExtensionMethods;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Events.Ef;

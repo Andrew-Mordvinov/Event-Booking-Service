@@ -1,5 +1,7 @@
 using Domain.Users.Exceptions;
+
 using Microsoft.AspNetCore.Mvc;
+
 using Shared.Exceptions;
 
 namespace Presentation.Users.Exceptions

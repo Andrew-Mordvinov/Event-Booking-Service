@@ -1,10 +1,15 @@
-﻿using Application.Events.DTO.Requests;
+using Application.Events.DTO.Requests;
 using Application.Events.Implementation;
 using Application.Events.Infrastructure;
+
 using Domain.Events;
+
 using FluentAssertions;
+
 using Microsoft.Extensions.Logging;
+
 using Moq;
+
 using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Abstract.Enums;
 
@@ -16,6 +21,7 @@ public class EventProcessingServiceTests
     {
         public required Mock<IEventRepository> RepositoryMock { get; init; }
         public required Mock<IUnitOfWork> UnitOfWorkMock { get; init; }
+        public required Mock<IEventCache> EventCacheMock { get; init; }
         public required Mock<IBookingEventsInboxRepository> BookingEventsInboxRepositoryMock { get; init; }
     }
 
@@ -25,6 +31,7 @@ public class EventProcessingServiceTests
         {
             RepositoryMock = new Mock<IEventRepository>(),
             UnitOfWorkMock = new Mock<IUnitOfWork>(),
+            EventCacheMock = new Mock<IEventCache>(),
             BookingEventsInboxRepositoryMock = new Mock<IBookingEventsInboxRepository>(),
         };
 
@@ -32,6 +39,7 @@ public class EventProcessingServiceTests
         (
             holder.RepositoryMock.Object,
             holder.BookingEventsInboxRepositoryMock.Object,
+            holder.EventCacheMock.Object,
             holder.UnitOfWorkMock.Object,
             new Mock<ILogger<EventProcessingService>>().Object
         );
@@ -64,10 +72,15 @@ public class EventProcessingServiceTests
         holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
+        // Обновили кешу
+        holder.EventCacheMock.Setup(s => s.SetEventAsync(@event.Id, @event, TestContext.Current.CancellationToken))
+            .Verifiable(Times.Once);
+
         // Act
         await service.ProcessConfirmationAsync(bookRequest, TestContext.Current.CancellationToken);
 
         // Assert
+        holder.EventCacheMock.Verify();
         holder.BookingEventsInboxRepositoryMock.Verify();
         holder.RepositoryMock.Verify();
         holder.UnitOfWorkMock.Verify();
@@ -101,10 +114,15 @@ public class EventProcessingServiceTests
         holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
+        // Кешу не трогали
+        holder.EventCacheMock.Setup(s => s.SetEventAsync(It.IsAny<Guid>(), It.IsAny<Event>(), TestContext.Current.CancellationToken))
+            .Verifiable(Times.Never);
+
         // Act
         await service.ProcessConfirmationAsync(bookRequest, TestContext.Current.CancellationToken);
 
         // Assert
+        holder.EventCacheMock.Verify();
         holder.BookingEventsInboxRepositoryMock.Verify();
         holder.RepositoryMock.Verify();
         holder.UnitOfWorkMock.Verify();
@@ -138,10 +156,15 @@ public class EventProcessingServiceTests
         holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
+        // Кешу не трогали
+        holder.EventCacheMock.Setup(s => s.SetEventAsync(It.IsAny<Guid>(), It.IsAny<Event>(), TestContext.Current.CancellationToken))
+            .Verifiable(Times.Never);
+
         // Act
         await service.ProcessConfirmationAsync(bookRequest, TestContext.Current.CancellationToken);
 
         // Assert
+        holder.EventCacheMock.Verify();
         holder.BookingEventsInboxRepositoryMock.Verify();
         holder.RepositoryMock.Verify();
         holder.UnitOfWorkMock.Verify();
@@ -162,7 +185,7 @@ public class EventProcessingServiceTests
 
         // Запросили событие
         holder.RepositoryMock.Setup(s => s.GetByIdAsync(bookRequest.EventId, GetMode.Edit, TestContext.Current.CancellationToken))
-            .ReturnsAsync((Event?)null)
+            .ReturnsAsync((Event?) null)
             .Verifiable(Times.Once);
 
         // Добавили в inbox
@@ -173,10 +196,15 @@ public class EventProcessingServiceTests
         holder.UnitOfWorkMock.Setup(s => s.SaveChangesAsync(TestContext.Current.CancellationToken))
             .Verifiable(Times.Once);
 
+        // Кешу не трогали
+        holder.EventCacheMock.Setup(s => s.SetEventAsync(It.IsAny<Guid>(), It.IsAny<Event>(), TestContext.Current.CancellationToken))
+            .Verifiable(Times.Never);
+
         // Act
         await service.ProcessConfirmationAsync(bookRequest, TestContext.Current.CancellationToken);
 
         // Assert
+        holder.EventCacheMock.Verify();
         holder.BookingEventsInboxRepositoryMock.Verify();
         holder.RepositoryMock.Verify();
         holder.UnitOfWorkMock.Verify();

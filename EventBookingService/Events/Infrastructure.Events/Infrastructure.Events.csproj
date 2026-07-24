@@ -16,13 +16,19 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2" />
+    <PackageReference Include="StackExchange.Redis" Version="3.0.17" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Contracts\Contracts.csproj" />
     <ProjectReference Include="..\..\Shared\Shared.Infrastructure.Ef\Shared.Infrastructure.Ef.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Infrastructure.Kafka\Shared.Infrastructure.Kafka.csproj" />
     <ProjectReference Include="..\Application.Events\Application.Events.csproj" />
     <ProjectReference Include="..\Domain.Events\Domain.Events.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Tests.Integration.Events" />
   </ItemGroup>
 
 </Project>

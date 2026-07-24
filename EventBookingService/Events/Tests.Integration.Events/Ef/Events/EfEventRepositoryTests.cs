@@ -1,16 +1,22 @@
-﻿using Application.Events.Infrastructure;
+using System.Linq.Expressions;
+
+using Application.Events.Infrastructure;
+
 using Domain.Events;
+
 using FluentAssertions;
+
 using Infrastructure.Events.Ef;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 using Shared.Exceptions;
 using Shared.Infrastructure.Abstract.Enums;
-using System.Linq.Expressions;
 
 namespace Tests.Integration.Events.Ef.Events;
 
-[Collection("PostgresTests")]
+[Collection(SharedFixture.PostgresTests)]
 public partial class EfEventRepositoryTests(SharedFixture sharedFixture) : IAsyncLifetime
 {
     private readonly SharedFixture _sharedFixture = sharedFixture;
@@ -318,6 +324,49 @@ public partial class EfEventRepositoryTests(SharedFixture sharedFixture) : IAsyn
 
         // Assert
         pageResult.Should().BeNull();
+    }
+
+    #endregion
+
+    #region GetTopSalesEventsAsync
+
+    [Theory]
+    [MemberData(nameof(GetTopSalesEventsAsync_CommonCase))]
+    public async Task GetTopSalesEventsAsync_CommonCase_ReturnCorrectList(
+        IEnumerable<Event> all,
+        Guid[] expectedIds)
+    {
+        // Arrange
+        await AddEventsAsync(all);
+
+        using var scope = _sharedFixture.ServiceProvider.CreateScope();
+
+        var dbContext = scope.ServiceProvider.GetRequiredService<EventsDbContext>();
+        var repository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
+
+        // Act
+        var result = await repository.GetTopSalesEventsAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Select(t => t.Id).Should().BeEqualTo(expectedIds);
+        dbContext.ChangeTracker.Entries().Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetTopSalesEventsAsync_NoItems_ReturnEmptyList()
+    {
+        // Arrange
+        using var scope = _sharedFixture.ServiceProvider.CreateScope();
+
+        var dbContext = scope.ServiceProvider.GetRequiredService<EventsDbContext>();
+        var repository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
+
+        // Act
+        var result = await repository.GetTopSalesEventsAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Should().BeEmpty();
+        dbContext.ChangeTracker.Entries().Should().BeEmpty();
     }
 
     #endregion

@@ -1,4 +1,4 @@
-﻿namespace Contracts.Settings;
+namespace Shared.Infrastructure.Kafka.Settings;
 
 /// <summary>
 /// Настройки подключения к Kafka

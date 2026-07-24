@@ -1,12 +1,15 @@
-﻿using FluentAssertions;
+using FluentAssertions;
+
 using Infrastructure.Events.Ef;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 using Npgsql;
 
 namespace Tests.Integration.Events.Ef.Infrastructure;
 
-[Collection("PostgresTests")]
+[Collection(SharedFixture.PostgresTests)]
 public class MigrationTests(SharedFixture sharedFixture)
 {
     private readonly SharedFixture _sharedFixture = sharedFixture;

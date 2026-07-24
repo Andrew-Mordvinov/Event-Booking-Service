@@ -1,4 +1,4 @@
-﻿using Application.Events.DTO.Requests;
+using Application.Events.DTO.Requests;
 
 namespace Application.Events.Interfaces;
 
@@ -8,9 +8,10 @@ namespace Application.Events.Interfaces;
 public interface IEventProcessingService
 {
     /// <summary>
-    /// Обработка успешного бронирования
+    /// Обработать успешное бронирование
     /// </summary>
     /// <param name="bookingConfirmed">Cобытие бронирования, которое нужно обработать</param>
     /// <param name="token">Токен отмены асинхронной операции</param>
+    /// <returns>Асинхронная задача</returns>
     Task ProcessConfirmationAsync(BookingConfirmedRequest bookingConfirmed, CancellationToken token = default);
 }

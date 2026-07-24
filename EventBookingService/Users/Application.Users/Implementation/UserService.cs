@@ -1,9 +1,11 @@
-﻿using Application.Users.DTO;
+using Application.Users.DTO;
 using Application.Users.Infrastructure;
 using Application.Users.Interfaces;
 using Application.Users.Validations;
+
 using Domain.Users;
 using Domain.Users.Exceptions;
+
 using Shared.Exceptions;
 using Shared.Infrastructure.Abstract;
 

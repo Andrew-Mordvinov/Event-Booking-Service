@@ -27,6 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Contracts\Contracts.csproj" />
     <ProjectReference Include="..\..\Shared\Shared.Infrastructure.Ef\Shared.Infrastructure.Ef.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Infrastructure.Kafka\Shared.Infrastructure.Kafka.csproj" />
     <ProjectReference Include="..\..\Shared\Shared.Roles\Shared.Roles.csproj" />
     <ProjectReference Include="..\Application.Bookings\Application.Bookings.csproj" />
     <ProjectReference Include="..\Domain.Bookings\Domain.Bookings.csproj" />

@@ -1,5 +1,6 @@
 using Application.Events.DTO.Requests;
 using Application.Events.DTO.Result;
+
 using Domain.Events;
 
 namespace Application.Events.Interfaces;
@@ -49,7 +50,13 @@ public interface IEventService
     /// </summary>
     /// <param name="id">Id события, которое нужно удалить</param>
     /// <param name="token">Токен отмены асинхронной операции</param>
+    /// <returns>Асинхронная задача</returns>
     Task DeleteEventByIdAsync(Guid id, CancellationToken token = default);
 
-
+    /// <summary>
+    /// Получить топ-10 событий по продажам
+    /// </summary>
+    /// <param name="token">Токен отмены асинхронной операции</param>
+    /// <returns>Список самых бронируемых событий или пустой список, если ничего нет</returns>
+    Task<List<Event>> GetTopSalesEventsAsync(CancellationToken token = default);
 }

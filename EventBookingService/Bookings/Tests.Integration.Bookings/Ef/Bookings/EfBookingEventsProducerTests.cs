@@ -1,8 +1,12 @@
-﻿using Application.Bookings.Infrastructure;
+using Application.Bookings.Infrastructure;
+
 using Domain.Bookings;
+
 using FluentAssertions;
+
 using Infrastructure.Bookings.Ef;
 using Infrastructure.Bookings.Ef.Models;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -87,7 +91,7 @@ public class EfBookingEventsProducerTests(SharedFixture sharedFixture) : IAsyncL
             var db = scope.ServiceProvider.GetRequiredService<BookingsDbContext>();
             var result = await db.BookingConfirmed.FirstOrDefaultAsync
             (
-                b => 
+                b =>
                     b.BookingId == bookingId && b.EventId == eventId,
                 TestContext.Current.CancellationToken
             );
@@ -116,7 +120,7 @@ public class EfBookingEventsProducerTests(SharedFixture sharedFixture) : IAsyncL
         );
 
         await AddBookingConfirmedAsync(booking);
-  
+
         using (var scope = _sharedFixture.ServiceProvider.CreateScope())
         {
             var producer = scope.ServiceProvider.GetRequiredService<IBookingEventsProducer>();

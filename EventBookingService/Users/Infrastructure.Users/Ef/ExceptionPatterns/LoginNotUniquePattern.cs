@@ -1,6 +1,9 @@
-﻿using Domain.Users.Exceptions;
+using Domain.Users.Exceptions;
+
 using Microsoft.EntityFrameworkCore;
+
 using Npgsql;
+
 using Shared.Infrastructure.Abstract.ExceptionPatterns;
 
 namespace Infrastructure.Users.Ef.ExceptionPatterns;

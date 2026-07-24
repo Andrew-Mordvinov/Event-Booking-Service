@@ -1,9 +1,11 @@
 
 using Application.Events.Interfaces;
+
 using Domain.Events;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using Presentation.Events.DTO.Requests;
 using Presentation.Events.DTO.Response;
 
@@ -15,10 +17,7 @@ namespace Presentation.Events.Application.Controllers;
 [ApiController]
 [Route("events")]
 [Authorize]
-public class EventController(
-    IEventService _eventService
-    //IBookingService _bookingService
-    ) : ControllerBase
+public class EventController(IEventService _eventService) : ControllerBase
 {
     /// <summary>
     /// Получение события по его идентификатору
@@ -152,6 +151,21 @@ public class EventController(
         await _eventService.DeleteEventByIdAsync(id, cancellationToken);
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// Получение топ-10 самых продаваемых событий
+    /// </summary>
+    /// <param name="cancellationToken">Токен отмены асинхронной операции</param>
+    /// <response code="200">Список событий успешно получен</response>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [AllowAnonymous]
+    [HttpGet("top")]
+    public async Task<IActionResult> GetTopSalesEventsAsync(CancellationToken cancellationToken)
+    {
+        var result = await _eventService.GetTopSalesEventsAsync(cancellationToken);
+
+        return Ok(result.Select(BaseEventResponse.FromEvent));
     }
 }
 

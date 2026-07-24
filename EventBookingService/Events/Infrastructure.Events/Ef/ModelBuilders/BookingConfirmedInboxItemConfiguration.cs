@@ -1,4 +1,5 @@
-﻿using Infrastructure.Events.Ef.Models;
+using Infrastructure.Events.Ef.Models;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

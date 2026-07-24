@@ -1,4 +1,5 @@
-﻿using Application.Events.Implementation;
+using Application.Events.Implementation;
+
 using Domain.Events;
 
 namespace Tests.Unit.Events.Filtering;

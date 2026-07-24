@@ -1,6 +1,8 @@
 using Application.Bookings.Infrastructure;
 using Application.Bookings.Interfaces;
+
 using Microsoft.Extensions.Logging;
+
 using Shared.Infrastructure.Abstract;
 
 namespace Application.Bookings.Implementation;

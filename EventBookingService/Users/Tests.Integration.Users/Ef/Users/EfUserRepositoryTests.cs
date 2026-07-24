@@ -1,9 +1,14 @@
-﻿using Application.Users.Infrastructure;
+using Application.Users.Infrastructure;
+
 using Domain.Users;
+
 using FluentAssertions;
+
 using Infrastructure.Users.Ef;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 using Shared.Roles;
 
 namespace Tests.Integration.Users.Ef.Users;

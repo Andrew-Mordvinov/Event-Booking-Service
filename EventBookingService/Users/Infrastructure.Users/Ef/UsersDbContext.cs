@@ -1,4 +1,5 @@
-﻿using Domain.Users;
+using Domain.Users;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Users.Ef;

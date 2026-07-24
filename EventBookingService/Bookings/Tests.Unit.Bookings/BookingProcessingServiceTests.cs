@@ -1,9 +1,14 @@
-﻿using Application.Bookings.Implementation;
+using Application.Bookings.Implementation;
 using Application.Bookings.Infrastructure;
+
 using Domain.Bookings;
+
 using FluentAssertions;
+
 using Microsoft.Extensions.Logging;
+
 using Moq;
+
 using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Abstract.Enums;
 
@@ -74,7 +79,7 @@ public class BookingProcessingServiceTests
         var bookId = Guid.NewGuid();
         // Бронь не найдена
         holder.BookingStorageMock.Setup(s => s.GetByIdAsync(bookId, GetMode.Edit, TestContext.Current.CancellationToken))
-            .ReturnsAsync((Booking?)null)
+            .ReturnsAsync((Booking?) null)
             .Verifiable(Times.Once);
 
         // Не публиковали событие 

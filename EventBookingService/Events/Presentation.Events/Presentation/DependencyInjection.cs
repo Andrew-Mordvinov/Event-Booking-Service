@@ -1,6 +1,7 @@
+using System.Reflection;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi;
-using System.Reflection;
 
 namespace Presentation.Events.Presentation;
 

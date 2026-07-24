@@ -1,3 +1,5 @@
+using System.Security.Claims;
+
 using FluentAssertions;
 
 using Infrastructure.Bookings.Http;
@@ -9,8 +11,6 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Moq;
 
 using Shared.Roles;
-
-using System.Security.Claims;
 
 namespace Tests.Unit.Bookings;
 

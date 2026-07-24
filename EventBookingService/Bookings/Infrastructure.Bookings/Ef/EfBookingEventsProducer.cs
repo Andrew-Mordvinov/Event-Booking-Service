@@ -1,5 +1,7 @@
-﻿using Application.Bookings.Infrastructure;
+using Application.Bookings.Infrastructure;
+
 using Domain.Bookings;
+
 using Infrastructure.Bookings.ExtensionMethods;
 
 namespace Infrastructure.Bookings.Ef;

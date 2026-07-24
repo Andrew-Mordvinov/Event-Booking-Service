@@ -1,7 +1,10 @@
-﻿using Application.Bookings.Infrastructure;
+using Application.Bookings.Infrastructure;
+
 using Infrastructure.Bookings.Http.Exceptions;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.JsonWebTokens;
+
 using Shared.Roles;
 
 namespace Infrastructure.Bookings.Http;

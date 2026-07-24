@@ -24,7 +24,7 @@ public class ExceptionHandlerRegistry
             StatusCode = statusCode,
             ProblemDetailsFactory = (context, ex) =>
             {
-                var problemDetails = problemDetailsFactory(context, (TException)ex);
+                var problemDetails = problemDetailsFactory(context, (TException) ex);
                 problemDetails.Status = statusCode;
 
                 return problemDetails;

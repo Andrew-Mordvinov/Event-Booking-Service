@@ -9,10 +9,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Shared.Infrastructure.Abstract;
 
-namespace Tests.Integration.Shared.Infrastructure;
+namespace Tests.Integration.Shared.Infrastructure.Ef;
 
 // TODO тесты лучше сделать с другой сущностью, но пока для экономии времени будут тесты с ивентами
-[Collection("PostgresTests")]
+[Collection(SharedFixture.PostgresTests)]
 public class EfUnitOfWorkTests(SharedFixture sharedFixture) : IAsyncLifetime
 {
     private readonly SharedFixture _sharedFixture = sharedFixture;

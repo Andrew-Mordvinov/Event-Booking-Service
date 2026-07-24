@@ -1,7 +1,10 @@
-﻿using FluentAssertions;
+using FluentAssertions;
+
 using Infrastructure.Bookings.Ef;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 using Npgsql;
 
 namespace Tests.Integration.Bookings.Ef.Infrastructure;

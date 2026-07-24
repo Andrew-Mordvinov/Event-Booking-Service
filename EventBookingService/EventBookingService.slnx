@@ -16,6 +16,7 @@
     <Project Path="Events/Tests.Unit.Events/Tests.Unit.Events.csproj" Id="954fd03c-bfa3-4f47-bfbb-a4b7cd39b8ad" />
   </Folder>
   <Folder Name="/Shared/">
+    <Project Path="Shared/Shared.Infrastructure.Kafka/Shared.Infrastructure.Kafka.csproj" Id="20758463-e158-4ad7-9454-be96f304d8fe" />
     <Project Path="Shared/Shared.Entities/Shared.Entities.csproj" Id="9a8b0100-f9e9-4641-945b-e9469e8f81a2" />
     <Project Path="Shared/Shared.Exceptions/Shared.Exceptions.csproj" Id="4a46bdde-3e1f-41d2-aa4d-8d1473fb8b08" />
     <Project Path="Shared/Shared.Helpers/Shared.Helpers.csproj" Id="dee85aa3-7350-4257-af86-b094346fea4c" />

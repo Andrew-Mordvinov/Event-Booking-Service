@@ -52,6 +52,18 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:8.8.0-alpine
+    container_name: redis
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     container_name: eventapi-kafka
@@ -84,6 +96,7 @@ services:
         condition: service_healthy
     environment:
       KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      KAFKA_TOPICS: ${KAFKA_TOPICS}
     command: 
       - /bin/sh
       - -c
@@ -136,6 +149,7 @@ services:
       - JwtSettings__Issuer=${JWT_ISSUER}
       - JwtSettings__Audience=${JWT_AUDIENCE}
       - JwtSettings__ExpiryMinutes=${JWT_EXPIRY_MINUTES}
+      - RedisSettings__Password=${REDIS_PASSWORD}
     depends_on:
       events-db:
         condition: service_healthy
@@ -143,6 +157,8 @@ services:
         condition: service_healthy
       kafka-init:
         condition: service_completed_successfully
+      redis:
+        condition: service_healthy
 
   users-api:
     build:

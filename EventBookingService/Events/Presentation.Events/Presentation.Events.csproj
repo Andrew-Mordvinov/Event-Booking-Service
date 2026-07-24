@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Shared\Shared.Infrastructure.Ef\Shared.Infrastructure.Ef.csproj" />
     <ProjectReference Include="..\..\Shared\Shared.ValidationAttributes\Shared.ValidationAttributes.csproj" />
     <ProjectReference Include="..\Application.Events\Application.Events.csproj" />
     <ProjectReference Include="..\Domain.Events\Domain.Events.csproj" />
