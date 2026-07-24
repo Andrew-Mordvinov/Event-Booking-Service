@@ -109,6 +109,33 @@ services:
         done
         echo "Topics created successfully!"
 
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: eventapi-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.56
+    container_name: eventapi-jaeger
+    ports:
+      - "16686:16686"   # UI
+      - "4317:4317"     # OTLP gRPC
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: eventapi-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+
   bookings-api:
     build:
       context: .
@@ -125,6 +152,7 @@ services:
       - JwtSettings__Issuer=${JWT_ISSUER}
       - JwtSettings__Audience=${JWT_AUDIENCE}
       - JwtSettings__ExpiryMinutes=${JWT_EXPIRY_MINUTES}
+      - Otlp__Endpoint=http://jaeger:4317
     depends_on:
       bookings-db:
         condition: service_healthy
@@ -150,6 +178,7 @@ services:
       - JwtSettings__Audience=${JWT_AUDIENCE}
       - JwtSettings__ExpiryMinutes=${JWT_EXPIRY_MINUTES}
       - RedisSettings__Password=${REDIS_PASSWORD}
+      - Otlp__Endpoint=http://jaeger:4317
     depends_on:
       events-db:
         condition: service_healthy
@@ -176,6 +205,7 @@ services:
       - JwtSettings__Issuer=${JWT_ISSUER}
       - JwtSettings__Audience=${JWT_AUDIENCE}
       - JwtSettings__ExpiryMinutes=${JWT_EXPIRY_MINUTES}
+      - Otlp__Endpoint=http://jaeger:4317
     depends_on:
       users-db:
         condition: service_healthy
@@ -189,3 +219,4 @@ volumes:
   events_data:
   users_data:
   kafka_data:
+  grafana-data: 
