@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   bookings-db:
     image: postgres:18
@@ -115,14 +113,14 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
     ports:
-      - "9090:9090"
+      - "${PROMETHEUS_EXTERNAL_PORT}:${PROMETHEUS_PORT}"
 
   jaeger:
     image: jaegertracing/all-in-one:1.56
     container_name: eventapi-jaeger
     ports:
-      - "16686:16686"   # UI
-      - "4317:4317"     # OTLP gRPC
+      - "${JAEGER_UI_EXTERNAL_PORT}:${JAEGER_UI_PORT}"   # UI
+      - "${JAEGER_OTLP_EXTERNAL_PORT}:${JAEGER_OTLP_PORT}"     # OTLP gRPC
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
 
@@ -130,7 +128,7 @@ services:
     image: grafana/grafana:10.4.2
     container_name: eventapi-grafana
     ports:
-      - "3000:3000"
+      - "${GRAFANA_EXTERNAL_PORT}:${GRAFANA_PORT}"
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
     depends_on:
@@ -156,7 +154,7 @@ services:
       - JwtSettings__Issuer=${JWT_ISSUER}
       - JwtSettings__Audience=${JWT_AUDIENCE}
       - JwtSettings__ExpiryMinutes=${JWT_EXPIRY_MINUTES}
-      - Otlp__Endpoint=http://jaeger:4317
+      - Otlp__Endpoint=http://jaeger:${JAEGER_OTLP_PORT}
     depends_on:
       bookings-db:
         condition: service_healthy
@@ -182,7 +180,7 @@ services:
       - JwtSettings__Audience=${JWT_AUDIENCE}
       - JwtSettings__ExpiryMinutes=${JWT_EXPIRY_MINUTES}
       - RedisSettings__Password=${REDIS_PASSWORD}
-      - Otlp__Endpoint=http://jaeger:4317
+      - Otlp__Endpoint=http://jaeger:${JAEGER_OTLP_PORT}
     depends_on:
       events-db:
         condition: service_healthy
@@ -209,7 +207,7 @@ services:
       - JwtSettings__Issuer=${JWT_ISSUER}
       - JwtSettings__Audience=${JWT_AUDIENCE}
       - JwtSettings__ExpiryMinutes=${JWT_EXPIRY_MINUTES}
-      - Otlp__Endpoint=http://jaeger:4317
+      - Otlp__Endpoint=http://jaeger:${JAEGER_OTLP_PORT}
     depends_on:
       users-db:
         condition: service_healthy
