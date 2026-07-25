@@ -31,7 +31,7 @@ public class BookingConfirmationBackgroundService(
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex, "При обработке бронирований возникло исключение");
+                _logger.LogError(ex, "При обработке бронирований возникло исключение");
             }
         }
 

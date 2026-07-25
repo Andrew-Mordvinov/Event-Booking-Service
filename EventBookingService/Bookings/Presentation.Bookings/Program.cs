@@ -17,10 +17,11 @@ builder.Host.UseSerilog((context, services, config) => config
     .ReadFrom.Configuration(context.Configuration)
 );
 
-builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddApplication();
-builder.Services.AddPresentation();
-builder.Services.AddExceptionMap();
+builder.Services
+    .AddInfrastructure(builder.Configuration)
+    .AddApplication()
+    .AddPresentation()
+    .AddExceptionMap();
 
 if (builder.Environment.IsDevelopment())
 {
@@ -49,6 +50,8 @@ app.UseExceptionHandlingMiddleware();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapPrometheusScrapingEndpoint();
 app.MapControllers();
 
 app.Run();

@@ -14,6 +14,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+
 using Shared.Infrastructure.Abstract;
 using Shared.Infrastructure.Abstract.ExceptionPatterns;
 using Shared.Infrastructure.Ef;
@@ -22,6 +26,8 @@ namespace Presentation.Users.Infrastructure;
 
 public static class DependencyInjection
 {
+    private static readonly string _serviceName = "user-service";
+
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
         IConfigurationManager configuration)
@@ -31,39 +37,60 @@ public static class DependencyInjection
 
         services.AddDbContextPool<UsersDbContext>(options => options
             .UseNpgsql(connectionString)
-            .LogTo(message => Serilog.Log.Information(message), LogLevel.Error)
             .EnableDetailedErrors(), 100);
 
         services.AddOptionsWithValidateOnStart<JwtSettings>()
             .Bind(configuration.GetSection("JwtSettings"))
             .ValidateDataAnnotations();
 
-        services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-        .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-        {
-            var settings = configuration.GetSection("JwtSettings").Get<JwtSettings>() ?? throw new Exception("Couldn't load settings for jwt token");
-
-            options.TokenValidationParameters = new TokenValidationParameters
+        services
+            .AddOpenTelemetry()
+            .WithMetrics(metrics =>
             {
-                ValidateIssuer = true,
-                ValidIssuer = settings.Issuer,
+                metrics
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddRuntimeInstrumentation()
+                    .AddPrometheusExporter()
+                    .ConfigureResource(r => r.AddService(_serviceName));
+            })
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddEntityFrameworkCoreInstrumentation()
+                    .AddOtlpExporter(o => o.Endpoint = new Uri(configuration["Otlp:Endpoint"]!))
+                    .ConfigureResource(r => r.AddService(_serviceName));
+            });
 
-                ValidateAudience = true,
-                ValidAudience = settings.Audience,
+        services
+            .AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+            {
+                var settings = configuration.GetSection("JwtSettings").Get<JwtSettings>() ?? throw new Exception("Couldn't load settings for jwt token");
 
-                ValidateLifetime = true,
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = settings.Issuer,
 
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SecretKey)),
-            };
+                    ValidateAudience = true,
+                    ValidAudience = settings.Audience,
 
-            // Опция, для того чтобы система сама не делала маппинг sub на какое-то длинное поле http-бла-бла-бла
-            options.MapInboundClaims = false;
-        });
+                    ValidateLifetime = true,
+
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SecretKey)),
+                };
+
+                // Опция, для того чтобы система сама не делала маппинг sub на какое-то длинное поле http-бла-бла-бла
+                options.MapInboundClaims = false;
+            });
 
         services.AddAuthorization();
 

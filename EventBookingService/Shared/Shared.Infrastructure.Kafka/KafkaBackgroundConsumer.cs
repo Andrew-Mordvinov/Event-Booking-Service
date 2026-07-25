@@ -72,7 +72,7 @@ public abstract class KafkaBackgroundConsumer<TMessage> : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex, "При обработке сообщений возникло исключение");
+                _logger.LogError(ex, "При обработке сообщений возникло исключение");
             }
         }
     }
@@ -93,7 +93,7 @@ public abstract class KafkaBackgroundConsumer<TMessage> : BackgroundService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ошибка сериализации сообщения {message}", consumeResult.Message.Value);
+            _logger.LogError(ex, "Ошибка сериализации сообщения {Message}", consumeResult.Message.Value);
             // TODO нужно добавить dlq
             consumer.Commit(consumeResult);
             return;
@@ -101,7 +101,7 @@ public abstract class KafkaBackgroundConsumer<TMessage> : BackgroundService
 
         if (message is null)
         {
-            _logger.LogError("Сообщение не десериализовано корректно {message}", consumeResult.Message.Value);
+            _logger.LogError("Сообщение не десериализовано корректно {Message}", consumeResult.Message.Value);
             // TODO нужно добавить dlq
             consumer.Commit(consumeResult);
             return;
